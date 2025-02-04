@@ -1,0 +1,23 @@
+.layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+.layout .content {
+  flex-grow: 1;
+
+  overflow-y: auto;
+  background-color: green;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.layout.expanded .content {
+  margin-left: 240px; /* Adjust based on navbar width */
+}
+
+.layout.collapsed .content {
+  margin-left: 60px; /* Adjust based on navbar width */
+}

@@ -1,0 +1,84 @@
+.dashboard {
+  padding: 20px;
+}
+
+.dashboard h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.section {
+  margin-bottom: 30px;
+}
+
+.section h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.chart {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.bar-chart {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  height: 200px; /* Fixed height for the bar chart */
+}
+
+.bar {
+  width: 50px;
+  background-color: #007bff;
+  color: white;
+  text-align: center;
+  border-radius: 4px 4px 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.bar span {
+  margin: 5px 0;
+}
+
+.pie-chart {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.slice {
+  width: 5rem;
+  height: 7rem;
+  border-radius: 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.tracking-logs {
+  list-style: none;
+  padding: 0;
+}
+
+.tracking-logs li {
+  background-color: #f1f1f1;
+  padding: 10px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+}
+
+.tracking-logs .module {
+  font-weight: bold;
+}
+
+.loading,
+.error {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 20px;
+}

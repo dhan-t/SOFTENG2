@@ -1,0 +1,123 @@
+.maindiv {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.welcome-message {
+  display: flex;
+  flex-direction: column;
+  height: fit-content max-content;
+}
+
+.user-greeting {
+  width: max-content;
+  font-weight: bold;
+  font-size: 1.5rem;
+  opacity: 90%;
+}
+
+.current-date {
+  font-weight: normal;
+  font-size: 0.8rem;
+  opacity: 80%;
+}
+
+.search-bar {
+  display: flex;
+  flex: 1;
+  height: 3rem;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid white; /* Light gray border */
+  border-radius: 4px;
+  padding: 5px 10px;
+  background-color: white;
+}
+
+.button {
+  background-color: transparent;
+  cursor: pointer;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.button:focus {
+  outline: none;
+}
+
+.icon-holder {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.search-icon {
+  color: #ccc;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.search-bar input {
+  flex-grow: 2;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  background-color: transparent;
+}
+
+.input-field {
+  color: #858d9d;
+  display: flex;
+  height: 100%;
+  font-size: 1rem;
+  align-items: center;
+  border: 1px solid #ccc; /* Light gray border */
+  border-radius: 4px;
+  padding: 5px 10px;
+  background-color: #f8f8f8;
+}
+
+.notif-icon {
+  color: #222222;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.profile-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+}
+
+.profile-picture {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #ccc;
+}
+
+.profile-texts {
+  height: fit-content;
+  text-align: start;
+}
+
+.username-display {
+  font-weight: bold;
+  font-size: 1rem;
+  opacity: 90%;
+}
+
+.user-position {
+  font-weight: normal;
+  font-size: 0.8rem;
+  opacity: 80%;
+}

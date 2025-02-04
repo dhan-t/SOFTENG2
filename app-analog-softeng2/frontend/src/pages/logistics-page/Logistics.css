@@ -1,0 +1,142 @@
+.logistics {
+  padding: 1rem;
+  background-color: red;
+  overflow-y: auto;
+}
+
+.logistics h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+form {
+  margin-bottom: 30px;
+}
+
+.section {
+  background: white;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+form h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+tr:hover {
+  background-color: #f9f9f9;
+}
+
+.loading,
+.error {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+/* Table container */
+.table-container {
+  margin: 20px 0;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Table */
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+/* Table header */
+.table-container th {
+  background-color: #4caf50;
+  color: white;
+  text-align: left;
+  padding: 12px;
+  font-weight: bold;
+}
+
+/* Table body */
+.table-container td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Table rows */
+.table-container tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.table-container tr:hover {
+  background-color: #ddd;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .table-container table,
+  .table-container th,
+  .table-container td {
+    display: block;
+    width: 100%;
+  }
+
+  .table-container th,
+  .table-container td {
+    box-sizing: border-box;
+    padding: 10px;
+  }
+
+  .table-container th {
+    background-color: #333;
+  }
+}
