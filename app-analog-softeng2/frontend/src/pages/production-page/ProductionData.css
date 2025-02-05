@@ -1,33 +1,69 @@
-.production-data {
-  padding: 20px;
+.main-div {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.production-data h1 {
-  font-size: 24px;
-  margin-bottom: 20px;
+.loading,
+.error {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 20px;
 }
 
-.form {
-  margin-bottom: 20px;
+.form-and-card {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  height: fit-content;
+}
+
+.report-production {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 1rem;
+  width: 100%;
+  height: fit-content;
+}
+
+form {
+  padding: 0;
+  margin: 0;
+}
+
+.form-and-card {
+  display: flex;
+  flex-direction: row;
+}
+
+.report-production .form {
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Gap between form groups */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 0.7rem;
+  margin-bottom: 0.3rem;
 }
 
 .form h2 {
   font-size: 20px;
-  margin-bottom: 10px;
 }
 
-.form input {
-  display: block;
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+.form input,
+.form select {
+  height: 2.5rem;
+  border-radius: 0.5rem;
 }
 
 .form button {
-  padding: 8px 16px;
-  margin-right: 10px;
   background-color: #007bff;
   color: white;
   border: none;
@@ -39,41 +75,86 @@
   background-color: #0056b3;
 }
 
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.preview-card {
+  background-color: #b5d7af;
+  border-radius: 1rem;
+  padding: 1rem;
+  width: 40%;
+  padding: 20px;
+  border-radius: 1rem;
+}
+
+.preview-content {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.preview-content span {
+  font-size: 12rem; /* Adjust the size as needed */
+}
+
+.preview-content p {
+  font-size: 2rem; /* Adjust text size if needed */
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
 }
 
-th, td {
-  padding: 10px;
-  border: 1px solid #ddd;
-  text-align: left;
+.styled-table {
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border-collapse: collapse;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 0.9em;
 }
-
-th {
-  background-color: #f2f2f2;
+.styled-table th,
+.styled-table td {
+  padding: 12px 15px;
 }
-
-tr:hover {
-  background-color: #f9f9f9;
-}
-
-button {
-  padding: 5px 10px;
-  margin-right: 5px;
-  background-color: #28a745;
+.styled-table thead th {
+  background-color: #b5d7af;
   color: white;
+}
+.styled-table tbody tr {
+  border-bottom: 1px solid #fff;
+}
+
+.styled-table button {
+  width: 80px; /* Set a uniform width */
+  height: 35px; /* Set a uniform height */
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 14px;
+  margin-right: 5px; /* Space between buttons */
 }
 
-button:hover {
-  background-color: #218838;
+.styled-table .edit-button {
+  background-color: #4caf50; /* Green for edit */
+  color: white;
 }
 
-.loading, .error {
-  text-align: center;
-  font-size: 18px;
-  margin-top: 20px;
+.styled-table .edit-button:hover {
+  background-color: #45a049; /* Darker green on hover */
+}
+
+.styled-table .delete-button {
+  background-color: #f44336; /* Red for delete */
+  color: white;
+}
+
+.styled-table .delete-button:hover {
+  background-color: #d32f2f; /* Darker red on hover */
 }

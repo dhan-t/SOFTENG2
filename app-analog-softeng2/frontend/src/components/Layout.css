@@ -4,13 +4,12 @@
   width: 100vw;
   overflow: hidden;
   transition: all 0.3s ease-in-out;
+  background-color: #f8f9fd;
 }
 
 .layout .content {
   flex-grow: 1;
-
   overflow-y: auto;
-  background-color: green;
   transition: margin-left 0.3s ease-in-out;
 }
 
