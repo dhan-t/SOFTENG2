@@ -13,7 +13,6 @@ function Header() {
     <div className="maindiv">
       <div className="welcome-message">
         <p className="user-greeting">Welcome, user!</p>
-        <p className="current-date">Today is January 2025</p>
       </div>
 
       <div className="search-bar">
