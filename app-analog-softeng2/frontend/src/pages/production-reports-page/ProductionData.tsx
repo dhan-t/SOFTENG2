@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useProductionData } from "../../hooks/useProductionData";
 import "./ProductionData.css";
 import Header from "../components/Header";
+
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -15,6 +16,9 @@ import InputLabel from "@mui/material/InputLabel";
 import AddIcon from "@mui/icons-material/Add";
 import UpdateIcon from "@mui/icons-material/Update";
 import CancelIcon from "@mui/icons-material/Cancel";
+import SaveIcon from "@mui/icons-material/Save";
+import EditIcon from "@mui/icons-material/Edit";
+
 import Button from "@mui/material/Button";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
@@ -303,7 +307,7 @@ const ProductionData: React.FC = () => {
               variant="contained"
               disableElevation
               color={editMode ? "primary" : "success"}
-              startIcon={editMode ? <UpdateIcon /> : <AddIcon />}
+              startIcon={editMode ? <EditIcon /> : <SaveIcon />}
             >
               {editMode ? "Update" : "Add"}
             </Button>
@@ -336,7 +340,9 @@ const ProductionData: React.FC = () => {
           )}
         </div>
       </div>
+
       <div className="styled-table">
+        <h2>Production Reports</h2>
         <DataGrid
           checkboxSelection
           rows={rows}
