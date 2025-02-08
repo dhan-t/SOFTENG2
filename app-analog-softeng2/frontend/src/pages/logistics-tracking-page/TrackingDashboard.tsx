@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useTracking } from "../../hooks/useTracking";
 import "./TrackingDashboard.css";
+import "../components/global.css";
 import Header from "../components/Header";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 

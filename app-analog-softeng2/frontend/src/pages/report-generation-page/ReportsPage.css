@@ -1,13 +1,9 @@
-.reports-page {
-  padding: 20px;
-}
-
 .reports-page h1 {
   font-size: 24px;
   margin-bottom: 20px;
 }
 
-button {
+.generate-button {
   padding: 10px 20px;
   background-color: #28a745;
   color: white;
@@ -16,11 +12,11 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+.generate-button:hover {
   background-color: #218838;
 }
 
-button:disabled {
+.generate-button:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
 }

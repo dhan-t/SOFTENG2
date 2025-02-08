@@ -1,4 +1,5 @@
 import React from "react";
+import Header from "../components/Header";
 import { useProductionData } from "../../hooks/useProductionData";
 import { useLogistics } from "../../hooks/useLogistics";
 import { useTracking } from "../../hooks/useTracking";
@@ -16,9 +17,14 @@ const ReportsPage = () => {
   };
 
   return (
-    <div className="reports-page">
-      <h1>Reports</h1>
-      <button onClick={handleGenerateReport} disabled={loading}>
+    <div className="main-div">
+      <Header />
+
+      <button
+        className="generate-button"
+        onClick={handleGenerateReport}
+        disabled={loading}
+      >
         {loading ? "Generating..." : "Generate Report"}
       </button>
       {error && <p className="error">{error}</p>}

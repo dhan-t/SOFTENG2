@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLogistics } from "../../hooks/useLogistics";
 import "./ModuleRequests.css";
 import Header from "../components/Header";
+import "../components/global.css";
 
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";

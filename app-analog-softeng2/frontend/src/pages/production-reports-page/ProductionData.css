@@ -11,17 +11,8 @@
   margin-top: 20px;
 }
 
-.form-and-card {
-  display: flex;
-  flex-direction: row;
-  gap: 1rem;
-  height: fit-content;
-}
-
-/*Global form styling*/
-
 .form-holder {
-  background-color: #ffffff;
+  background-color: white;
   border-radius: 1rem;
   padding: 1rem;
   width: 100%;
@@ -29,7 +20,6 @@
 }
 
 .form {
-  background-color: transparent;
   height: fit-content;
   display: flex;
   flex-direction: column;
@@ -44,33 +34,15 @@
   height: 1rem;
 }
 
-.form-group {
-  gap: 1.5rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.submit-button {
-  background-color: white;
-  color: red;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 1rem;
-}
-
 .preview-card {
   background-color: white;
   border-radius: 1rem;
-  padding: 1rem;
   width: 40%;
-  padding: 20px;
-  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.preview-card h2 {
+  font-size: 1.5rem; /* Adjust the size as needed */
 }
 
 .preview-content {
@@ -79,65 +51,6 @@
   text-align: center;
 }
 
-.preview-content span {
-  font-size: 12rem; /* Adjust the size as needed */
-}
-
 .preview-content p {
   font-size: 2rem; /* Adjust text size if needed */
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.styled-table {
-  width: 100%;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  border-collapse: collapse;
-  border-radius: 10px;
-  overflow: hidden;
-  font-size: 0.9em;
-}
-.styled-table th,
-.styled-table td {
-  padding: 12px 15px;
-}
-.styled-table thead th {
-  background-color: #b5d7af;
-  color: white;
-}
-.styled-table tbody tr {
-  border-bottom: 1px solid #fff;
-}
-
-.styled-table button {
-  width: 80px; /* Set a uniform width */
-  height: 35px; /* Set a uniform height */
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-right: 5px; /* Space between buttons */
-}
-
-.styled-table .edit-button {
-  background-color: #4caf50; /* Green for edit */
-  color: white;
-}
-
-.styled-table .edit-button:hover {
-  background-color: #45a049; /* Darker green on hover */
-}
-
-.styled-table .delete-button {
-  background-color: #f44336; /* Red for delete */
-  color: white;
-}
-
-.styled-table .delete-button:hover {
-  background-color: #d32f2f; /* Darker red on hover */
 }

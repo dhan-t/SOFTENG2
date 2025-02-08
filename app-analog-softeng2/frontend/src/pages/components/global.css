@@ -1,0 +1,68 @@
+.main-div {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.layout .content {
+  flex-grow: 1; /* Allow content to fill available space */
+  padding: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 0.7rem;
+}
+
+.form h2 {
+  font-size: 1.5rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.styled-table {
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border-collapse: collapse;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 0.9em;
+}
+
+.styled-table button {
+  width: 5rem;
+  height: 2.1875rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  margin-right: 0.4rem;
+}
+
+.styled-table .edit-button {
+  background-color: #4caf50;
+  color: white;
+}
+
+.styled-table .delete-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.styled-table .edit-button:hover {
+  opacity: 80%;
+}
+
+.styled-table .delete-button:hover {
+  opacity: 80%;
+}

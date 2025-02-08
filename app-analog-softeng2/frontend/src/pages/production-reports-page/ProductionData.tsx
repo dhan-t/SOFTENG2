@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useProductionData } from "../../hooks/useProductionData";
 import "./ProductionData.css";
+import "../components/global.css";
 import Header from "../components/Header";
 
 import TextField from "@mui/material/TextField";

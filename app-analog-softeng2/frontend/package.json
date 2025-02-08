@@ -17,7 +17,7 @@
     "@mui/icons-material": "^6.4.3",
     "@mui/material": "^6.4.3",
     "@mui/x-data-grid": "^7.26.0",
-    "@mui/x-date-pickers": "^7.25.0",
+    "@mui/x-date-pickers": "^7.26.0",
     "@shadcn/ui": "^0.0.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

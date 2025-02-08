@@ -228,6 +228,7 @@ const Dashboard: React.FC = () => {
             <h2>Production Schedule</h2>
 
             <div className="calendar-dashboard">
+              <h2>Production Schedule</h2>
               <Calendar
                 className={"calendar"}
                 onChange={(date) => setValue(date as Date)}
