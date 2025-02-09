@@ -7,6 +7,7 @@ import LoginPage from "./pages/login-page/Login";
 import RegisterPage from "./pages/register-page/Register";
 import ProductionData from "./pages/2_production-reports/ProductionData";
 import Layout from "./components/Layout";
+import MainTest from "./pages/test page/MainTest";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/maintest" element={<MainTest />} />
           <Route path="/production" element={<ProductionData />} />
           <Route path="/logistics" element={<LogisticsPage />} />
           <Route path="/reports" element={<ReportPage />} />

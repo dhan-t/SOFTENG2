@@ -63,6 +63,12 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
           isExpanded={isExpanded}
           icon="📑"
         />
+        <NavbarItem
+          text="Test page"
+          link="/maintest"
+          isExpanded={isExpanded}
+          icon="test"
+        />
       </ul>
 
       <div className="navbar-bottom">
