@@ -9,7 +9,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
-  const noNavbarRoutes = ["/", "/register", "/login"];
+  const noNavbarRoutes = ["/", "/register"];
   const [isExpanded, setIsExpanded] = useState(true); // Navbar state
 
   const isNoNavbarRoute = noNavbarRoutes.includes(location.pathname);
@@ -17,11 +17,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div
       className={`layout ${
-        !isNoNavbarRoute && isExpanded
-          ? "expanded"
-          : !isNoNavbarRoute
-          ? "collapsed"
-          : ""
+        isNoNavbarRoute ? "" : isExpanded ? "expanded" : "collapsed"
       }`}
     >
       {!isNoNavbarRoute && (

@@ -1,11 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/dashboard-page/Dashboard";
-import LogisticsPage from "./pages/module-requests-page/ModuleRequests";
-import ReportPage from "./pages/report-generation-page/ReportsPage";
-import TrackingDashboard from "./pages/logistics-tracking-page/TrackingDashboard";
+import Dashboard from "./pages/1_dashboard/Dashboard";
+import LogisticsPage from "./pages/3_equipment-request/ModuleRequests";
+import ReportPage from "./pages/5_report-generation/ReportsPage";
+import TrackingDashboard from "./pages/4_logistics-tracking/TrackingDashboard";
 import LoginPage from "./pages/login-page/Login";
 import RegisterPage from "./pages/register-page/Register";
-import ProductionData from "./pages/production-reports-page/ProductionData";
+import ProductionData from "./pages/2_production-reports/ProductionData";
 import Layout from "./components/Layout";
 
 function App() {

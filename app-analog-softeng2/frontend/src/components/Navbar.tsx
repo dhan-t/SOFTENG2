@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "./logos/image 1.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
+import { faSignOutAlt, faBars } from "@fortawesome/free-solid-svg-icons";
 import "./Navbar.css";
 
 interface NavbarProps {
@@ -24,8 +24,11 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
           className="logo-container"
           onClick={() => setIsExpanded(!isExpanded)}
         >
-          <img src={String(logo)} alt="Logo" className="logo" />
-          {isExpanded && <h1 className="logo-text">Analog</h1>}
+          <img
+            src={String(logo)}
+            alt="Logo"
+            style={{ width: isExpanded ? 120 : 40 }} // Dynamically change logo size
+          />
         </div>
       </div>
 
@@ -37,13 +40,13 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
           icon="📊"
         />
         <NavbarItem
-          text="Production Reports"
+          text="Production report"
           link="/production"
           isExpanded={isExpanded}
-          icon="🏭 "
+          icon="🏭"
         />
         <NavbarItem
-          text="Module requests	"
+          text="Equipment requests"
           link="/logistics"
           isExpanded={isExpanded}
           icon="📦"
@@ -55,7 +58,7 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
           icon="🚛"
         />
         <NavbarItem
-          text="Report Generation"
+          text="Report generation"
           link="/reports"
           isExpanded={isExpanded}
           icon="📑"
