@@ -3,7 +3,12 @@ import cors from "cors";
 import { connect } from "./connect.js";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 import { generatePDF } from "./pdfGenerator.js";
+import notificationsRouter from "../routes/notifications.js";
 
 dotenv.config({ path: "./config.env" });
 
@@ -12,12 +17,46 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Convert import.meta.url to __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Create the uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+
+app.use("/uploads", express.static(uploadsDir)); // Serve static files from the uploads directory
+
+app.use("/api/notifications", notificationsRouter);
+
+// Set up multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+const upload = multer({ storage });
+
 connect()
   .then((client) => {
     const db = client.db("analog");
     app.locals.db = db;
 
     console.log("Connected to the database!");
+
+    // Helper function to create a notification
+    const createNotification = async (message) => {
+      const collection = db.collection("notifications");
+      await collection.insertOne({
+        message,
+        createdAt: new Date(),
+      });
+    };
 
     // Register User
     app.post("/api/register", async (req, res) => {
@@ -36,14 +75,79 @@ connect()
         await collection.insertOne({
           email,
           password: hashedPassword,
+          firstName: "",
+          lastName: "",
+          birthday: "",
+          address: "",
+          profilePicture: "",
           createdAt: new Date(),
         });
+
+        await createNotification(`New user registered: ${email}`);
 
         res.status(201).json({ message: "User registered successfully!" });
       } catch (err) {
         console.error("Error during registration:", err);
         res.status(500).json({ error: "Registration failed" });
       }
+    });
+
+    // Get User Profile
+    app.get("/api/user/:email", async (req, res) => {
+      const { email } = req.params;
+
+      try {
+        const collection = db.collection("user");
+        const user = await collection.findOne({ email });
+
+        if (!user) {
+          return res.status(404).json({ error: "User not found" });
+        }
+
+        res.status(200).json(user);
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+        res.status(500).json({ error: "Failed to fetch user profile" });
+      }
+    });
+
+    // Update User Profile
+    app.put("/api/user/:email", async (req, res) => {
+      const { email } = req.params;
+      const { firstName, lastName, birthday, address, profilePicture } = req.body;
+
+      try {
+        const collection = db.collection("user");
+        await collection.updateOne(
+          { email },
+          {
+            $set: {
+              firstName,
+              lastName,
+              birthday,
+              address,
+              profilePicture,
+              updatedAt: new Date(),
+            },
+          }
+        );
+
+        await createNotification(`User profile updated: ${email}`);
+
+        res.status(200).json({ message: "User profile updated successfully" });
+      } catch (err) {
+        console.error("Error updating user profile:", err);
+        res.status(500).json({ error: "Failed to update user profile" });
+      }
+    });
+
+    // Image upload endpoint
+    app.post("/api/upload", upload.single("profilePicture"), (req, res) => {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      const imageUrl = `http://localhost:5001/uploads/${req.file.filename}`;
+      res.status(200).json({ imageUrl });
     });
 
     // Login User
@@ -119,6 +223,8 @@ connect()
           updatedAt: new Date(),
         });
 
+        await createNotification(`New logistics request: ${module} by ${requestedBy}`);
+
         res
           .status(201)
           .json({ message: "Logistics request submitted successfully" });
@@ -159,6 +265,9 @@ connect()
         };
 
         await collection.insertOne(newProduction);
+
+        await createNotification(`New production data added: ${productName}`);
+
         res.status(201).json({ message: "Production data added successfully" });
       } catch (err) {
         console.error("Error adding production data:", err);
@@ -199,6 +308,9 @@ connect()
             },
           }
         );
+
+        await createNotification(`Production data updated: ${productName}`);
+
         res
           .status(200)
           .json({ message: "Production data updated successfully" });
@@ -219,6 +331,9 @@ connect()
       try {
         const collection = db.collection("production");
         await collection.deleteOne({ productId });
+
+        await createNotification(`Production data deleted: ${productId}`);
+
         res
           .status(200)
           .json({ message: "Production data deleted successfully" });
@@ -256,6 +371,9 @@ connect()
           { logId },
           { $set: { status, updatedAt: new Date() } }
         );
+
+        await createNotification(`Tracking status updated: ${logId} to ${status}`);
+
         res
           .status(200)
           .json({ message: "Tracking status updated successfully" });

@@ -32,6 +32,7 @@ const Login: React.FC = () => {
   };
 
   return (
+    <div className="wrapper">
     <motion.div
       className="login-container"
       variants={pageVariants}
@@ -92,6 +93,7 @@ const Login: React.FC = () => {
         </div>
       </div>
     </motion.div>
+    </div>
   );
 };
 

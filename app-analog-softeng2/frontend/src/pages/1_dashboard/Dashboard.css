@@ -21,14 +21,6 @@
   border-radius: 1rem;
 }
 
-.small-holder {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  background-color: white;
-  border-radius: 1rem;
-}
-
 .bigger-components {
   flex-grow: 1;
   flex: 5;
@@ -221,6 +213,7 @@
 }
 
 .reminder-day {
+  /* Add custom styling for days with reminders here */
   background-color: #f5f5f5;
 }
 
@@ -231,25 +224,23 @@
   height: 100%;
 }
 
+/* SMALL CARD STYLING */
 .small-dashboard-card {
   background-color: white;
   padding: 1rem;
   border-radius: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.progress-card {
-  background-color: white;
+  display: grid;
+  gap: 1rem;
 }
 
 .rate-card {
-  background-color: white;
+  background-color: red;
+  border-radius: 8px;
 }
 
 .summary-card {
   background-color: white;
+  border-radius: 8px;
 }
 
 .card-title {
@@ -258,12 +249,12 @@
 }
 
 .card-value {
-  font-size: 2.2rem;
-  font-weight: bold;
+  font-size: 10rem;
 }
 
 .card-units,
 .card-difference,
+.card-comparison,
 .card-description {
   font-size: 0.9rem;
   color: #666;

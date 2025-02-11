@@ -1,4 +1,3 @@
-// hooks/useAuth.ts
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface AuthContextType {
@@ -6,6 +5,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<string | null>;
   register: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  refreshUser: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -77,8 +77,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem("user"); // Remove user from localStorage on logout
   };
 
+  const refreshUser = () => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      setUser(savedUser); // Refresh user from localStorage
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
