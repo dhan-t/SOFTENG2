@@ -12,6 +12,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs, { Dayjs } from "dayjs";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import { SelectChangeEvent } from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import AddIcon from "@mui/icons-material/Add";
@@ -54,7 +55,7 @@ const Logistics: React.FC = () => {
     quantity: 0,
   });
 
-  const handleModuleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleModuleChange = (event: SelectChangeEvent<string>) => {
     const selectedOption = moduleOptions.find(
       (option) => option.code === event.target.value
     );
@@ -118,24 +119,27 @@ const Logistics: React.FC = () => {
         <div className="form-holder">
           <form onSubmit={handleSubmit} className="form">
             <h2 className="h2">Module Request</h2>
-            {/* 
             <div className="form-group">
-              <label htmlFor="module">Module Code</label>
-              <select
-                id="module"
-                value={formData.module}
-                onChange={handleModuleChange}
-                required
-              >
-                <option value="">Select Module</option>
-                {moduleOptions.map((option) => (
-                  <option key={option.code} value={option.code}>
-                    {option.code} - {option.description}
-                  </option>
-                ))}
-              </select>
+              <FormControl fullWidth required>
+                <InputLabel id="module-label">Module Code</InputLabel>
+                <Select
+                  labelId="module-label"
+                  id="module"
+                  value={formData.module}
+                  onChange={handleModuleChange}
+                  label="Module Code"
+                >
+                  <MenuItem value="">
+                    <em>Select Module</em>
+                  </MenuItem>
+                  {moduleOptions.map((option) => (
+                    <MenuItem key={option.code} value={option.code}>
+                      {option.code} - {option.description}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </div>
-            */}
             <div className="form-group">
               <TextField
                 type="text"
@@ -187,7 +191,7 @@ const Logistics: React.FC = () => {
                         : "",
                     })
                   }
-                  renderInput={(params) => <TextField {...params} fullWidth />}
+                  slotProps={{ textField: { fullWidth: true } }}
                 />
               </LocalizationProvider>
             </div>
@@ -220,11 +224,11 @@ const Logistics: React.FC = () => {
         <div className="preview-card">
           {/* Preview Card */}
           <h2>Request preview</h2>
-          {formData.moduleCode && (
+          {formData.module && (
             <div className="preview-content">
               {
                 moduleOptions.find(
-                  (option) => option.code === formData.moduleCode
+                  (option) => option.code === formData.module
                 )?.icon
               }
               <p>{formData.description}</p>

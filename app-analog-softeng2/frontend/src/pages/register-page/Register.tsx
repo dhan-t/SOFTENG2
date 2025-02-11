@@ -32,6 +32,7 @@ const Register: React.FC = () => {
   };
 
   return (
+    <div className="wrapper">
     <motion.div
       className="register-container"
       variants={pageVariants}
@@ -83,6 +84,7 @@ const Register: React.FC = () => {
         </div>
       </div>
     </motion.div>
+    </div>
   );
 };
 
