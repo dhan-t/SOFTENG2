@@ -1,6 +1,6 @@
 .main-div {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 1rem;
 }
 
@@ -231,23 +231,25 @@
   height: 100%;
 }
 
-/* SMALL CARD STYLING */
 .small-dashboard-card {
   background-color: white;
   padding: 1rem;
   border-radius: 1rem;
-  display: grid;
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.progress-card {
+  background-color: white;
 }
 
 .rate-card {
-  background-color: red;
-  border-radius: 8px;
+  background-color: white;
 }
 
 .summary-card {
   background-color: white;
-  border-radius: 8px;
 }
 
 .card-title {
@@ -256,12 +258,12 @@
 }
 
 .card-value {
-  font-size: 10rem;
+  font-size: 2.2rem;
+  font-weight: bold;
 }
 
 .card-units,
 .card-difference,
-.card-comparison,
 .card-description {
   font-size: 0.9rem;
   color: #666;
