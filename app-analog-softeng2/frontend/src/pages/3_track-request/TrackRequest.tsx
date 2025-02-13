@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
 import { useTracking } from "../../hooks/useTracking";
-import "./TrackingDashboard.css";
+import "./TrackRequest.css";
 import "../components/global.css";
 import Header from "../components/Header";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
-const TrackingDashboard = () => {
+const TrackRequest = () => {
   const {
     trackingLogs,
     fetchTrackingLogs,
@@ -75,4 +75,4 @@ const TrackingDashboard = () => {
   );
 };
 
-export default TrackingDashboard;
+export default TrackRequest;

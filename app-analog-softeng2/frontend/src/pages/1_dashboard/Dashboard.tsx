@@ -7,11 +7,10 @@ import { useLogistics } from "../../hooks/useLogistics";
 import { useTracking } from "../../hooks/useTracking";
 import "./Dashboard.css";
 import Header from "../components/Header";
-import { FaBox, FaMapMarkerAlt, FaUser, FaClipboardList } from "react-icons/fa";
+import { FaBox, FaTruck, FaUser, FaClipboardList } from "react-icons/fa";
 import LineChartComponent from "../test page/test";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { TrendingUp, TrendingDown } from "@mui/icons-material";
-
 import {
   BarChart,
   Bar,
@@ -36,6 +35,7 @@ import {
   Chip,
 } from "@mui/material";
 import { green } from "@mui/material/colors";
+import { useReports } from "../../hooks/useReports";
 
 // ✅ Small components stuff
 interface CardProps {
@@ -46,6 +46,30 @@ interface CardProps {
   oldValue?: number;
   description?: string;
 }
+
+const GenerateReport = () => {
+  const { productionData } = useProductionData();
+  const { requests: logisticsData } = useLogistics();
+  const { trackingLogs: trackingData } = useTracking();
+  const { generateReport, loading, error } = useReports();
+
+  const handleGenerateReport = async () => {
+    await generateReport(productionData, logisticsData, trackingData);
+  };
+
+  return (
+    <div>
+      <button
+        className="generate-button"
+        onClick={handleGenerateReport}
+        disabled={loading}
+      >
+        {loading ? "Generating..." : "Generate Report"}
+      </button>
+      {error && <p className="error">{error}</p>}
+    </div>
+  );
+};
 
 const UnifiedCard: React.FC<CardProps> = ({
   type,
@@ -552,6 +576,44 @@ interface Reminder {
   title: string;
 }
 
+const Heatmap = () => {
+  const { productionData, loading, error } = useProductionData();
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+  if (productionData.length === 0) return <p>No production data available.</p>;
+
+  // Calculate max value for normalization
+  const maxProduced = Math.max(
+    ...productionData.map((item) => item.quantityProduced),
+    1
+  );
+
+  return (
+    <div className="heatmap">
+      {[...productionData] // Create a copy to avoid modifying the original array
+        .reverse() // Reverse the order so the latest push is first
+        .map((item) => {
+          const intensity = (item.quantityProduced / maxProduced) * 255;
+          return (
+            <div
+              key={item.productId}
+              className="heatmap-cell"
+              style={{
+                backgroundColor: `rgb(${255 - intensity}, ${
+                  255 - intensity
+                }, 255)`, // Blue scale
+              }}
+            >
+              <span className="product-name">{item.productName}</span>
+              <span className="product-quantity">{item.quantityProduced}</span>
+            </div>
+          );
+        })}
+    </div>
+  );
+};
+
 const SummaryCard: React.FC<SummaryCardProps> = ({ title, items }) => (
   <div className="small-card">
     <div className="summary-header">
@@ -580,6 +642,7 @@ const Dashboard: React.FC = () => {
     loading: productionLoading,
     error: productionError,
   } = useProductionData();
+
   const {
     requests,
     loading: logisticsLoading,
@@ -595,7 +658,7 @@ const Dashboard: React.FC = () => {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [showReminderInput, setShowReminderInput] = useState(false);
   const [reminderTitle, setReminderTitle] = useState("");
-  const [view, setView] = useState("production");
+  const [view, setView] = useState("all");
 
   const addReminder = () => {
     const formattedDate = value.toISOString().split("T")[0];
@@ -643,14 +706,14 @@ const Dashboard: React.FC = () => {
     {
       icon: FaBox,
       value: 868,
-      label: "Quantity in Hand",
+      label: "Finished units",
       iconBgColor: "#FFF4E5",
       iconColor: "#FFA500",
     },
     {
-      icon: FaMapMarkerAlt,
+      icon: FaTruck,
       value: 200,
-      label: "To be received",
+      label: "To be shipped",
       iconBgColor: "#EEF3FF",
       iconColor: "#5A78F0",
     },
@@ -682,7 +745,7 @@ const Dashboard: React.FC = () => {
         exclusive
         onChange={(_, newView) => setView(newView)}
         aria-label="Dashboard View"
-        sx={{ marginBottom: 2 }}
+        sx={{ marginBottom: 2, alignItems: "center" }}
       >
         <ToggleButton value="all" aria-label="All">
           All
@@ -690,12 +753,17 @@ const Dashboard: React.FC = () => {
         <ToggleButton value="production" aria-label="Production">
           Production
         </ToggleButton>
-        <ToggleButton value="logistics" aria-label="Logistics">
+        <ToggleButton value="logistics" aria-label="Requests">
           Logistics
         </ToggleButton>
-        <ToggleButton value="tracking" aria-label="Tracking">
+        <ToggleButton
+          value="tracking"
+          aria-label="Tracking"
+          sx={{ marginRight: 2 }}
+        >
           Tracking
         </ToggleButton>
+        <GenerateReport />
       </ToggleButtonGroup>
 
       {view === "all" && (
@@ -733,27 +801,12 @@ const Dashboard: React.FC = () => {
               <div className="component-holder">
                 <h2>Production feed</h2>
                 <div className="chart">
-                  <div className="bar-chart">
-                    {productionData.length > 0 ? (
-                      productionData.map((item) => (
-                        <div
-                          key={item.productId}
-                          className="bar"
-                          style={{ height: `${item.quantityProduced * 2}px` }}
-                        >
-                          <span>{item.productName}</span>
-                          <span>{item.quantityProduced}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <p>No production data available.</p>
-                    )}
-                  </div>
+                  <Heatmap />
                 </div>
               </div>
 
               <div className="component-holder">
-                <h2>Logistics Summary</h2>
+                <h2>Recent requests</h2>
                 <div className="chart">
                   <div className="pie-chart">
                     {requests.map((item) => (
@@ -774,7 +827,7 @@ const Dashboard: React.FC = () => {
               </div>
 
               <div className="component-holder">
-                <h2>Tracking Summary</h2>
+                <h2>Shipping updates</h2>
                 <ul className="tracking-logs">
                   {trackingLogs.map((log) => (
                     <li key={log.logId}>
@@ -876,6 +929,12 @@ const Dashboard: React.FC = () => {
           <div className="component-holder">
             <h2>Production Performance</h2>
             <LineChartComponent />
+          </div>
+          <div className="component-holder">
+            <h2>Production feed</h2>
+            <div id="full-width-heatmap" className="chart">
+              <Heatmap />
+            </div>
           </div>
         </div>
       )}

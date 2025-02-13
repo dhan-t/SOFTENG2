@@ -16,6 +16,7 @@
 }
 
 .component-holder {
+  width: fill;
   background-color: white;
   padding: 1rem;
   border-radius: 1rem;
@@ -54,7 +55,6 @@
 
 .chart {
   background-color: transparent;
-  padding: 0.5rem;
 }
 
 .bar-chart {
@@ -265,4 +265,43 @@
 .card-description {
   font-size: 0.9rem;
   color: #666;
+}
+
+/*Heatmap stuff*/
+.heatmap {
+  width: fill;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto; /* Enables horizontal scrolling */
+  max-width: calc(
+    7.5 * 100px + 5 * 8px
+  ); /* Fits 6 columns, adjusting for spacing */
+  white-space: nowrap; /* Prevents wrapping */
+}
+#full-width-heatmap {
+  width: fill;
+  overflow-x: auto; /* Enables horizontal scrolling */
+  width: 100%;
+}
+
+.heatmap-cell {
+  height: 10rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  border-radius: 5px;
+  color: #000;
+  font-weight: bold;
+  text-align: center;
+}
+
+.product-name {
+  font-size: 14px;
+}
+
+.product-quantity {
+  font-size: 18px;
 }

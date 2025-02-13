@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLogistics } from "../../hooks/useLogistics";
-import "./ModuleRequests.css";
+import "./RequestModule.css";
 import Header from "../components/Header";
 import "../components/global.css";
 
@@ -15,7 +15,6 @@ import MenuItem from "@mui/material/MenuItem";
 import { SelectChangeEvent } from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
-import AddIcon from "@mui/icons-material/Add";
 import SendIcon from "@mui/icons-material/Send";
 import Button from "@mui/material/Button";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -44,7 +43,7 @@ const moduleOptions = [
   { code: "SPK123", description: "Speaker module", icon: <SpeakerIcon /> },
 ];
 
-const Logistics: React.FC = () => {
+const RequestModule: React.FC = () => {
   const { requests, submitRequest, loading, error } = useLogistics();
   const [formData, setFormData] = useState({
     module: "",
@@ -227,9 +226,8 @@ const Logistics: React.FC = () => {
           {formData.module && (
             <div className="preview-content">
               {
-                moduleOptions.find(
-                  (option) => option.code === formData.module
-                )?.icon
+                moduleOptions.find((option) => option.code === formData.module)
+                  ?.icon
               }
               <p>{formData.description}</p>
             </div>
@@ -260,4 +258,4 @@ const Logistics: React.FC = () => {
   );
 };
 
-export default Logistics;
+export default RequestModule;

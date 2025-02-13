@@ -40,34 +40,28 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
           icon="📊"
         />
         <NavbarItem
-          text="Production report"
-          link="/production"
+          text="Generate workorder"
+          link="/workorder"
           isExpanded={isExpanded}
-          icon="🏭"
+          icon="📋"
         />
         <NavbarItem
-          text="Equipment requests"
-          link="/logistics"
+          text="Track requests"
+          link="/trackrequest"
+          isExpanded={isExpanded}
+          icon="🔎"
+        />
+        <NavbarItem
+          text="Request modules"
+          link="/requestmodule"
           isExpanded={isExpanded}
           icon="📦"
         />
         <NavbarItem
-          text="Logistics tracking"
-          link="/tracking"
+          text="Report production"
+          link="/reportproduction"
           isExpanded={isExpanded}
-          icon="🚛"
-        />
-        <NavbarItem
-          text="Report generation"
-          link="/reports"
-          isExpanded={isExpanded}
-          icon="📑"
-        />
-        <NavbarItem
-          text="Test page"
-          link="/maintest"
-          isExpanded={isExpanded}
-          icon="test"
+          icon="✅"
         />
       </ul>
 

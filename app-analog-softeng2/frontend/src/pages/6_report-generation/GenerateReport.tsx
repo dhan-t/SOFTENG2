@@ -1,12 +1,11 @@
-import React from "react";
 import Header from "../components/Header";
 import { useProductionData } from "../../hooks/useProductionData";
 import { useLogistics } from "../../hooks/useLogistics";
 import { useTracking } from "../../hooks/useTracking";
 import { useReports } from "../../hooks/useReports";
-import "./ReportsPage.css";
+import "./GenerateReport.css";
 
-const ReportsPage = () => {
+const GenerateReport = () => {
   const { productionData } = useProductionData();
   const { requests: logisticsData } = useLogistics();
   const { trackingLogs: trackingData } = useTracking();
@@ -17,9 +16,7 @@ const ReportsPage = () => {
   };
 
   return (
-    <div className="main-div">
-      <Header />
-
+    <div>
       <button
         className="generate-button"
         onClick={handleGenerateReport}
@@ -32,4 +29,4 @@ const ReportsPage = () => {
   );
 };
 
-export default ReportsPage;
+export default GenerateReport;
