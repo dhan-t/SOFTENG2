@@ -37,6 +37,13 @@
   gap: 1rem;
 }
 
+.small-holder {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  width: 100%; /* Ensure it takes the full width of the parent */
+}
+
 .dashboard h1 {
   font-size: 24px;
 }
@@ -224,21 +231,21 @@
   height: 100%;
 }
 
-/* SMALL CARD STYLING */
+/*  CARD STYLING */
 .small-dashboard-card {
   background-color: white;
-  padding: 1rem;
   border-radius: 1rem;
-  display: grid;
-  gap: 1rem;
+  flex: 1; /* Allow cards to grow and fill the available space */
+  display: flex;
+  flex-direction: column;
 }
 
 .rate-card {
-  background-color: red;
-  border-radius: 8px;
+  background-color: white;
+  border-radius: 1rem;
 }
 
-.summary-card {
+.small-card {
   background-color: white;
   border-radius: 8px;
 }

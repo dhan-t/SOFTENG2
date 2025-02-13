@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "./logos/image 1.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSignOutAlt, faBars } from "@fortawesome/free-solid-svg-icons";
+import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import "./Navbar.css";
 
 interface NavbarProps {
@@ -62,6 +62,12 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
           link="/reports"
           isExpanded={isExpanded}
           icon="📑"
+        />
+        <NavbarItem
+          text="Test page"
+          link="/maintest"
+          isExpanded={isExpanded}
+          icon="test"
         />
       </ul>
 
