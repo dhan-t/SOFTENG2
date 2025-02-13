@@ -114,7 +114,8 @@ connect()
     // Update User Profile
     app.put("/api/user/:email", async (req, res) => {
       const { email } = req.params;
-      const { firstName, lastName, birthday, address, profilePicture } = req.body;
+      const { firstName, lastName, birthday, address, profilePicture } =
+        req.body;
 
       try {
         const collection = db.collection("user");
@@ -223,7 +224,9 @@ connect()
           updatedAt: new Date(),
         });
 
-        await createNotification(`New logistics request: ${module} by ${requestedBy}`);
+        await createNotification(
+          `New logistics request: ${module} by ${requestedBy}`
+        );
 
         res
           .status(201)
@@ -372,7 +375,9 @@ connect()
           { $set: { status, updatedAt: new Date() } }
         );
 
-        await createNotification(`Tracking status updated: ${logId} to ${status}`);
+        await createNotification(
+          `Tracking status updated: ${logId} to ${status}`
+        );
 
         res
           .status(200)
@@ -380,6 +385,87 @@ connect()
       } catch (err) {
         console.error("Error updating tracking status:", err);
         res.status(500).json({ error: "Failed to update tracking status" });
+      }
+    });
+
+    // 📌 Work Orders: Submit New Work Order
+    app.post("/api/requests", async (req, res) => {
+      const {
+        module,
+        requestedBy,
+        description,
+        recipient,
+        requestDate,
+        quantity, // Ensure this field is included
+      } = req.body;
+
+      if (
+        !module ||
+        !requestedBy ||
+        !description ||
+        !recipient ||
+        !requestDate ||
+        quantity === undefined // Check for quantity
+      ) {
+        return res.status(400).json({ error: "All fields are required" });
+      }
+
+      try {
+        const collection = db.collection("requests");
+
+        const newRequest = {
+          module,
+          requestedBy,
+          description,
+          recipient,
+          requestDate: new Date(requestDate),
+          quantity, // Ensure this field is included
+          status: "Pending",
+        };
+
+        await collection.insertOne(newRequest);
+
+        res.status(201).json({ message: "Request submitted successfully" });
+      } catch (err) {
+        console.error("Error submitting request:", err);
+        res.status(500).json({ error: "Failed to submit request" });
+      }
+    });
+
+    // 📌 Work Orders: Get All Work Orders
+    app.get("/api/workorders", async (req, res) => {
+      try {
+        const collection = db.collection("workorders");
+        const workOrders = await collection.find().toArray();
+        res.status(200).json(workOrders);
+      } catch (err) {
+        console.error("Error fetching work orders:", err);
+        res.status(500).json({ error: "Failed to fetch work orders" });
+      }
+    });
+
+    // 📌 Work Orders: Update Status
+    app.put("/api/workorders/:id", async (req, res) => {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!status) {
+        return res.status(400).json({ error: "Status is required" });
+      }
+
+      try {
+        const collection = db.collection("workorders");
+        await collection.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: { status, updatedAt: new Date() } }
+        );
+
+        await createNotification(`Work order updated: ${id} to ${status}`);
+
+        res.status(201).json({ message: "Work order submitted successfully" });
+      } catch (err) {
+        console.error("Error updating work order:", err);
+        res.status(500).json({ error: "Failed to update work order" });
       }
     });
 
