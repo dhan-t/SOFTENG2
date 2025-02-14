@@ -388,6 +388,8 @@ connect()
       }
     });
 
+    // starting from here fri_14
+
     // 📌 Work Orders: Submit New Work Order
     app.post("/api/requests", async (req, res) => {
       const {
@@ -468,6 +470,8 @@ connect()
         res.status(500).json({ error: "Failed to update work order" });
       }
     });
+
+    // ending from here fri_14
 
     // 📌 Reports: Generate PDF Report
     app.post("/api/reports", async (req, res) => {
