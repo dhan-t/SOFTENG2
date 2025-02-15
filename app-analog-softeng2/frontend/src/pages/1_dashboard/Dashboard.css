@@ -305,3 +305,27 @@
 .product-quantity {
   font-size: 18px;
 }
+
+/* Generate button styling */
+.generate-button {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.generate-button:hover {
+  background-color: #218838;
+}
+
+.generate-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #dc3545;
+  margin-top: 10px;
+}

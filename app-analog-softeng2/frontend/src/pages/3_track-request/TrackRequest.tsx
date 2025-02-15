@@ -31,10 +31,14 @@ const TrackRequest = () => {
     status: log.status,
   }));
 
+  {
+    /*ALLCHANGE recipient should be Factory Name. Requested by should be employee name.
+    - Status actions not working*/
+  }
   const columns: GridColDef[] = [
     { field: "index", headerName: "ID", width: 20, maxWidth: 20 },
     { field: "id", headerName: "Request ID", width: 150, flex: 1 },
-    { field: "module", headerName: "Module", width: 250, sortable: true },
+    { field: "module", headerName: "Module Code", width: 250, sortable: true },
     {
       field: "requestedBy",
       headerName: "Requested By",
@@ -42,7 +46,12 @@ const TrackRequest = () => {
       sortable: true,
     },
     { field: "recipient", headerName: "Recipient", width: 200, sortable: true },
-    { field: "status", headerName: "Status", width: 150, sortable: true },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 200,
+      sortable: true,
+    },
   ];
 
   if (loading) return <div className="loading">Loading...</div>;
@@ -50,6 +59,9 @@ const TrackRequest = () => {
 
   const paginationModel = { page: 0, pageSize: 5 };
 
+  {
+    /*ALLCHANGE connect to database. list all phone models to be created.*/
+  }
   return (
     <div className="main-div">
       <Header />

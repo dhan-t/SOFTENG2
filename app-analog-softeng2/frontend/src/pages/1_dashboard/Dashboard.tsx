@@ -754,7 +754,7 @@ const Dashboard: React.FC = () => {
           Production
         </ToggleButton>
         <ToggleButton value="logistics" aria-label="Requests">
-          Logistics
+          Modules
         </ToggleButton>
         <ToggleButton
           value="tracking"
@@ -926,9 +926,19 @@ const Dashboard: React.FC = () => {
               description="Total revenue for the month"
             />
           </div>
-          <div className="component-holder">
-            <h2>Production Performance</h2>
-            <LineChartComponent />
+
+          <div className="dashboard-contents">
+            <div className="bigger-components">
+              <div id="linechart-70" className="component-holder">
+                <h2>Production Performance</h2>
+                <LineChartComponent />
+              </div>
+            </div>
+            <div className="smaller-components">
+              <div className="component-holder">
+                <SummaryCard title="Logistics Summary" items={logisticsItems} />
+              </div>
+            </div>
           </div>
           <div className="component-holder">
             <h2>Production feed</h2>
@@ -993,6 +1003,7 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
+      {/* Tracking will be removed in prod
       {view === "tracking" && (
         <div className="main-div">
           <div className="small-holder">
@@ -1037,7 +1048,8 @@ const Dashboard: React.FC = () => {
             </ul>
           </div>
         </div>
-      )}
+
+      )}*/}
     </div>
   );
 };

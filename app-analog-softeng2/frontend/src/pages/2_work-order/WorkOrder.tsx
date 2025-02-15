@@ -120,10 +120,13 @@ const WorkOrder: React.FC = () => {
     }
   };
 
+  {
+    /*Columns creation*/
+  }
   const columns: GridColDef[] = [
     { field: "index", headerName: "ID", width: 50 },
-    { field: "id", headerName: "Request ID", width: 150, flex: 1 },
-    { field: "phone", headerName: "Phone Model", width: 250, sortable: true },
+    { field: "id", headerName: "Request ID", width: 250, flex: 1 },
+    { field: "phone", headerName: "Phone", width: 100, sortable: true },
     {
       field: "requestedBy",
       headerName: "Requested By",
@@ -131,7 +134,7 @@ const WorkOrder: React.FC = () => {
       sortable: true,
     },
     { field: "recipient", headerName: "Recipient", width: 200, sortable: true },
-    { field: "quantity", headerName: "Quantity", width: 150, sortable: true },
+    { field: "quantity", headerName: "Quantity", width: 100, sortable: true },
     { field: "status", headerName: "Status", width: 150, sortable: true },
   ];
 
@@ -142,7 +145,9 @@ const WorkOrder: React.FC = () => {
         <div className="form-holder">
           <form onSubmit={handleSubmit} className="form">
             <h2 className="h2">Create work order</h2>
+
             <div className="form-group">
+              {/*ALLCHANGE list all phone models to be created.*/}
               <FormControl fullWidth required>
                 <InputLabel id="phone-label">Phone model</InputLabel>
                 <Select
@@ -176,6 +181,8 @@ const WorkOrder: React.FC = () => {
               />
             </div>
 
+            {/*ALLCHANGE  list all factories. 
+            Recipient parin, pero factory na ang reciever*/}
             <div className="form-group">
               <FormControl fullWidth required>
                 <InputLabel id="recipient-label">Assign factory</InputLabel>
@@ -197,6 +204,7 @@ const WorkOrder: React.FC = () => {
               </FormControl>
             </div>
 
+            {/*ALLCHANGE  autofill function, will always fill to today.*/}
             <div className="form-group">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker

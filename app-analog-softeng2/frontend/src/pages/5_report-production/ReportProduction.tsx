@@ -16,6 +16,7 @@ import EditIcon from "@mui/icons-material/Edit";
 
 import Button from "@mui/material/Button";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 
 // Define your icons as SVGs or use an icon library
 const CameraIcon = () => (
@@ -132,14 +133,14 @@ const ReportProduction: React.FC = () => {
     { field: "index", headerName: "ID", width: 20, maxWidth: 20 },
     {
       field: "productId",
-      headerName: "Module Code",
+      headerName: "Module Code", // should be work order id
       width: 150,
       sortable: true,
       flex: 1,
     },
     {
       field: "productName",
-      headerName: "Module Description",
+      headerName: "Module Description", // should be phone
       width: 200,
       sortable: true,
       flex: 1,
@@ -153,7 +154,13 @@ const ReportProduction: React.FC = () => {
     },
     {
       field: "dateProduced",
-      headerName: "Date Produced",
+      headerName: "Date Requested", // should be from work order date request
+      width: 200,
+      sortable: true,
+    },
+    {
+      field: "dateProduced",
+      headerName: "Date Fulfilled", // should be from report production fulfillment date
       width: 200,
       sortable: true,
     },
@@ -197,9 +204,33 @@ const ReportProduction: React.FC = () => {
         <div className="form-holder">
           <form onSubmit={handleSubmit} className="form">
             <h2>{editMode ? "Edit report" : "Report production"}</h2>
+
+            {/*ALLCHANGE connect to database. should reference workorder IDs.*/}
+            <div className="form-group">
+              <FormControl fullWidth variant="outlined">
+                <InputLabel>Select Work Order</InputLabel>
+                <Select
+                  value={formData.moduleCode}
+                  onChange={handleModuleChange}
+                  label="Module Code"
+                  required
+                >
+                  <MenuItem value="">
+                    <em>Select Workorder</em>
+                  </MenuItem>
+                  {moduleOptions.map((option) => (
+                    <MenuItem key={option.code} value={option.code}>
+                      {option.code} - {option.description}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
+
+            {/*ALLCHANGE connect to database. autofill phone model based on work order ID.*/}
             <div className="form-group">
               <TextField
-                label="Product ID"
+                label="Phone model AUTOFILL"
                 variant="outlined"
                 type="text"
                 value={formData.productId}
@@ -211,9 +242,32 @@ const ReportProduction: React.FC = () => {
               />
             </div>
 
+            {/*ALLCHANGE connect to database.
+            - fucntion should autofill to work order request date*/}
+            <div className="form-group">
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  label="Date requested"
+                  value={
+                    formData.requestDate ? dayjs(formData.requestDate) : null
+                  }
+                  onChange={(newValue) =>
+                    setFormData({
+                      ...formData,
+                      requestDate: newValue
+                        ? newValue.format("YYYY-MM-DD")
+                        : "",
+                    })
+                  }
+                  slotProps={{ textField: { fullWidth: true } }}
+                />
+              </LocalizationProvider>
+            </div>
+
+            {/*ALLCHANGE name of employee.*/}
             <div className="form-group">
               <TextField
-                label="Product Name"
+                label="Reporter"
                 variant="outlined"
                 type="text"
                 value={formData.productName}
@@ -242,61 +296,28 @@ const ReportProduction: React.FC = () => {
               />
             </div>
 
+            {/*ALLCHANGE connect to database. fulfillment date.
+            - fucntion should autofill to current date*/}
             <div className="form-group">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
-                  label="Date Produced"
+                  label="Date fulfilled"
                   value={
-                    formData.dateProduced ? dayjs(formData.dateProduced) : null
+                    formData.requestDate ? dayjs(formData.requestDate) : null
                   }
                   onChange={(newValue) =>
                     setFormData({
                       ...formData,
-                      dateProduced: newValue
+                      requestDate: newValue
                         ? newValue.format("YYYY-MM-DD")
                         : "",
                     })
                   }
-                  renderInput={(params) => <TextField {...params} fullWidth />}
+                  slotProps={{ textField: { fullWidth: true } }}
                 />
               </LocalizationProvider>
             </div>
 
-            {/*
-            <div className="form-group">
-              <FormControl fullWidth variant="outlined">
-                <InputLabel>Module Code</InputLabel>
-                <Select
-                  value={formData.moduleCode}
-                  onChange={handleModuleChange}
-                  label="Module Code"
-                  required
-                >
-                  <MenuItem value="">
-                    <em>Select Module</em>
-                  </MenuItem>
-                  {moduleOptions.map((option) => (
-                    <MenuItem key={option.code} value={option.code}>
-                      {option.code} - {option.description}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-
-            <div className="form-group">
-              <TextField
-                label="Description"
-                variant="outlined"
-                type="text"
-                value={formData.description}
-                InputProps={{
-                  readOnly: true,
-                }}
-                fullWidth
-              />
-            </div>
-            */}
             <Button
               type="submit"
               variant="contained"

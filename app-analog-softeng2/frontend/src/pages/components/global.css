@@ -66,3 +66,15 @@
 .styled-table .delete-button:hover {
   opacity: 80%;
 }
+
+.preview-card {
+  background-color: white;
+  border-radius: 1rem;
+  width: 40%;
+  padding: 1rem;
+  width: fixed;
+}
+
+.preview-card h2 {
+  font-size: 1.5rem; /* Adjust the size as needed */
+}

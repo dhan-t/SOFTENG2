@@ -5,12 +5,12 @@ import Header from "../components/Header";
 import "../components/global.css";
 
 import TextField from "@mui/material/TextField";
-import InputAdornment from "@mui/material/InputAdornment";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs, { Dayjs } from "dayjs";
 import Select from "@mui/material/Select";
+import Chip from "@mui/material/Chip";
 import MenuItem from "@mui/material/MenuItem";
 import { SelectChangeEvent } from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
@@ -18,31 +18,158 @@ import InputLabel from "@mui/material/InputLabel";
 import SendIcon from "@mui/icons-material/Send";
 import Button from "@mui/material/Button";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import {
+  CameraAltRounded as CameraIcon,
+  HomeRounded as RectangleIcon,
+  VolumeUpRounded as SpeakerIcon,
+  AodRounded as ScreenIcon,
+  BatteryChargingFullRounded as BatteryIcon,
+  MemoryRounded as ChipIcon,
+  WifiRounded as WifiIcon,
+  BoltRounded as BoltIcon,
+  ShieldRounded as ShieldIcon,
+  VibrationRounded as VibrationIcon,
+  RadarRounded as RadarIcon,
+  HeadphonesRounded as HeadphonesIcon,
+  TouchAppRounded as TouchIcon,
+  ToggleOnRounded as ToggleIcon,
+  AirRounded as FanIcon,
+  PlaceOutlined as PlaceOutlinedIcon,
+  Event as EventIcon,
+  Person as PersonIcon,
+} from "@mui/icons-material";
 
-// Define your icons as SVGs or use an icon library
-const CameraIcon = () => (
-  <span role="img" aria-label="camera">
-    📷
-  </span>
-);
-const RectangleIcon = () => (
-  <span role="img" aria-label="rectangle">
-    📱
-  </span>
-);
-const SpeakerIcon = () => (
-  <span role="img" aria-label="speaker">
-    🔊
-  </span>
-);
+interface ModuleOption {
+  code: string;
+  description: string;
+  icon: React.ReactNode;
+}
 
-// Define your module options with icons
-const moduleOptions = [
-  { code: "CMR123", description: "Camera module", icon: <CameraIcon /> },
-  { code: "HSN123", description: "Housing module", icon: <RectangleIcon /> },
-  { code: "SPK123", description: "Speaker module", icon: <SpeakerIcon /> },
+interface FactoryNames {
+  name: string;
+  description: string;
+}
+
+const moduleOptions: ModuleOption[] = [
+  {
+    code: "CMR123",
+    description: "Camera module",
+    icon: <CameraIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
+  {
+    code: "HSN123",
+    description: "Housing module",
+    icon: <RectangleIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
+  {
+    code: "SPK123",
+    description: "Speaker module",
+    icon: <SpeakerIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
+  {
+    code: "DSP123",
+    description: "Display module",
+    icon: <ScreenIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
+  {
+    code: "BTRY123",
+    description: "Battery module",
+    icon: <BatteryIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
+  {
+    code: "LGC123",
+    description: "Logic module",
+    icon: <ChipIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
+  {
+    code: "CON123",
+    description: "Connectivity module",
+    icon: <WifiIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
+  {
+    code: "CHG123",
+    description: "Charging module",
+    icon: <BoltIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
+  {
+    code: "SEC123",
+    description: "Security module",
+    icon: <ShieldIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
+  {
+    code: "HPT123",
+    description: "Haptics module",
+    icon: <VibrationIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
+  {
+    code: "SEN123",
+    description: "Sensor module",
+    icon: <RadarIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
+  {
+    code: "AUD123",
+    description: "Audio module",
+    icon: <HeadphonesIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
+  {
+    code: "TCH123",
+    description: "Touch module",
+    icon: <TouchIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
+  {
+    code: "BTN123",
+    description: "Button module",
+    icon: <ToggleIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
+  {
+    code: "COOL123",
+    description: "Cooling module",
+    icon: <FanIcon sx={{ fontSize: 300, color: "#33691e" }} />,
+  },
 ];
 
+const factoryNames = [
+  {
+    name: "Factory A",
+    description: "Chassis and Frame Assembly",
+  },
+  {
+    name: "Factory B",
+    description: "Battery Production and Testing",
+  },
+  {
+    name: "Factory C",
+    description: "Screen Manufacturing and Quality Control",
+  },
+  {
+    name: "Factory D",
+    description: "Camera Module Assembly",
+  },
+  {
+    name: "Factory E",
+    description: "Logic Board and Chip Integration",
+  },
+  {
+    name: "Factory F",
+    description: "Final Assembly and Packaging",
+  },
+  {
+    name: "Factory G",
+    description: "Connectivity Module Production",
+  },
+  {
+    name: "Factory H",
+    description: "Audio and Speaker Installation",
+  },
+  {
+    name: "Factory I",
+    description: "Security Features and Software Installation",
+  },
+  {
+    name: "Factory J",
+    description: "Cooling System and Haptics Integration",
+  },
+];
 const RequestModule: React.FC = () => {
   const { requests, submitRequest, loading, error } = useLogistics();
   const [formData, setFormData] = useState({
@@ -63,6 +190,17 @@ const RequestModule: React.FC = () => {
       ...formData,
       module: selectedOption?.code || "",
       description: selectedOption?.description || "",
+    });
+  };
+
+  const handleFactoryChange = (event: SelectChangeEvent<string>) => {
+    const selectedFactory = factoryNames.find(
+      (factory) => factory.name === event.target.value
+    );
+
+    setFormData({
+      ...formData,
+      recipient: selectedFactory?.name || "",
     });
   };
 
@@ -91,7 +229,7 @@ const RequestModule: React.FC = () => {
   const columns: GridColDef[] = [
     { field: "index", headerName: "ID", width: 20, maxWidth: 20 },
     { field: "id", headerName: "Request ID", width: 150, flex: 1 },
-    { field: "module", headerName: "Module", width: 250, sortable: true },
+    { field: "module", headerName: "Module Code", width: 250, sortable: true },
     {
       field: "requestedBy",
       headerName: "Requested By",
@@ -118,6 +256,7 @@ const RequestModule: React.FC = () => {
         <div className="form-holder">
           <form onSubmit={handleSubmit} className="form">
             <h2 className="h2">Module Request</h2>
+            {/*ALLCHANGE list of all modules.*/}
             <div className="form-group">
               <FormControl fullWidth required>
                 <InputLabel id="module-label">Module Code</InputLabel>
@@ -133,12 +272,26 @@ const RequestModule: React.FC = () => {
                   </MenuItem>
                   {moduleOptions.map((option) => (
                     <MenuItem key={option.code} value={option.code}>
-                      {option.code} - {option.description}
+                      {option.code}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </div>
+
+            <div className="form-group">
+              <TextField
+                type="text"
+                id="description"
+                label="Module name"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                disabled
+              />
+            </div>
+            {/*ALLCHANGE  list of all modules.*/}
             <div className="form-group">
               <TextField
                 type="text"
@@ -151,34 +304,34 @@ const RequestModule: React.FC = () => {
                 required
               />
             </div>
+
+            {/*ALLCHANGE  list of all factory (autofilled recipients).*/}
             <div className="form-group">
-              <TextField
-                type="text"
-                id="description"
-                label="Module name"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                required
-              />
+              <FormControl fullWidth required>
+                <InputLabel id="recipient-label">Recipient</InputLabel>
+                <Select
+                  labelId="recipient-label"
+                  id="recipient"
+                  value={formData.recipient}
+                  onChange={handleFactoryChange}
+                  label="Recipient"
+                >
+                  <MenuItem value="">
+                    <em>Select Module</em>
+                  </MenuItem>
+                  {factoryNames.map((option) => (
+                    <MenuItem key={option.name} value={option.name}>
+                      {option.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </div>
-            <div className="form-group">
-              <TextField
-                type="text"
-                id="recipient"
-                label="Recipient"
-                value={formData.recipient}
-                onChange={(e) =>
-                  setFormData({ ...formData, recipient: e.target.value })
-                }
-                required
-              />
-            </div>
+
             <div className="form-group">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
-                  label="Date Produced"
+                  label="Request date"
                   value={
                     formData.requestDate ? dayjs(formData.requestDate) : null
                   }
@@ -194,6 +347,7 @@ const RequestModule: React.FC = () => {
                 />
               </LocalizationProvider>
             </div>
+
             <div className="form-group">
               <TextField
                 type="number"
@@ -209,6 +363,7 @@ const RequestModule: React.FC = () => {
                 required
               />
             </div>
+
             <Button
               type="submit"
               variant="contained"
@@ -220,20 +375,91 @@ const RequestModule: React.FC = () => {
             </Button>
           </form>
         </div>
-        <div className="preview-card">
-          {/* Preview Card */}
-          <h2>Request preview</h2>
+        <div id="request-card" className="preview-card">
+          {/* Preview Card, styling @ global.css */}
+          <h2 id="requestcard-h2">Request preview</h2>
           {formData.module && (
-            <div className="preview-content">
+            <div className="preview-icon">
               {
                 moduleOptions.find((option) => option.code === formData.module)
                   ?.icon
               }
-              <p>{formData.description}</p>
             </div>
           )}
+
+          <div className="preview-details">
+            <div>
+              {" "}
+              <h2 id="module-code">{formData.module}</h2>
+              <h3 id="module-desc">{formData.description}</h3>
+            </div>
+
+            <div className="chip-holder">
+              <Chip
+                label={formData.quantity + " pc"}
+                color="success"
+                sx={{
+                  fontWeight: "medium",
+                }}
+              />
+              <Chip
+                icon={
+                  <PlaceOutlinedIcon
+                    sx={{
+                      "&&": { color: "#33691e" },
+                      fontSize: 25,
+                      paddingLeft: 1,
+                    }}
+                  />
+                }
+                label={formData.recipient}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#f1f8e9",
+                  color: "#33691e",
+                }}
+              />
+              <Chip
+                icon={
+                  <EventIcon
+                    sx={{
+                      "&&": { color: "#33691e" },
+                      fontSize: 25,
+                      paddingLeft: 1,
+                    }}
+                  />
+                }
+                label={formData.requestDate}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#f1f8e9",
+                  color: "#33691e",
+                }}
+              />
+            </div>
+            <div className="chip-holder">
+              <Chip
+                icon={
+                  <PersonIcon
+                    sx={{
+                      "&&": { color: "#33691e" },
+                      fontSize: 25,
+                      paddingLeft: 1,
+                    }}
+                  />
+                }
+                label={formData.requestedBy}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#f1f8e9",
+                  color: "#33691e",
+                }}
+              />
+            </div>
+          </div>
         </div>
       </div>
+
       {/* Existing Requests */}
       <div style={{ height: 400, width: "100%" }}>
         <h2>Existing Requests</h2>
