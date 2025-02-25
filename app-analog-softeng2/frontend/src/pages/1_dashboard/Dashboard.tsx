@@ -87,7 +87,7 @@ const UnifiedCard: React.FC<CardProps> = ({
   // ✅ Dynamically select icon & color (Only for "rate" cards)
   const IconComponent = isPositive ? TrendingUp : TrendingDown;
   const iconColor = isPositive ? "green" : "red";
-
+ 
   {
     /* Small dashboard component builder*/
   }
@@ -745,32 +745,135 @@ const Dashboard: React.FC = () => {
         exclusive
         onChange={(_, newView) => setView(newView)}
         aria-label="Dashboard View"
-        sx={{ marginBottom: 2, alignItems: "center" }}
+        sx={{ display: "flex",
+          justifyContent: "flex-start", // Aligns buttons to the left
+          alignItems: "center", // Centers vertically
+          backgroundColor: "#fff",
+          borderRadius: "30px",
+          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.08)",
+          padding: "7px",
+          paddingLeft: "12px",
+          gap: "7px",
+          width: "100%",
+         }}
       >
-        <ToggleButton value="all" aria-label="All">
+        <ToggleButton 
+        value="all" 
+        aria-label="All"
+        sx={{
+          color: "#444", 
+          fontWeight: 600, 
+          fontFamily: "'Poppins', sans-serif", 
+          borderRadius: "17px!important", 
+          backgroundColor: "#f8f9fa", 
+          fontSize: "0.8rem", 
+          padding: "6px 14px", 
+          minWidth: "auto",
+          height: "32px", 
+          overflow: "hidden",
+          transition: "all 0.2s ease-in-out", 
+          "&:hover": {
+            backgroundColor: "#e2e6ea", 
+          },
+          "&.Mui-selected, &.Mui-focusVisible": {
+            backgroundColor: "#261cc9",
+            color: "white",
+            boxShadow: "0px 2px 8px rgba(0, 123, 255, 0.4)", 
+          },
+        }}
+      >
           All
         </ToggleButton>
-        <ToggleButton value="production" aria-label="Production">
+        <ToggleButton 
+        value="production" 
+        aria-label="Production"
+        sx={{
+          color: "#444", 
+          fontWeight: 600, 
+          fontFamily: "'Poppins', sans-serif", 
+          borderRadius: "17px!important", 
+          backgroundColor: "#f8f9fa", 
+          fontSize: "0.8rem", 
+          padding: "6px 14px", 
+          minWidth: "auto",
+          height: "32px", 
+          overflow: "hidden",
+          transition: "all 0.2s ease-in-out", 
+          "&:hover": {
+            backgroundColor: "#e2e6ea", 
+          },
+          "&.Mui-selected, &.Mui-focusVisible": {
+            backgroundColor: "#261cc9",
+            color: "white",
+            boxShadow: "0px 2px 8px rgba(0, 123, 255, 0.4)", 
+          },
+        }}
+        >
           Production
         </ToggleButton>
-        <ToggleButton value="logistics" aria-label="Requests">
+        <ToggleButton 
+        value="logistics" 
+        aria-label="Requests"
+        sx={{
+          color: "#444", 
+          fontWeight: 600, 
+          fontFamily: "'Poppins', sans-serif", 
+          borderRadius: "17px!important", 
+          backgroundColor: "#f8f9fa", 
+          fontSize: "0.8rem", 
+          padding: "6px 14px", 
+          minWidth: "auto",
+          height: "32px", 
+          overflow: "hidden",
+          transition: "all 0.2s ease-in-out", 
+          "&:hover": {
+            backgroundColor: "#e2e6ea", 
+          },
+          "&.Mui-selected, &.Mui-focusVisible": {
+            backgroundColor: "#261cc9",
+            color: "white",
+            boxShadow: "0px 2px 8px rgba(0, 123, 255, 0.4)", 
+          },
+        }}
+        >
           Modules
         </ToggleButton>
         <ToggleButton
           value="tracking"
           aria-label="Tracking"
-          sx={{ marginRight: 2 }}
+          sx={{
+            color: "#444", 
+          fontWeight: 600, 
+          fontFamily: "'Poppins', sans-serif", 
+          borderRadius: "17px!important",
+          backgroundColor: "#f8f9fa", 
+          fontSize: "0.8rem", 
+          padding: "6px 14px", 
+          minWidth: "auto",
+          height: "32px", 
+          overflow: "hidden",
+          transition: "all 0.2s ease-in-out", 
+          "&:hover": {
+            backgroundColor: "#e2e6ea", 
+          },
+          "&.Mui-selected, &.Mui-focusVisible": {
+            backgroundColor: "#261cc9",
+            color: "white",
+            boxShadow: "0px 2px 8px rgba(0, 123, 255, 0.4)", 
+            },
+          }}
         >
           Tracking
         </ToggleButton>
         <GenerateReport />
       </ToggleButtonGroup>
 
+      {/* top cards*/}
       {view === "all" && (
-        <div className="main-div">
-          <div className="small-holder">
+        <div className="main-div"> 
+          <div className="small-holder"> 
             <UnifiedCard
-              type="progress"
+              type="progress" 
               title="Daily Quota"
               currentValue={94}
               maxValue={100}

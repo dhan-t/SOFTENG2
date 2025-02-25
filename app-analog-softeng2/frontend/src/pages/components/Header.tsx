@@ -120,24 +120,25 @@ function Header() {
       <div className="welcome-message">
         <p className="user-greeting">Welcome, {profile.firstName || "user"}!</p>
       </div>
+      <div className="header">
+          <div className="search-bar">
+          <input
+            className="input-field"
+            type="text"
+            placeholder="Search product, supplier, order"
+            value={searchTerm}
+            onChange={handleChange}
+           />
 
-      <div className="search-bar">
-        <input
-          className="input-field"
-          type="text"
-          placeholder="Search product, supplier, order"
-          value={searchTerm}
-          onChange={handleChange}
-        />
+          <button className="button" id="search-btn">
+            <div className="icon-holder">
+              <FaMagnifyingGlass className="search-icon" />
+            </div>
+          </button>
+        </div>
+      
 
-        <button className="button" id="search-btn">
-          <div className="icon-holder">
-            <FaMagnifyingGlass className="search-icon" />
-          </div>
-        </button>
-      </div>
-
-      <button className="button" id="notif-btn" onClick={handleNotifClick}>
+      <button className="search button" id="notif-btn" onClick={handleNotifClick}>
         <div className="icon-holder">
           <FaBell className="notif-icon" />
         </div>
@@ -177,7 +178,7 @@ function Header() {
         )}
         <div className="profile-texts">
           <p className="username-display">{profile.firstName}</p>
-          <p className="user-position">Manager</p>
+          
         </div>
         {showProfilePopup && (
           <div className="profile-popup">
@@ -188,6 +189,7 @@ function Header() {
             </ul>
           </div>
         )}
+      </div>
       </div>
     </div>
   );
