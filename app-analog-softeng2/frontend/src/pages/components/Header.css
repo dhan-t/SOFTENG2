@@ -10,13 +10,14 @@
   display: flex;
   flex-direction: column;
   height: fit-content max-content;
+  margin-left: 15px;
 }
 
 .user-greeting {
   width: max-content;
-  font-weight: bold;
-  font-size: 1.5rem;
-  color: black;
+  font-weight:600;
+  font-size: 30px;
+  color: #242c52;
 }
 
 .current-date {
@@ -25,6 +26,20 @@
   opacity: 80%;
 }
 
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px 10px;
+    background-color: white;
+    border-radius: 40px;
+    width: 550px; 
+    box-shadow: 0px 10px 20px 0px rgba(133, 133, 133, 0.1); /* Subtle shadow */
+
+ }
+
+
 .search-bar {
   display: flex;
   flex: 1;
@@ -32,62 +47,69 @@
   justify-content: space-between;
   align-items: center;
   border: 1px solid white; /* Light gray border */
-  border-radius: 4px;
+  border-radius: 20px;
   padding: 5px 10px;
-  background-color: white;
+  background-color: #f3f6fd ;
+}
+
+.search-bar .placeholder{
+  color: #a4add4;
 }
 
 .button {
   background-color: transparent;
   cursor: pointer;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 22px;  /* Reduced width */
+  height: 22px; /* Reduced height */
   border: none;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 22px; /* Ensure proper spacing */
 }
+
 
 .button:focus {
   outline: none;
 }
 
 .icon-holder {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 .search-icon {
-  color: #ccc;
-  width: 1.5rem;
-  height: 1.5rem;
+  color: #a4add4;
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
 .search-bar input {
   flex-grow: 2;
   border: none;
   outline: none;
-  font-size: 1rem;
+  font-size: .8rem;
   background-color: transparent;
 }
 
 .input-field {
-  color: #858d9d;
+  color: #5280e3;
   display: flex;
   height: 100%;
   font-size: 1rem;
   align-items: center;
   border: 1px solid #ccc; /* Light gray border */
-  border-radius: 4px;
-  padding: 5px 10px;
-  background-color: #f8f8f8;
+  border-radius: 10px;
+  padding: 5px 15px;
+  background-color: #f3f6fd;
 }
 
 .notif-icon {
-  color: #222222;
+  color: #b2b7d1;
   width: 1.5rem;
   height: 1.5rem;
   transition: transform 0.3s ease, color 0.3s ease; /* Increase transition duration for smoother animation */
+  margin-top: -4px; /* Move it up */
 }
 
 .notif-icon:hover {
@@ -100,36 +122,20 @@
   flex-direction: row;
   align-items: center;
   text-align: center;
-  justify-content: space-between;
+  justify-content:space-evenly;
   gap: 1.2rem;
   position: relative;
+  padding-left: 10px;
 }
 
 .profile-picture {
-  width: 50px;
-  height: 50px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background-color: #ccc;
+  background-color: #b7bef3;
   background-size: cover;
   background-position: center;
   cursor: pointer;
-}
-
-.profile-texts {
-  height: fit-content;
-  text-align: start;
-}
-
-.username-display {
-  font-weight: bold;
-  font-size: 1rem;
-  opacity: 90%;
-}
-
-.user-position {
-  font-weight: normal;
-  font-size: 0.8rem;
-  opacity: 80%;
 }
 
 .notification-popup {

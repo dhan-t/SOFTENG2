@@ -1,8 +1,13 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "./logos/image 1.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import StickyNote2RoundedIcon from '@mui/icons-material/StickyNote2Rounded';
+import InventoryRoundedIcon from '@mui/icons-material/InventoryRounded';
+import FindReplaceRoundedIcon from '@mui/icons-material/FindReplaceRounded';
+import LibraryAddCheckRoundedIcon from '@mui/icons-material/LibraryAddCheckRounded';
 import "./Navbar.css";
 
 interface NavbarProps {
@@ -12,6 +17,13 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
   const navigate = useNavigate();
+  const location = useLocation(); // Get the current route
+  const [activeItem, setActiveItem] = useState(location.pathname); // Track active item
+
+  const handleItemClick = (path: string) => {
+    setActiveItem(path);
+    navigate(path); 
+  };  
 
   const handleLogout = () => {
     navigate("/");
@@ -33,35 +45,45 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
       </div>
 
       <ul className="nav-links">
-        <NavbarItem
-          text="Dashboard"
-          link="/dashboard"
-          isExpanded={isExpanded}
-          icon="📊"
+        <NavbarItem 
+          text="Dashboard" 
+          link="/dashboard" 
+          isExpanded={isExpanded} 
+          icon={<HomeRoundedIcon />} 
+          active={activeItem === "/dashboard"}
+          onClick={handleItemClick}
         />
         <NavbarItem
           text="Generate workorder"
           link="/workorder"
           isExpanded={isExpanded}
-          icon="📋"
+          icon={<StickyNote2RoundedIcon />}
+          active={activeItem === "/workorder"}
+          onClick={handleItemClick}
         />
         <NavbarItem
           text="Track requests"
           link="/trackrequest"
           isExpanded={isExpanded}
-          icon="🔎"
+          icon={<InventoryRoundedIcon />}
+          active={activeItem === "/trackrequest"}
+          onClick={handleItemClick}
         />
         <NavbarItem
           text="Request modules"
           link="/requestmodule"
           isExpanded={isExpanded}
-          icon="📦"
+          icon={<FindReplaceRoundedIcon />}
+          active={activeItem === "/requestmodule"}
+          onClick={handleItemClick}
         />
         <NavbarItem
           text="Report production"
           link="/reportproduction"
           isExpanded={isExpanded}
-          icon="✅"
+          icon={<LibraryAddCheckRoundedIcon />}
+          active={activeItem === "/reportproduction"}
+          onClick={handleItemClick}
         />
       </ul>
 
@@ -79,8 +101,12 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
             </div>
           )}
         </div>
+        
+        <div className="separator"></div>
+
         <button className="logout-btn" onClick={handleLogout}>
-          {isExpanded ? "Logout" : <FontAwesomeIcon icon={faSignOutAlt} />}
+          <FontAwesomeIcon icon={faSignOutAlt} />
+          {isExpanded && <span>Logout</span>}
         </button>
       </div>
     </nav>
@@ -91,7 +117,9 @@ interface NavbarItemProps {
   text: string;
   link: string;
   isExpanded: boolean;
-  icon: string;
+  icon: React.ReactNode;
+  active: boolean;
+  onClick: (path: string) => void;
 }
 
 const NavbarItem: React.FC<NavbarItemProps> = ({
@@ -99,9 +127,11 @@ const NavbarItem: React.FC<NavbarItemProps> = ({
   link,
   isExpanded,
   icon,
+  active,
+  onClick,
 }) => {
   return (
-    <li className="nav-item">
+    <li className={`nav-item ${active ? "active" : ""}`} onClick={() => onClick(link)}>
       <Link to={link} className="nav-link">
         <span className="nav-icon">{icon}</span>
         {isExpanded && <span className="nav-text">{text}</span>}
