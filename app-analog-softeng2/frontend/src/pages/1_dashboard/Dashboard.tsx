@@ -723,14 +723,14 @@ const Dashboard: React.FC = () => {
     {
       icon: FaUser,
       value: 31,
-      label: "Number of Suppliers",
+      label: "Here are the number of suppliers.",
       iconBgColor: "#E6F7FF",
       iconColor: "#00A3FF",
     },
     {
       icon: FaClipboardList,
       value: 21,
-      label: "Number of Categories",
+      label: "Here are the number of categories.",
       iconBgColor: "#F6F2FF",
       iconColor: "#A461D8",
     },
@@ -753,15 +753,12 @@ const Dashboard: React.FC = () => {
         <ToggleButton value="production" aria-label="Production">
           Production
         </ToggleButton>
-        <ToggleButton value="logistics" aria-label="Requests">
-          Modules
-        </ToggleButton>
         <ToggleButton
-          value="tracking"
-          aria-label="Tracking"
+          value="logistics"
+          aria-label="Requests"
           sx={{ marginRight: 2 }}
         >
-          Tracking
+          Modules
         </ToggleButton>
         <GenerateReport />
       </ToggleButtonGroup>
