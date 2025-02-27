@@ -35,7 +35,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, data }) => {
                     <Typography variant="subtitle1">{item.name}</Typography>
                     <Typography
                       variant="h5"
-                      color={isPositive ? "green" : "red"}
+                      color={isPositive ? "green" : "green"}
                     >
                       {item.produced}
                     </Typography>

@@ -11,6 +11,7 @@ import { FaBox, FaTruck, FaUser, FaClipboardList } from "react-icons/fa";
 import LineChartComponent from "../test page/test";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { TrendingUp, TrendingDown } from "@mui/icons-material";
+import { AssignmentTurnedIn } from "@mui/icons-material";
 import {
   BarChart,
   Bar,
@@ -133,24 +134,34 @@ const UnifiedCard: React.FC<CardProps> = ({
         {type === "rate" && (
           <Box
             sx={{
-              flex: 3,
+              
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center", // ✅ Center vertically
               width: "100%", // ✅ Ensure full width
               height: "100%", // ✅ Ensure full height
+              mt: 5,
+              
+              
             }}
           >
             {/* ✅ Dynamic Icon */}
             <Box
               sx={{
                 display: "flex",
-                justifyContent: "center",
                 alignItems: "center",
+                alignSelf: "flex-start", // Moves only the icon up/down without shifting other content
+                position: "relative", // Allows independent movement
+                top: 85, // Moves the icon up
+                right: 115
               }}
             >
-              <IconComponent sx={{ fontSize: "4rem", color: iconColor }} />
+              <IconComponent 
+                sx={{ 
+                  fontSize: "4rem", 
+                  color: iconColor, 
+                  mt: -10}} />
             </Box>
 
             {/* ✅ Percentage Change */}
@@ -161,6 +172,8 @@ const UnifiedCard: React.FC<CardProps> = ({
                 backgroundColor: isPositive ? "green" : "red",
                 color: "white",
                 fontWeight: "bold",
+                mr: 50,
+                mt: 10,
               }}
             />
           </Box>
@@ -872,30 +885,208 @@ const Dashboard: React.FC = () => {
       {view === "all" && (
         <div className="main-div"> 
           <div className="small-holder"> 
+          <Box sx={{ 
+            boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)", 
+            borderRadius: 6, 
+            p: 1, 
+            backgroundColor: "white", 
+            minWidth: "220px", 
+            minHeight: "150px", }}>
+
             <UnifiedCard
-              type="progress" 
-              title="Daily Quota"
-              currentValue={94}
+              type="progress"
+              title={
+                <Typography
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start", // to the top
+                    alignSelf: "flex-start", // same height as text
+                    fontFamily: "Poppins, sans-serif", // Ensures the title also uses Poppins
+                    fontWeight: 600, // Optional: Makes it stand out
+                    whiteSpace: "nowrap", // Prevents text from wrapping to a new line
+                    overflow: "hidden", // Ensures no extra spacing issues
+                    fontSize: "1.05rem",
+                    color: "#09194f",
+                  }}
+                >
+                  <AssignmentTurnedIn sx={{ fontSize: "1.3rem", mr: 6, mt: .5, color: "#0f38bf",}} />
+                  Daily Quota
+                </Typography>
+              }
+              currentValue={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 500,
+                    fontSize: "2.5rem",
+                    mt: 5,
+                    
+                    mb: -1.3,
+                  }}
+                >
+                  94
+                </Typography>
+              }
               maxValue={100}
             />
+            </Box>
+
+            <Box
+            sx={{
+              boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
+              borderRadius: 6,
+              p: 0.7,
+              backgroundColor: "white",
+              minWidth: "280px",
+              minHeight: "150px",
+              display: "flex",
+              flexDirection: "column", // Makes sure children are stacked vertically
+              justifyContent: "space-between", // Pushes description to the bottom
+            }}
+          >
             <UnifiedCard
               type="summary"
-              title="Unresolved requests"
-              currentValue={10}
-              description="Total revenue for the month"
+              title={
+                <Typography
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start", // Aligns icon and text properly
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    fontSize: "1rem",
+                    color: "#09194f",
+                    mt: 1,
+                  }}
+                >
+                  <AssignmentTurnedIn
+                    sx={{ fontSize: "1.3rem", mr: 4, color: "#0f38bf" }}
+                  />
+                  Unresolved Requests
+                </Typography>
+              }
+              currentValue={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 500,
+                    fontSize: "2.5rem",
+                    mt: 5,
+                    ml: 1,
+                  }}
+                >
+                  10
+                </Typography>
+              }
+              description={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontSize: "0.85rem",
+                    color: "#6b7280", // Soft gray color
+                    textAlign: "left",
+                    ml: 1,
+                  }}
+                >
+                  Total revenue for the month
+                </Typography>
+              }
             />
+          </Box>
+
+            <Box
+              sx={{
+              boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
+              borderRadius: 6,
+              p: 0.7,
+              backgroundColor: "white",
+              width: "350px", // Set a fixed width
+              maxWidth: "260px",
+              minHeight: "150px",
+              display: "flex",
+              flexDirection: "column", // Makes sure children are stacked vertically
+              justifyContent: "space-between", // Pushes description to the bottom
+              flexShrink: 0, // Prevents resizing due to content
+              }}
+            >
             <UnifiedCard
               type="rate"
-              title="Weekly Production Trend"
-              currentValue={90}
+              title={
+                <Typography
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start", // Aligns icon and text properly
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    fontSize: "1.1rem",
+                    color: "#09194f",
+                    mt: 1,
+                    mr: 6
+                  }}
+                >
+                  <AssignmentTurnedIn sx={{ fontSize: "1.3rem", mr: 8, color: "#0f38bf" }} />
+                  Weekly Trend
+                  
+                </Typography>
+              }
+              currentValue={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 500,
+                    fontSize: "2.5rem",
+                    mt: 5,
+                    ml: 1,
+                  }}
+                >
+                  90
+                </Typography>
+              }
               oldValue={120}
             />
+            </Box>
+
+            <Box
+              sx={{
+                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
+                borderRadius: 6,
+                p: .5,
+                backgroundColor: "white",
+              }}
+            >
             <UnifiedCard
               type="summary"
-              title="Monthly Revenue"
-              currentValue={5000}
+              title={
+                <Typography
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    fontFamily: "Poppins, sans-serif",                     		    
+                    fontWeight: 600,                   
+		                }}
+                >
+                  <AssignmentTurnedIn sx={{ mr: 7 }} />
+                  Monthly Revenue
+                </Typography>
+              }
+              currentValue={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 500, // Medium weight for numbers
+                    fontSize: "2rem", // Adjust size for visibility
+                    marginTop: "20px",
+                  }}
+                >
+                  5000
+                </Typography>
+              }
               description="Total revenue for the month"
             />
+            </Box>
           </div>
 
           <div className="dashboard-contents">
