@@ -1039,7 +1039,7 @@ const Dashboard: React.FC = () => {
                     fontWeight: 500,
                     fontSize: "2.5rem",
                     mt: 5,
-                    ml: 1,
+                    
                   }}
                 >
                   90
@@ -1053,35 +1053,52 @@ const Dashboard: React.FC = () => {
               sx={{
                 boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
                 borderRadius: 6,
-                p: .5,
+                p: 0.7,
                 backgroundColor: "white",
-              }}
+                minWidth: "280px",
+                minHeight: "150px",
+                display: "flex",
+                flexDirection: "column", // Makes sure children are stacked vertically
+                justifyContent: "space-between", // Pushes description to the bottom
+                }}
             >
             <UnifiedCard
               type="summary"
               title={
                 <Typography
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    fontFamily: "Poppins, sans-serif",                     		    
-                    fontWeight: 600,                   
-		                }}
-                >
-                  <AssignmentTurnedIn sx={{ mr: 7 }} />
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start", // Aligns icon and text properly
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  fontSize: "1.1rem",
+                  color: "#09194f",
+                  mt: 1,
+                  
+                }}
+              >
+                <AssignmentTurnedIn
+                    sx={{ fontSize: "1.3rem", 
+                      mr: 6, 
+                      color: "#0f38bf" 
+                    }}
+                  />
                   Monthly Revenue
                 </Typography>
               }
               currentValue={
                 <Typography
-                  sx={{
-                    fontFamily: "Poppins, sans-serif",
-                    fontWeight: 500, // Medium weight for numbers
-                    fontSize: "2rem", // Adjust size for visibility
-                    marginTop: "20px",
-                  }}
-                >
-                  5000
+                sx={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: 500,
+                  fontSize: "2.5rem",
+                  mt: 5,
+                  
+                }}
+              >
+                5000
                 </Typography>
               }
               description="Total revenue for the month"
@@ -1195,30 +1212,230 @@ const Dashboard: React.FC = () => {
       {view === "production" && (
         <div className="main-div">
           <div className="small-holder">
+          <Box sx={{ 
+            boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)", 
+            borderRadius: 6, 
+            p: 1, 
+            backgroundColor: "white", 
+            minWidth: "230px", 
+            minHeight: "150px", }}>
+
             <UnifiedCard
               type="progress"
-              title="Items produced today"
-              currentValue={94}
+              title={
+                <Typography
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start", // to the top
+                    alignSelf: "flex-start", // same height as text
+                    fontFamily: "Poppins, sans-serif", // Ensures the title also uses Poppins
+                    fontWeight: 600, // Optional: Makes it stand out
+                    whiteSpace: "nowrap", // Prevents text from wrapping to a new line
+                    overflow: "hidden", // Ensures no extra spacing issues
+                    
+                    fontSize: "1rem",
+                    color: "#09194f",
+                  }}
+                >
+                  <AssignmentTurnedIn sx={{ fontSize: "1.3rem", mr: 6, mt: .5, color: "#0f38bf",}} />
+                  Today's Yield
+              </Typography>
+              }
+              currentValue={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 500,
+                    fontSize: "2.5rem",
+                    mt: 5,
+                    
+                    mb: -1.3,
+                  }}
+                >
+                  94
+                </Typography>
+              }
               maxValue={100}
             />
+            </Box>
+
+
+            <Box
+            sx={{
+              boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
+              borderRadius: 6,
+              minWidth: "270px",
+              minHeight: "120px",
+              height: 200,
+              display: "flex",
+              flexDirection: "column", // Makes sure children are stacked vertically
+              justifyContent: "space-between", // Pushes description to the bottom
+            }}
+          >
             <UnifiedCard
               type="summary"
-              title="Unresolved production issues"
-              currentValue={10}
-              description="Total revenue for the month"
+              sx={{ backgroundColor: "transparent" }} // ✅ Remove white background
+              title={
+                <Typography
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start", // Aligns icon and text properly
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    fontSize: "1rem",
+                    color: "#09194f",
+                    maxWidth: "220px",
+                    whiteSpace: "normal",
+                    wordBreak: "break-word", // Ensures proper line breaking
+                    textAlign: "right",
+                    mt: 2,
+                  }}
+                >
+                  <AssignmentTurnedIn
+                    sx={{ fontSize: "1.4rem", mr: 2, color: "#0f38bf", ml:1}}
+                  />
+              Unresolved production issues
+              </Typography>
+              }
+              currentValue={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 500,
+                    fontSize: "2.5rem",
+                    mt: 2,
+                    ml: 1,
+                  }}
+                >
+                  10
+                </Typography>
+              }
+              description={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontSize: "0.85rem",
+                    color: "#6b7280", // Soft gray color
+                    textAlign: "left",
+                    ml: 1,
+                  }}
+                >
+                  Total revenue for the month
+                </Typography>
+              }
             />
+          </Box>
+
+
+            <Box
+              sx={{
+              boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
+              borderRadius: 6,
+              p: 0.7,
+              backgroundColor: "white",
+              width: "300px", // Set a fixed width
+              maxWidth: "270px",
+              minHeight: "150px",
+              display: "flex",
+              flexDirection: "column", // Makes sure children are stacked vertically
+              justifyContent: "space-between", // Pushes description to the bottom
+              flexShrink: 0, // Prevents resizing due to content
+              }}
+            >
             <UnifiedCard
               type="rate"
-              title="Production Performance"
-              currentValue={90}
+              title={
+                <Typography
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start", // Aligns icon and text properly
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    fontSize: "1rem",
+                    color: "#09194f",
+                    mt: 1,
+                    mr: 7
+                  }}
+                >
+                  <AssignmentTurnedIn sx={{ fontSize: "1.2rem", mr: 5, color: "#0f38bf" }} />
+                  Performance Rate
+              </Typography>
+              }
+              currentValue={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 500,
+                    fontSize: "2.5rem",
+                    mt: 5,
+                    
+                  }}
+                >
+                  90
+                </Typography>
+              }
               oldValue={120}
             />
+            </Box>
+
+
+            <Box
+              sx={{
+                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
+                borderRadius: 6,
+                p: 0.7,
+                backgroundColor: "white",
+                minWidth: 230,
+                minHeight: "150px",
+                display: "flex",
+                flexDirection: "column", // Makes sure children are stacked vertically
+                justifyContent: "space-between", // Pushes description to the bottom
+                }}
+            >
             <UnifiedCard
               type="summary"
-              title="Revenue from produced items"
-              currentValue={5000}
+              title={
+                <Typography
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start", // Aligns icon and text properly
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  fontSize: "1rem",
+                  color: "#09194f",
+                  mt: 1,
+                }}
+              >
+                <AssignmentTurnedIn
+                    sx={{ fontSize: "1.3rem", 
+                      mr: 4, 
+                      color: "#0f38bf" 
+                    }}
+                  />
+              Production Revenue
+              </Typography>
+              }
+              currentValue={
+                <Typography
+                sx={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: 500,
+                  fontSize: "2.5rem",
+                  mt: 5,
+                  ml: 1,
+                }}
+              >
+                5000
+                </Typography>
+              }
               description="Total revenue for the month"
             />
+            </Box>
           </div>
 
           <div className="dashboard-contents">
