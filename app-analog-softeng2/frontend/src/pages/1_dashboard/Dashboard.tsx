@@ -83,7 +83,9 @@ const UnifiedCard: React.FC<CardProps> = ({
   const difference = currentValue - oldValue;
   const isPositive = difference >= 0;
   const percentageChange =
-    oldValue !== 0 ? ((difference / oldValue) * 100).toFixed(1) : "0";
+  oldValue !== 0
+    ? ((difference / Math.abs(oldValue)) * 100).toFixed(2) // Format to 2 decimal places
+    : "0.00"; // Prevent NaN and ensure consistent output
 
   // ✅ Dynamically select icon & color (Only for "rate" cards)
   const IconComponent = isPositive ? TrendingUp : TrendingDown;
@@ -1101,7 +1103,19 @@ const Dashboard: React.FC = () => {
                 5000
                 </Typography>
               }
-              description="Total revenue for the month"
+              description={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontSize: "0.85rem",
+                    color: "#6b7280", // Soft gray color
+                    textAlign: "left",
+                    ml: 1,
+                  }}
+                >
+                  Total revenue for the month
+                </Typography>
+              }
             />
             </Box>
           </div>
@@ -1232,7 +1246,7 @@ const Dashboard: React.FC = () => {
                     fontWeight: 600, // Optional: Makes it stand out
                     whiteSpace: "nowrap", // Prevents text from wrapping to a new line
                     overflow: "hidden", // Ensures no extra spacing issues
-                    
+                    mt: 1,
                     fontSize: "1rem",
                     color: "#09194f",
                   }}
@@ -1433,7 +1447,19 @@ const Dashboard: React.FC = () => {
                 5000
                 </Typography>
               }
-              description="Total revenue for the month"
+              description={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontSize: "0.85rem",
+                    color: "#6b7280", // Soft gray color
+                    textAlign: "left",
+                    ml: 1,
+                  }}
+                >
+                  Total revenue for the month
+                </Typography>
+              }
             />
             </Box>
           </div>
@@ -1463,30 +1489,250 @@ const Dashboard: React.FC = () => {
       {view === "logistics" && (
         <div className="main-div">
           <div className="small-holder">
-            <UnifiedCard
+          <Box sx={{ 
+            boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)", 
+            borderRadius: 6, 
+            p: 1, 
+            backgroundColor: "white", 
+            minWidth: "230px", 
+            minHeight: "150px", }}>
+
+          <UnifiedCard
               type="progress"
-              title="Components delivered today"
-              currentValue={94}
+              title={
+                <Typography
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start", // Aligns icon and text properly
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    fontSize: "1rem",
+                    color: "#09194f",
+                    maxWidth: "220px",
+                    whiteSpace: "normal",
+                    wordBreak: "break-word", // Ensures proper line breaking
+                    textAlign: "right",
+                    
+                  }}
+                >
+                  <AssignmentTurnedIn sx={{ fontSize: "1.3rem", mr: 6,  color: "#0f38bf",}} />
+              Components delivered today
+              </Typography>
+              }
+              currentValue={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 500,
+                    fontSize: "2.5rem",
+                    mb: -2,
+                    mt: 3
+                    
+                  }}
+                >
+                  94
+                </Typography>
+              }
               maxValue={100}
             />
+            </Box>
+
+
+            <Box
+            sx={{
+              boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
+              borderRadius: 6,
+              minWidth: "270px",
+              minHeight: "120px",
+              height: 210,
+              display: "flex",
+              flexDirection: "column", // Makes sure children are stacked vertically
+              justifyContent: "space-between", // Pushes description to the bottom
+            }}
+          >
             <UnifiedCard
               type="summary"
-              title="Open missing component requests"
-              currentValue={10}
-              description="Total revenue for the month"
+              sx={{ backgroundColor: "transparent" }} // ✅ Remove white background
+              title={
+                <Typography
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start", // Aligns icon and text properly
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    fontSize: "1rem",
+                    color: "#09194f",
+                    maxWidth: "220px",
+                    whiteSpace: "normal",
+                    wordBreak: "break-word", // Ensures proper line breaking
+                    textAlign: "right",
+                    mt: 1
+                  }}
+                >
+                  <AssignmentTurnedIn
+                    sx={{ fontSize: "1.4rem", mr: 2, color: "#0f38bf", ml:1, mt: 1.5}}
+                  />
+              Open missing component requests
+              </Typography>
+              }
+              currentValue={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 500,
+                    fontSize: "2.5rem",
+                    
+                    ml: 1,
+                  }}
+                >
+                  10
+                </Typography>
+              }
+              description={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontSize: "0.85rem",
+                    color: "#6b7280", // Soft gray color
+                    textAlign: "left",
+                    ml: 1,
+                  }}
+                >
+                  Total revenue for the month
+                </Typography>
+              }
             />
+          </Box>
+
+
+          <Box
+              sx={{
+              boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
+              borderRadius: 6,
+              p: 0.7,
+              backgroundColor: "white",
+              width: "300px", // Set a fixed width
+              maxWidth: "270px",
+              minHeight: "150px",
+              display: "flex",
+              flexDirection: "column", // Makes sure children are stacked vertically
+              justifyContent: "space-between", // Pushes description to the bottom
+              flexShrink: 0, // Prevents resizing due to content
+              }}
+            >
             <UnifiedCard
               type="rate"
-              title="Components requested trend"
-              currentValue={90}
+              title={
+                <Typography
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start", // Aligns icon and text properly
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    fontSize: ".9rem",
+                    color: "#09194f",
+                    mt: 1,
+                    mr: 7
+                  }}
+                >
+                  <AssignmentTurnedIn sx={{ fontSize: "1.2rem", mr: 3, color: "#0f38bf" }} />
+                  Requested parts trend
+              </Typography>
+              }
+              currentValue={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 500,
+                    fontSize: "2.5rem",
+                    mt: 5,
+                    
+                  }}
+                >
+                  90
+                </Typography>
+              }
               oldValue={120}
             />
+            </Box>
+              
+
+
+            <Box
+              sx={{
+                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
+                borderRadius: 6,
+                p: 0.7,
+                backgroundColor: "white",
+                minWidth: 230,
+                minHeight: "150px",
+                display: "flex",
+                flexDirection: "column", // Makes sure children are stacked vertically
+                justifyContent: "space-between", // Pushes description to the bottom
+                }}
+            >
             <UnifiedCard
               type="summary"
-              title="Cost of missing components"
-              currentValue={5000}
-              description="Total revenue for the month"
+              title={
+                <Typography
+                sx={{
+                  display: "flex",
+                    alignItems: "flex-start", // Aligns icon and text properly
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    fontSize: "1rem",
+                    color: "#09194f",
+                    maxWidth: "220px",
+                    whiteSpace: "normal",
+                    wordBreak: "break-word", // Ensures proper line breaking
+                    textAlign: "right",
+                    
+                }}
+              >
+                <AssignmentTurnedIn
+                    sx={{ fontSize: "1.3rem", 
+                      mr: 4, 
+                      color: "#0f38bf" 
+                    }}
+                  />
+              Cost of missing components
+              </Typography>
+              }
+              currentValue={
+                <Typography
+                sx={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: 500,
+                  fontSize: "2.5rem",
+                  mb: -1,
+                  mt: 4
+                }}
+              >
+                5000
+                </Typography>
+              }
+              description={
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontSize: "0.85rem",
+                    color: "#6b7280", // Soft gray color
+                    textAlign: "left",
+                    mt: 1
+                  }}
+                >
+                  Total revenue for the month
+                </Typography>
+              }
             />
+            </Box>
+          
+
           </div>
           <div className="component-holder">
             <LogisticsTest />
