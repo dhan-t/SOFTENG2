@@ -153,7 +153,7 @@ const WorkOrder: React.FC = () => {
                 <Select
                   labelId="phone-label"
                   id="phone"
-                  value={formData.phone}
+                  value={formData.module}
                   onChange={handlePhoneChange}
                 >
                   <MenuItem value="">
