@@ -11,6 +11,7 @@ import { FaBox, FaTruck, FaUser, FaClipboardList } from "react-icons/fa";
 import LineChartComponent from "../test page/test";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { TrendingUp, TrendingDown } from "@mui/icons-material";
+import { AssignmentTurnedIn } from "@mui/icons-material";
 import {
   BarChart,
   Bar,
@@ -82,7 +83,9 @@ const UnifiedCard: React.FC<CardProps> = ({
   const difference = currentValue - oldValue;
   const isPositive = difference >= 0;
   const percentageChange =
-    oldValue !== 0 ? ((difference / oldValue) * 100).toFixed(1) : "0";
+  oldValue !== 0
+    ? ((difference / Math.abs(oldValue)) * 100).toFixed(2) // Format to 2 decimal places
+    : "0.00"; // Prevent NaN and ensure consistent output
 
   // ✅ Dynamically select icon & color (Only for "rate" cards)
   const IconComponent = isPositive ? TrendingUp : TrendingDown;
@@ -133,24 +136,34 @@ const UnifiedCard: React.FC<CardProps> = ({
         {type === "rate" && (
           <Box
             sx={{
-              flex: 3,
+              
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center", // ✅ Center vertically
               width: "100%", // ✅ Ensure full width
               height: "100%", // ✅ Ensure full height
+              mt: 5,
+              
+              
             }}
           >
             {/* ✅ Dynamic Icon */}
             <Box
               sx={{
                 display: "flex",
-                justifyContent: "center",
                 alignItems: "center",
+                alignSelf: "flex-start", // Moves only the icon up/down without shifting other content
+                position: "relative", // Allows independent movement
+                top: 85, // Moves the icon up
+                right: 115
               }}
             >
-              <IconComponent sx={{ fontSize: "4rem", color: iconColor }} />
+              <IconComponent 
+                sx={{ 
+                  fontSize: "4rem", 
+                  color: iconColor, 
+                  mt: -10}} />
             </Box>
 
             {/* ✅ Percentage Change */}
@@ -161,6 +174,8 @@ const UnifiedCard: React.FC<CardProps> = ({
                 backgroundColor: isPositive ? "green" : "red",
                 color: "white",
                 fontWeight: "bold",
+                mr: 50,
+                mt: 10,
               }}
             />
           </Box>
@@ -736,6 +751,254 @@ const Dashboard: React.FC = () => {
     },
   ];
 
+ return (
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      {/* ✅ Most Requested Items (Bar Chart) */}
+      <Card>
+        <CardContent>
+          <Typography variant="h6">Most Requested Items</Typography>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={barChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="quantity" fill="#4caf50" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* ✅ Factory Requests (Pie Chart) */}
+      <Card>
+        <CardContent>
+          <Typography variant="h6">Factory Requests</Typography>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={pieChartData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                fill="#8884d8"
+                label
+              >
+                {pieChartData.map((_, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={pieColors[index % pieColors.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* ✅ Request Trends Over Time (Line Chart) */}
+      <Card>
+        <CardContent>
+          <Typography variant="h6">Request Trends Over Time</Typography>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={lineChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="requests" stroke="#ff9800" />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </Box>
+  );
+};
+
+interface SummaryItem {
+  icon: IconType;
+  value: number;
+  label: string;
+  iconBgColor: string;
+  iconColor: string;
+}
+
+interface SummaryCardProps {
+  title: string;
+  items: SummaryItem[];
+  linkText?: string;
+  onLinkClick?: () => void;
+}
+
+interface Reminder {
+  date: string;
+  title: string;
+}
+
+const Heatmap = () => {
+  const { productionData, loading, error } = useProductionData();
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+  if (productionData.length === 0) return <p>No production data available.</p>;
+
+  // Calculate max value for normalization
+  const maxProduced = Math.max(
+    ...productionData.map((item) => item.quantityProduced),
+    1
+  );
+
+  return (
+    <div className="heatmap">
+      {[...productionData] // Create a copy to avoid modifying the original array
+        .reverse() // Reverse the order so the latest push is first
+        .map((item) => {
+          const intensity = (item.quantityProduced / maxProduced) * 255;
+          return (
+            <div
+              key={item.productId}
+              className="heatmap-cell"
+              style={{
+                backgroundColor: `rgb(${255 - intensity}, ${
+                  255 - intensity
+                }, 255)`, // Blue scale
+              }}
+            >
+              <span className="product-name">{item.productName}</span>
+              <span className="product-quantity">{item.quantityProduced}</span>
+            </div>
+          );
+        })}
+    </div>
+  );
+};
+
+const SummaryCard: React.FC<SummaryCardProps> = ({ title, items }) => (
+  <div className="small-card">
+    <div className="summary-header">
+      <h2>{title}</h2>
+    </div>
+    <div className="summary-content">
+      {items.map((item, index) => (
+        <div className="summary-item" key={index}>
+          <div
+            className="icon-container"
+            style={{ backgroundColor: item.iconBgColor }}
+          >
+            <item.icon className="icon" style={{ color: item.iconColor }} />
+          </div>
+          <p className="value">{item.value}</p>
+          <p className="label">{item.label}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const Dashboard: React.FC = () => {
+  const {
+    productionData,
+    loading: productionLoading,
+    error: productionError,
+  } = useProductionData();
+
+  const {
+    requests,
+    loading: logisticsLoading,
+    error: logisticsError,
+  } = useLogistics();
+  const {
+    trackingLogs,
+    loading: trackingLoading,
+    error: trackingError,
+  } = useTracking();
+
+  const [value, setValue] = useState<Date>(new Date());
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [showReminderInput, setShowReminderInput] = useState(false);
+  const [reminderTitle, setReminderTitle] = useState("");
+  const [view, setView] = useState("all");
+
+  const addReminder = () => {
+    const formattedDate = value.toISOString().split("T")[0];
+    if (reminderTitle.trim() === "") {
+      alert("Reminder title cannot be empty.");
+      return;
+    }
+
+    setReminders([...reminders, { date: formattedDate, title: reminderTitle }]);
+    setReminderTitle("");
+    setShowReminderInput(false);
+  };
+
+  const tileContent = ({ date, view }: { date: Date; view: string }) => {
+    if (view === "month") {
+      const formattedDate = date.toISOString().split("T")[0];
+      const reminderForDate = reminders.find(
+        (reminder) => reminder.date === formattedDate
+      );
+      if (reminderForDate) {
+        return (
+          <span
+            style={{ color: "blue", fontWeight: "bold", fontSize: "0.9rem" }}
+          >
+            ●
+          </span>
+        );
+      }
+    }
+    return null;
+  };
+  const handleDayHover = (date: Date) => {
+    const formattedDate = date.toISOString().split("T")[0];
+    const reminderForDate = reminders.find(
+      (reminder) => reminder.date === formattedDate
+    );
+    return reminderForDate ? reminderForDate.title : null;
+  };
+  if (productionLoading || logisticsLoading || trackingLoading)
+    return <div className="loading">Loading...</div>;
+  if (productionError || logisticsError || trackingError)
+    return <div className="error">Error loading data.</div>;
+
+  const inventoryItems: SummaryItem[] = [
+    {
+      icon: FaBox,
+      value: 868,
+      label: "Finished units",
+      iconBgColor: "#FFF4E5",
+      iconColor: "#FFA500",
+    },
+    {
+      icon: FaTruck,
+      value: 200,
+      label: "To be shipped",
+      iconBgColor: "#EEF3FF",
+      iconColor: "#5A78F0",
+    },
+  ];
+
+  const logisticsItems: SummaryItem[] = [
+    {
+      icon: FaUser,
+      value: 31,
+      label: "Number of Suppliers",
+      iconBgColor: "#E6F7FF",
+      iconColor: "#00A3FF",
+    },
+    {
+      icon: FaClipboardList,
+      value: 21,
+      label: "Number of Categories",
+      iconBgColor: "#F6F2FF",
+      iconColor: "#A461D8",
+    },
+  ];
+
   return (
     <div className="main-div">
       <Header />
@@ -745,71 +1008,12 @@ const Dashboard: React.FC = () => {
         exclusive
         onChange={(_, newView) => setView(newView)}
         aria-label="Dashboard View"
-        sx={{
-          display: "flex",
-          justifyContent: "flex-start", // Aligns buttons to the left
-          alignItems: "center", // Centers vertically
-          backgroundColor: "#fff",
-          borderRadius: "30px",
-          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.08)",
-          padding: "7px",
-          paddingLeft: "12px",
-          gap: "7px",
-          width: "100%",
-        }}
+        sx={{ marginBottom: 2, alignItems: "center" }}
       >
-        <ToggleButton
-          value="all"
-          aria-label="All"
-          sx={{
-            color: "#444",
-            fontWeight: 600,
-            fontFamily: "'Poppins', sans-serif",
-            borderRadius: "17px!important",
-            backgroundColor: "#f8f9fa",
-            fontSize: "0.8rem",
-            padding: "6px 14px",
-            minWidth: "auto",
-            height: "32px",
-            overflow: "hidden",
-            transition: "all 0.2s ease-in-out",
-            "&:hover": {
-              backgroundColor: "#e2e6ea",
-            },
-            "&.Mui-selected, &.Mui-focusVisible": {
-              backgroundColor: "#261cc9",
-              color: "white",
-              boxShadow: "0px 2px 8px rgba(0, 123, 255, 0.4)",
-            },
-          }}
-        >
+        <ToggleButton value="all" aria-label="All">
           All
         </ToggleButton>
-        <ToggleButton
-          value="production"
-          aria-label="Production"
-          sx={{
-            color: "#444",
-            fontWeight: 600,
-            fontFamily: "'Poppins', sans-serif",
-            borderRadius: "17px!important",
-            backgroundColor: "#f8f9fa",
-            fontSize: "0.8rem",
-            padding: "6px 14px",
-            minWidth: "auto",
-            height: "32px",
-            overflow: "hidden",
-            transition: "all 0.2s ease-in-out",
-            "&:hover": {
-              backgroundColor: "#e2e6ea",
-            },
-            "&.Mui-selected, &.Mui-focusVisible": {
-              backgroundColor: "#261cc9",
-              color: "white",
-              boxShadow: "0px 2px 8px rgba(0, 123, 255, 0.4)",
-            },
-          }}
-        >
+        <ToggleButton value="production" aria-label="Production">
           Production
         </ToggleButton>
         <ToggleButton value="logistics" aria-label="Requests">
@@ -820,12 +1024,11 @@ const Dashboard: React.FC = () => {
           aria-label="Tracking"
           sx={{ marginRight: 2 }}
         >
-          Modules
+          Tracking
         </ToggleButton>
         <GenerateReport />
       </ToggleButtonGroup>
 
-      {/* top cards*/}
       {view === "all" && (
         <div className="main-div">
           <div className="small-holder">
