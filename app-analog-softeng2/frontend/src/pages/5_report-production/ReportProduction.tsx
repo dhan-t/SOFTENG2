@@ -9,6 +9,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
+import Chip from "@mui/material/Chip";
 
 import CancelIcon from "@mui/icons-material/Cancel";
 import SaveIcon from "@mui/icons-material/Save";
@@ -17,6 +18,13 @@ import EditIcon from "@mui/icons-material/Edit";
 import Button from "@mui/material/Button";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+
+import {
+  Event as EventIcon,
+  Person as PersonIcon,
+  WidgetsRounded as WidgetsRoundedIcon,
+  SmartphoneRounded as SmartphoneRoundedIcon,
+} from "@mui/icons-material";
 
 // Define your icons as SVGs or use an icon library
 const CameraIcon = () => (
@@ -125,73 +133,49 @@ const ReportProduction: React.FC = () => {
 
   const rows = productionData.map((item, index) => ({
     ...item,
-    id: item.productId || index, // Ensure unique ID
-    index: index + 1, // Add an index column
+    id: item.productId || index,
+    index: index + 1,
   }));
 
   const columns: GridColDef[] = [
     { field: "index", headerName: "ID", width: 20, maxWidth: 20 },
+    { field: "id", headerName: "Request ID", width: 100, sortable: true },
     {
-      field: "productId",
-      headerName: "Module Code", // should be work order id
-      width: 150,
-      sortable: true,
-      flex: 1,
-    },
-    {
-      field: "productName",
-      headerName: "Module Description", // should be phone
+      field: "dateRequested",
+      headerName: "Date Requested",
       width: 200,
       sortable: true,
-      flex: 1,
+    },
+    {
+      field: "quantityRequested",
+      headerName: "Requested Qty",
+      width: 150,
+      sortable: true,
+    },
+    {
+      field: "dateProduced",
+      headerName: "Date Fulfilled",
+      width: 200,
+      sortable: true,
     },
     {
       field: "quantityProduced",
-      headerName: "Qty",
-      width: 40,
-      maxWidth: 40,
+      headerName: "Produced Qty",
+      width: 150,
       sortable: true,
     },
     {
-      field: "dateProduced",
-      headerName: "Date Requested", // should be from work order date request
-      width: 200,
+      field: "orderFulfilled",
+      headerName: "Order Fulfilled?",
+      width: 100,
       sortable: true,
-    },
-    {
-      field: "dateProduced",
-      headerName: "Date Fulfilled", // should be from report production fulfillment date
-      width: 200,
-      sortable: true,
-    },
-    {
-      field: "actions",
-      headerName: "Actions",
-      flex: 1,
-      renderCell: (params) => {
-        const { row } = params;
-        return (
-          <>
-            <button className="edit-button" onClick={() => handleEdit(row)}>
-              Edit
-            </button>
-            <button
-              className="delete-button"
-              onClick={() => {
-                if (row.productId) {
-                  deleteProductionData(row.productId);
-                } else {
-                  console.error("❌ No productId found for deletion!");
-                }
-              }}
-            >
-              Delete
-            </button>
-          </>
-        );
-      },
+      renderCell: (params) =>
+        params.row.quantityProduced >= params.row.quantityRequested
+          ? "✅"
+          : "❌",
     },
   ];
+
   const paginationModel = { page: 0, pageSize: 5 };
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">{error}</div>;
@@ -341,19 +325,91 @@ const ReportProduction: React.FC = () => {
             )}
           </form>
         </div>
-        <div className="preview-card">
-          <h2>Report preview</h2>
+
+        <div id="report-preview" className="preview-card">
           {/* Preview Card */}
-          {formData.moduleCode && (
-            <div className="preview-content">
-              {
-                moduleOptions.find(
-                  (option) => option.code === formData.moduleCode
-                )?.icon
-              }
-              <p>{formData.description}</p>
+          <h2 className="preview-title" id="report-title">
+            Report Preview
+          </h2>
+
+          {/* Always show a smartphone icon */}
+          <div className="preview-icon">
+            <SmartphoneRoundedIcon sx={{ fontSize: 300, color: "#E65100" }} />
+          </div>
+
+          <div className="preview-details">
+            <div>
+              <h2 id="report-module-code">
+                {formData.moduleCode || "Module Code"}
+              </h2>
+              <h3 id="report-module-desc">
+                {formData.description || "Module Description"}
+              </h3>
             </div>
-          )}
+
+            <div className="chip-holder">
+              {/* Quantity Produced */}
+              <Chip
+                label={
+                  formData.quantityProduced
+                    ? `${formData.quantityProduced} pc`
+                    : "Qtyss"
+                }
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#FFCCBC",
+                  color: "#BF360C",
+                }}
+              />
+
+              {/* Phone Model */}
+              <Chip
+                icon={
+                  <SmartphoneRoundedIcon
+                    sx={{ color: "#e65100", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={formData.productId || "Phone Model"}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#FFF3E0",
+                  color: "#E65100",
+                }}
+              />
+
+              {/* Date Fulfilled */}
+              <Chip
+                icon={
+                  <EventIcon
+                    sx={{ color: "#E65100", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={formData.dateProduced || "Fulfilled"}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#FFF3E0",
+                  color: "#E65100",
+                }}
+              />
+            </div>
+
+            <div className="chip-holder">
+              {/* Reporter (Employee) */}
+              <Chip
+                icon={
+                  <PersonIcon
+                    sx={{ color: "#e65100", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={formData.reportedBy || "Reporter"}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#FFF3E0",
+                  color: "#E65100",
+                }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 

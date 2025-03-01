@@ -37,6 +37,7 @@ import {
   PlaceOutlined as PlaceOutlinedIcon,
   Event as EventIcon,
   Person as PersonIcon,
+  WidgetsRounded as WidgetsRoundedIcon,
 } from "@mui/icons-material";
 
 interface ModuleOption {
@@ -223,6 +224,7 @@ const RequestModule: React.FC = () => {
     module: request.module,
     requestedBy: request.requestedBy,
     recipient: request.recipient, // Add recipient field
+    requestDate: request.requestDate,
     status: request.status,
   }));
 
@@ -236,7 +238,13 @@ const RequestModule: React.FC = () => {
       width: 200,
       sortable: true,
     },
-    { field: "recipient", headerName: "Recipient", width: 200, sortable: true },
+    { field: "recipient", headerName: "Recipient", width: 150, sortable: true },
+    {
+      field: "requestDate",
+      headerName: "Request Date",
+      width: 200,
+      sortable: true,
+    },
     {
       field: "status",
       headerName: "Status",
@@ -375,33 +383,44 @@ const RequestModule: React.FC = () => {
             </Button>
           </form>
         </div>
+
         <div id="request-card" className="preview-card">
-          {/* Preview Card, styling @ global.css */}
-          <h2 id="requestcard-h2">Request preview</h2>
-          {formData.module && (
-            <div className="preview-icon">
-              {
-                moduleOptions.find((option) => option.code === formData.module)
-                  ?.icon
-              }
-            </div>
-          )}
+          {/* Preview Title */}
+          <h2 className="preview-title" id="request-title">
+            Request Preview
+          </h2>
+
+          {/* Display selected module icon or a placeholder icon */}
+          <div className="preview-icon">
+            {formData.module ? (
+              moduleOptions.find((option) => option.code === formData.module)
+                ?.icon
+            ) : (
+              <WidgetsRoundedIcon sx={{ fontSize: 270, color: "#33691e" }} />
+            )}
+          </div>
 
           <div className="preview-details">
             <div>
-              {" "}
-              <h2 id="module-code">{formData.module}</h2>
-              <h3 id="module-desc">{formData.description}</h3>
+              <h2 className="preview-module-code" id="request-module-code">
+                {formData.module || "Module Code"}
+              </h2>
+              <h3 className="preview-module-desc" id="request-module-desc">
+                {formData.description || "Module Description"}
+              </h3>
             </div>
 
             <div className="chip-holder">
+              {/* Quantity */}
               <Chip
-                label={formData.quantity + " pc"}
-                color="success"
-                sx={{
-                  fontWeight: "medium",
-                }}
+                label={
+                  formData.quantity ? `${formData.quantity} pc` : "Quantity"
+                }
+                className="preview-chip"
+                id="request-chip-quantity"
               />
+
+              {/* Recipient */}
               <Chip
                 icon={
                   <PlaceOutlinedIcon
@@ -412,13 +431,17 @@ const RequestModule: React.FC = () => {
                     }}
                   />
                 }
-                label={formData.recipient}
+                label={formData.recipient || "Recipient"}
                 sx={{
                   fontWeight: "medium",
                   backgroundColor: "#f1f8e9",
                   color: "#33691e",
                 }}
+                className="preview-chip"
+                id="request-chip-recipient"
               />
+
+              {/* Date */}
               <Chip
                 icon={
                   <EventIcon
@@ -429,15 +452,19 @@ const RequestModule: React.FC = () => {
                     }}
                   />
                 }
-                label={formData.requestDate}
+                label={formData.requestDate || "Date"}
                 sx={{
                   fontWeight: "medium",
                   backgroundColor: "#f1f8e9",
                   color: "#33691e",
                 }}
+                className="preview-chip"
+                id="request-chip-date"
               />
             </div>
+
             <div className="chip-holder">
+              {/* Requester */}
               <Chip
                 icon={
                   <PersonIcon
@@ -448,12 +475,14 @@ const RequestModule: React.FC = () => {
                     }}
                   />
                 }
-                label={formData.requestedBy}
+                label={formData.requestedBy || "Requester"}
                 sx={{
                   fontWeight: "medium",
                   backgroundColor: "#f1f8e9",
                   color: "#33691e",
                 }}
+                className="preview-chip"
+                id="request-chip-requester"
               />
             </div>
           </div>

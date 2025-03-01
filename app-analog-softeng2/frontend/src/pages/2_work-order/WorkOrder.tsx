@@ -16,19 +16,24 @@ import InputLabel from "@mui/material/InputLabel";
 import SendIcon from "@mui/icons-material/Send";
 import Button from "@mui/material/Button";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-
-// Define icons
+import {
+  Event as EventIcon,
+  Person as PersonIcon,
+  HourglassBottom as HourglassBottomIcon,
+  SmartphoneRounded as SmartphoneRoundedIcon,
+  Factory as FactoryIcon,
+} from "@mui/icons-material";
+import { Chip } from "@mui/material";
 const PhoneIcon = () => (
   <span role="img" aria-label="phone">
     📱
   </span>
 );
-const FactoryIcon = () => (
+const FactoryIcons = () => (
   <span role="img" aria-label="factory">
     🏭
   </span>
 );
-
 // Define phone models
 const phoneOptions = [
   { code: "Galaxy S25", description: "Base model", icon: <PhoneIcon /> },
@@ -38,9 +43,13 @@ const phoneOptions = [
 
 // Define factory list
 const factoryList = [
-  { code: "Factory A", description: "Basic factory", icon: <FactoryIcon /> },
-  { code: "Factory B", description: "Middle factory", icon: <FactoryIcon /> },
-  { code: "Factory C", description: "Top-tier factory", icon: <FactoryIcon /> },
+  { code: "Factory A", description: "Basic factory", icon: <FactoryIcons /> },
+  { code: "Factory B", description: "Middle factory", icon: <FactoryIcons /> },
+  {
+    code: "Factory C",
+    description: "Top-tier factory",
+    icon: <FactoryIcons />,
+  },
 ];
 
 const WorkOrder: React.FC = () => {
@@ -125,22 +134,23 @@ const WorkOrder: React.FC = () => {
   }
   const columns: GridColDef[] = [
     { field: "index", headerName: "ID", width: 50 },
-    { field: "id", headerName: "Request ID", width: 250, flex: 1 },
-    { field: "phone", headerName: "Phone", width: 100, sortable: true },
+    { field: "id", headerName: "Request ID", flex: 1 },
+    { field: "phone", headerName: "Phone", sortable: true },
     {
       field: "requestedBy",
       headerName: "Requested By",
-      width: 200,
+
       sortable: true,
     },
-    { field: "recipient", headerName: "Recipient", width: 200, sortable: true },
-    { field: "quantity", headerName: "Quantity", width: 100, sortable: true },
-    { field: "status", headerName: "Status", width: 150, sortable: true },
+    { field: "recipient", headerName: "Recipient", sortable: true },
+    { field: "quantity", headerName: "Quantity", sortable: true },
+    { field: "status", headerName: "Status", sortable: true },
   ];
 
   return (
     <div className="main-div">
       <Header />
+
       <div className="form-and-card">
         <div className="form-holder">
           <form onSubmit={handleSubmit} className="form">
@@ -252,6 +262,119 @@ const WorkOrder: React.FC = () => {
             </Button>
           </form>
         </div>
+
+        <div id="workorder-preview" className="preview-card">
+          {/* Preview Card */}
+          <h2 className="preview-title" id="workorder-title">
+            Work Order Preview
+          </h2>
+
+          {/* Always show a smartphone icon */}
+          <div className="preview-icon">
+            <SmartphoneRoundedIcon sx={{ fontSize: 300, color: "#1565C0" }} />
+          </div>
+
+          <div className="preview-details">
+            <div>
+              <h2 id="workorder-module-code">
+                {formData.module || "Module Code"}
+              </h2>
+              <h3 id="workorder-module-desc">
+                {formData.description || "Module Description"}
+              </h3>
+            </div>
+
+            <div className="chip-holder">
+              {/* Quantity */}
+              <Chip
+                label={
+                  formData.quantity ? `${formData.quantity} pc` : "Order Pc"
+                }
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#0d47a1",
+                  color: "white",
+                }}
+              />
+
+              {/* Phone Model */}
+              <Chip
+                icon={
+                  <SmartphoneRoundedIcon
+                    sx={{ color: "#0D47A1", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={formData.module || "Phone Model"}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#90caf9",
+                  color: "#0d47a1",
+                }}
+              />
+
+              {/* Date Requested */}
+              <Chip
+                icon={
+                  <EventIcon
+                    sx={{ color: "#0D47A1", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={formData.requestDate || "Date"}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#90caf9",
+                  color: "#0d47a1",
+                }}
+              />
+            </div>
+
+            <div className="chip-holder">
+              <Chip
+                icon={
+                  <HourglassBottomIcon
+                    sx={{ color: "#0D47A1", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={formData.requestDate || "Deadline"}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#90caf9",
+                  color: "#0d47a1",
+                }}
+              />
+
+              <Chip
+                icon={
+                  <PersonIcon
+                    sx={{ color: "#0D47A1", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={formData.requestedBy || "Requester"}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#90caf9",
+                  color: "#0d47a1",
+                }}
+              />
+            </div>
+
+            <div className="chip-holder">
+              <Chip
+                icon={
+                  <FactoryIcon
+                    sx={{ color: "#0d47a1", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={formData.recipient || "Recipient"}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#90caf9",
+                  color: "#0d47a1",
+                }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       <div style={{ height: 400, width: "100%" }}>
@@ -261,6 +384,14 @@ const WorkOrder: React.FC = () => {
           columns={columns}
           checkboxSelection
           disableRowSelectionOnClick
+          sx={{
+            backgroundColor: "white", // Set background to white
+            border: "none", // Remove border if needed
+
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: "#f5f5f5", // Optional: header background color
+            },
+          }}
         />
       </div>
     </div>

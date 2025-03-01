@@ -500,73 +500,67 @@ const lineChartData = Object.keys(requestTrendsData).map((key) => ({
   requests: requestTrendsData[key],
 }));
 
-// Main logistic code
-const LogisticsTest: React.FC = () => {
+const ModulePie: React.FC = () => {
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      {/* ✅ Most Requested Items (Bar Chart) */}
-      <Card>
-        <CardContent>
-          <Typography variant="h6">Most Requested Items</Typography>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={barChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="quantity" fill="#4caf50" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+    <div>
+      <ResponsiveContainer width="100%" height={300}>
+        <PieChart>
+          <Pie
+            data={pieChartData}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={100}
+            fill="#8884d8"
+            label
+          >
+            {pieChartData.map((_, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={pieColors[index % pieColors.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
 
-      {/* ✅ Factory Requests (Pie Chart) */}
-      <Card>
-        <CardContent>
-          <Typography variant="h6">Factory Requests</Typography>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={pieChartData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                fill="#8884d8"
-                label
-              >
-                {pieChartData.map((_, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={pieColors[index % pieColors.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+const ModuleLine: React.FC = () => {
+  return (
+    <div>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={lineChartData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="date" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey="requests" stroke="#ff9800" />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
 
-      {/* ✅ Request Trends Over Time (Line Chart) */}
-      <Card>
-        <CardContent>
-          <Typography variant="h6">Request Trends Over Time</Typography>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={lineChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="requests" stroke="#ff9800" />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-    </Box>
+// Main logistic code
+const ModuleBar: React.FC = () => {
+  return (
+    <div>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={barChartData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="quantity" fill="#4caf50" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 
@@ -853,37 +847,11 @@ const Dashboard: React.FC = () => {
         >
           Modules
         </ToggleButton>
-        <ToggleButton
-          value="tracking"
-          aria-label="Tracking"
-          sx={{
-            color: "#444",
-            fontWeight: 600,
-            fontFamily: "'Poppins', sans-serif",
-            borderRadius: "17px!important",
-            backgroundColor: "#f8f9fa",
-            fontSize: "0.8rem",
-            padding: "6px 14px",
-            minWidth: "auto",
-            height: "32px",
-            overflow: "hidden",
-            transition: "all 0.2s ease-in-out",
-            "&:hover": {
-              backgroundColor: "#e2e6ea",
-            },
-            "&.Mui-selected, &.Mui-focusVisible": {
-              backgroundColor: "#261cc9",
-              color: "white",
-              boxShadow: "0px 2px 8px rgba(0, 123, 255, 0.4)",
-            },
-          }}
-        >
-          Tracking
-        </ToggleButton>
         <GenerateReport />
       </ToggleButtonGroup>
 
       {/* top cards*/}
+      {/*jump2all*/}
       {view === "all" && (
         <div className="main-div">
           <div className="small-holder">
@@ -1226,7 +1194,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
-
+      {/*jump2prod*/}
       {view === "production" && (
         <div className="main-div">
           <div className="small-holder">
@@ -1499,6 +1467,7 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
+      {/*jump2module*/}
       {view === "logistics" && (
         <div className="main-div">
           <div className="small-holder">
@@ -1746,26 +1715,42 @@ const Dashboard: React.FC = () => {
               />
             </Box>
           </div>
-          <div className="component-holder">
-            <LogisticsTest />
-          </div>
-          <div className="component-holder">
-            <h2>Logistics Summary</h2>
-            <div className="chart">
-              <div className="pie-chart">
-                {requests.map((item) => (
-                  <div
-                    key={item._id}
-                    className="slice"
-                    style={{
-                      backgroundColor: `#${Math.floor(
-                        Math.random() * 16777215
-                      ).toString(16)}`,
-                    }}
-                  >
-                    <span>{item.module}</span>
+
+          <div className="dashboard-contents">
+            <div className="bigger-components">
+              <div className="component-holder">
+                <h2>Most Requested Items</h2>
+                <ModuleBar />
+              </div>
+              <div className="component-holder">
+                <h2>Factory Request Distribuition</h2>
+                <ModulePie />
+              </div>
+              <div className="component-holder">
+                <h2>Request Trends Over Time</h2>
+                <ModuleLine />
+              </div>
+            </div>
+            <div className="smaller-components">
+              <div className="component-holder">
+                <h2>Logistics Summary</h2>
+                <div className="chart">
+                  <div className="pie-chart">
+                    {requests.map((item) => (
+                      <div
+                        key={item._id}
+                        className="slice"
+                        style={{
+                          backgroundColor: `#${Math.floor(
+                            Math.random() * 16777215
+                          ).toString(16)}`,
+                        }}
+                      >
+                        <span>{item.module}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           </div>

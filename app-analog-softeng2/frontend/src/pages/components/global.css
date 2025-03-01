@@ -75,6 +75,39 @@
   width: fixed;
 }
 
-.preview-card h2 {
-  font-size: 1.5rem; /* Adjust the size as needed */
+.preview-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.preview-icon {
+  text-align: center;
+}
+
+.preview-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  height: fill;
+  width: fill;
+  flex-wrap: wrap;
+}
+
+.preview-module-code {
+  font-size: 2.4rem;
+}
+
+.preview-module-desc {
+  font-size: 1.6rem;
+}
+
+.chip-holder {
+  display: flex;
+  gap: 0.3rem;
+  overflow-x: visible;
+  max-width: 8rem; /* Adjust as needed */
+}
+
+.preview-chip {
+  font-weight: medium;
 }

@@ -43,3 +43,33 @@
 .preview-content p {
   font-size: 2rem; /* Adjust text size if needed */
 }
+
+/* Report Page Specific Styling */
+#report-preview {
+  background-color: #ffe0b2; /* Red 50 */
+}
+
+#report-title {
+  color: #bf360c; /* Deep Orange 900 */
+}
+
+#report-module-code {
+  color: #d84315; /* Deep Orange 700 */
+}
+
+#report-module-desc {
+  color: #e64a19; /* Deep Orange 600 */
+}
+
+/* Chips */
+#report-chip-quantity {
+  background-color: #ffccbc; /* Deep Orange 100 */
+  color: #bf360c; /* Deep Orange 900 */
+}
+
+#report-chip-phone,
+#report-chip-date,
+#report-chip-reporter {
+  background-color: #ffab91; /* Deep Orange 200 */
+  color: #bf360c; /* Deep Orange 900 */
+}
