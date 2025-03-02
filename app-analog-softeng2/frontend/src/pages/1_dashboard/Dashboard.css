@@ -58,6 +58,7 @@
 
 .chart {
   background-color: transparent;
+  color: #000000;
 }
 
 .bar-chart {
@@ -270,35 +271,72 @@
   color: #666;
 }
 
-/*Heatmap stuff*/
+/* Heatmap container */
 .heatmap {
-  width: fill;
   display: flex;
   flex-wrap: nowrap;
-  gap: 8px;
+  gap: 12px; /* More spacing for better readability */
   overflow-x: auto; /* Enables horizontal scrolling */
-  max-width: calc(
-    7.5 * 100px + 5 * 8px
-  ); /* Fits 6 columns, adjusting for spacing */
+  max-width: calc(6 * 120px + 20 * 11px); /* Fits 6 columns */
+  padding: 10px;
   white-space: nowrap; /* Prevents wrapping */
-}
-#full-width-heatmap {
-  width: fill;
-  overflow-x: auto; /* Enables horizontal scrolling */
-  width: 100%;
+  scrollbar-width: thin; /* Thinner scrollbar for aesthetics */
+  width: 100%
 }
 
+/* Full-width heatmap container */
+#full-width-heatmap {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+/* Heatmap cell styling */
 .heatmap-cell {
   height: 10rem;
+  width: 100%; /* Ensures consistent size */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 15px;
-  border-radius: 5px;
-  color: #000;
+  border-radius: 15px;
   font-weight: bold;
   text-align: center;
+  color: #000000; /* White text for better contrast */
+  box-shadow: 2px 4px 8px rgba(43, 43, 43, 0.15); /* Subtle shadow for depth */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+/* Heatmap color gradient */
+.heatmap-cell[data-value="low"] {
+  background: #1e90ff; /* Cool Blue */
+}
+
+.heatmap-cell[data-value="medium"] {
+  background: #ffa500; /* Warm Orange */
+}
+
+.heatmap-cell[data-value="high"] {
+  background: #ff4500; /* Strong Red */
+}
+
+/* Hover Effect */
+.heatmap-cell:hover {
+  transform: scale(1.05);
+  box-shadow: 3px 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .heatmap {
+    max-width: calc(4 * 100px + 3 * 10px); /* Adjusted for smaller screens */
+  }
+
+  .heatmap-cell {
+    width: 100px;
+    height: 8rem;
+  }
 }
 
 .product-name {

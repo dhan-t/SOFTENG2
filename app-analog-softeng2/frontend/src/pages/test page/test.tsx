@@ -80,13 +80,13 @@ const LineChartComponent: React.FC = () => {
             {
               data: data.daily.map((entry) => entry.produced),
               label: "Produced",
-              color: "#4caf50",
+              color: "#0952db",
               showMark: true,
             },
             {
               data: data.daily.map((entry) => entry.requirement),
               label: "Requirement",
-              color: "#ff9800",
+              color: "#e00d54",
               showMark: true,
             },
           ]}
@@ -118,13 +118,13 @@ const LineChartComponent: React.FC = () => {
             {
               data: data.weekly.map((entry) => entry.produced),
               label: "Produced",
-              color: "#4caf50",
+              color: "#0952db",
               showMark: true,
             },
             {
               data: data.weekly.map((entry) => entry.requirement),
               label: "Requirement",
-              color: "#ff9800",
+              color: "#e00d54",
               showMark: true,
             },
           ]}
@@ -157,13 +157,13 @@ const LineChartComponent: React.FC = () => {
             {
               data: data.monthly.map((entry) => entry.produced),
               label: "Produced",
-              color: "#4caf50",
+              color: "#0952db",
               showMark: true,
             },
             {
               data: data.monthly.map((entry) => entry.requirement),
               label: "Requirement",
-              color: "#ff9800",
+              color: "#e00d54",
               showMark: true,
             },
           ]}

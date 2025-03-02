@@ -557,7 +557,7 @@ const ModuleBar: React.FC = () => {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="quantity" fill="#4caf50" />
+          <Bar dataKey="quantity" fill="#0952db" />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -597,20 +597,20 @@ const Heatmap = () => {
     1
   );
 
+  
   return (
     <div className="heatmap">
       {[...productionData] // Create a copy to avoid modifying the original array
         .reverse() // Reverse the order so the latest push is first
         .map((item) => {
-          const intensity = (item.quantityProduced / maxProduced) * 255;
+          const intensity = (item.quantityProduced / maxProduced) * 500; // Keeps colors soft and balanced
           return (
             <div
               key={item.productId}
               className="heatmap-cell"
               style={{
-                backgroundColor: `rgb(${255 - intensity}, ${
-                  255 - intensity
-                }, 255)`, // Blue scale
+                backgroundColor: `rgb(${210 - intensity / 3}, ${245 - intensity / 3}, ${295 - intensity / 6})`, 
+                // Deep ocean blue → soft teal → almost white lavender
               }}
             >
               <span className="product-name">{item.productName}</span>
@@ -742,6 +742,22 @@ const Dashboard: React.FC = () => {
       iconBgColor: "#F6F2FF",
       iconColor: "#A461D8",
     },
+  ];
+
+  const softCoolColors = [
+    "#D64550", // Soft Crimson
+    "#E57373", // Light Coral
+    "#F28E8E", // Warm Pastel Red
+    "#F8B6B6", // Pale Blush Red
+   "#FDDCDC", // Very Soft Pink
+  ];
+
+  const violetShades = [
+    "#5c07b0", // Royal Purple
+    "#7611d9", // Pure Purple
+    "#9730fc", // Amethyst
+    "#b673fa", // Medium Orchid
+    "#c38ff7", // Orchid
   ];
 
   return (
@@ -1102,23 +1118,30 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
 
+
               <div className="component-holder">
                 <h2>Recent requests</h2>
                 <div className="chart">
                   <div className="pie-chart">
-                    {requests.map((item) => (
-                      <div
-                        key={item._id}
-                        className="slice"
-                        style={{
-                          backgroundColor: `#${Math.floor(
-                            Math.random() * 16777215
-                          ).toString(16)}`,
-                        }}
-                      >
-                        <span>{item.module}</span>
-                      </div>
-                    ))}
+                    {requests.map((item, index) => {
+                      const bgColor = softCoolColors[index % softCoolColors.length];
+                      const textColor = index < 3 ? "#000" : "#000"; // Darker colors get white text, lighter get dark text
+                      
+                      return (
+                        <div
+                          key={item._id}
+                          className="slice"
+                          style={{
+                            backgroundColor: bgColor,
+                            color: textColor, // Dynamic font color
+                            borderRadius: "12px",
+                            padding: "8px 17px 10px",
+                          }}
+                        >
+                          <span>{item.module}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -1732,29 +1755,36 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             <div className="smaller-components">
-              <div className="component-holder">
-                <h2>Logistics Summary</h2>
-                <div className="chart">
-                  <div className="pie-chart">
-                    {requests.map((item) => (
+            <div className="component-holder">
+              <h2>Logistics Summary</h2>
+              <div className="chart">
+                <div className="pie-chart">
+                  {requests.map((item, index) => {
+                    const bgColor = violetShades[index % violetShades.length];
+                    const textColor = index < 3 ? "#fff" : "#fff"; // White on dark, deep red on light
+
+                    return (
                       <div
                         key={item._id}
                         className="slice"
                         style={{
-                          backgroundColor: `#${Math.floor(
-                            Math.random() * 16777215
-                          ).toString(16)}`,
+                          backgroundColor: bgColor,
+                          color: textColor,
+                          borderRadius: "12px", // ⬅️ Rounded boxes
+                          padding: "8px 12px", // ⬅️ Better spacing
                         }}
                       >
                         <span>{item.module}</span>
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
+          </div>            
           </div>
-        </div>
+          </div>
+        
       )}
 
       {/* Tracking will be removed in prod
