@@ -9,6 +9,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { generatePDF } from "./pdfGenerator.js";
 import notificationsRouter from "../routes/notifications.js";
+import { ObjectId } from "mongodb";
 
 dotenv.config({ path: "./config.env" });
 
@@ -390,84 +391,48 @@ connect()
 
     // starting from here fri_14
 
-    // 📌 Work Orders: Submit New Work Order
-    app.post("/api/requests", async (req, res) => {
-      const {
-        module,
-        requestedBy,
-        description,
-        recipient,
-        requestDate,
-        quantity, // Ensure this field is included
-      } = req.body;
-
-      if (
-        !module ||
-        !requestedBy ||
-        !description ||
-        !recipient ||
-        !requestDate ||
-        quantity === undefined // Check for quantity
-      ) {
-        return res.status(400).json({ error: "All fields are required" });
-      }
-
+    // 📌 Work Orders: Submit New Work Order (with Tracking)
+    const submitWorkOrder = async (newWorkOrder: WorkOrder) => {
+      setLoading(true);
       try {
-        const collection = db.collection("requests");
-
-        const newRequest = {
-          module,
-          requestedBy,
-          description,
-          recipient,
-          requestDate: new Date(requestDate),
-          quantity, // Ensure this field is included
-          status: "Pending",
+        const formattedWorkOrder = {
+          ...newWorkOrder,
+          createdDate: new Date(newWorkOrder.createdDate).toISOString(),
+          dueDate: new Date(newWorkOrder.dueDate).toISOString(),
         };
 
-        await collection.insertOne(newRequest);
+        const res = await fetch("http://localhost:5001/api/workorders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formattedWorkOrder),
+        });
 
-        res.status(201).json({ message: "Request submitted successfully" });
+        if (res.ok) {
+          await fetchWorkOrders();
+          return true;
+        } else {
+          const errorText = await res.text();
+          console.error("Failed to submit work order:", errorText);
+          setError("Failed to submit work order.");
+          return false;
+        }
       } catch (err) {
-        console.error("Error submitting request:", err);
-        res.status(500).json({ error: "Failed to submit request" });
+        console.error("Error submitting work order:", err);
+        setError("An error occurred.");
+        return false;
+      } finally {
+        setLoading(false);
       }
-    });
+    };
 
-    // 📌 Work Orders: Get All Work Orders
     app.get("/api/workorders", async (req, res) => {
       try {
-        const collection = db.collection("workorders");
-        const workOrders = await collection.find().toArray();
-        res.status(200).json(workOrders);
+        const workOrdersCollection = db.collection("workorders");
+        const workOrders = await workOrdersCollection.find().toArray();
+        res.json(workOrders);
       } catch (err) {
         console.error("Error fetching work orders:", err);
         res.status(500).json({ error: "Failed to fetch work orders" });
-      }
-    });
-
-    // 📌 Work Orders: Update Status
-    app.put("/api/workorders/:id", async (req, res) => {
-      const { id } = req.params;
-      const { status } = req.body;
-
-      if (!status) {
-        return res.status(400).json({ error: "Status is required" });
-      }
-
-      try {
-        const collection = db.collection("workorders");
-        await collection.updateOne(
-          { _id: new ObjectId(id) },
-          { $set: { status, updatedAt: new Date() } }
-        );
-
-        await createNotification(`Work order updated: ${id} to ${status}`);
-
-        res.status(201).json({ message: "Work order submitted successfully" });
-      } catch (err) {
-        console.error("Error updating work order:", err);
-        res.status(500).json({ error: "Failed to update work order" });
       }
     });
 

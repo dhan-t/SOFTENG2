@@ -12,7 +12,17 @@ const useDataWorkOrder = () => {
         if (!response.ok) throw new Error("Failed to fetch work orders");
 
         const data = await response.json();
-        setWorkOrders(data);
+
+        // Extract only the necessary fields
+        const formattedData = data.map((order: any) => ({
+          id: order._id, // Work Order ID
+          module: order.module, // Module
+          requestDate: order.requestDate, // Date Requested
+          dueDate: order.dueDate, // Due Date
+          quantity: order.quantity, // Quantity
+        }));
+
+        setWorkOrders(formattedData);
       } catch (err) {
         setError(err.message);
       } finally {
