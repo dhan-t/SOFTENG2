@@ -557,7 +557,7 @@ const ModuleBar: React.FC = () => {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="quantity" fill="#0952db" />
+          <Bar dataKey="quantity" fill="#ad0232" />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -609,9 +609,11 @@ const Heatmap = () => {
               key={item.productId}
               className="heatmap-cell"
               style={{
-                backgroundColor: `rgb(${210 - intensity / 3}, ${245 - intensity / 3}, ${295 - intensity / 6})`, 
-                // Deep ocean blue → soft teal → almost white lavender
+                backgroundColor: `rgb(${280 - intensity / 5}, ${90 - intensity / 5}, ${130 - intensity / 3})`, 
+                // Soft Red → Coral → Light Pink
               }}
+              
+              
             >
               <span className="product-name">{item.productName}</span>
               <span className="product-quantity">{item.quantityProduced}</span>
@@ -752,14 +754,6 @@ const Dashboard: React.FC = () => {
    "#FDDCDC", // Very Soft Pink
   ];
 
-  const violetShades = [
-    "#5c07b0", // Royal Purple
-    "#7611d9", // Pure Purple
-    "#9730fc", // Amethyst
-    "#b673fa", // Medium Orchid
-    "#c38ff7", // Orchid
-  ];
-
   return (
     <div className="main-div">
       <Header />
@@ -801,9 +795,9 @@ const Dashboard: React.FC = () => {
               backgroundColor: "#e2e6ea",
             },
             "&.Mui-selected, &.Mui-focusVisible": {
-              backgroundColor: "#261cc9",
+              backgroundColor: "#ad0232",
               color: "white",
-              boxShadow: "0px 2px 8px rgba(0, 123, 255, 0.4)",
+              boxShadow: "0px 2px 8px rgba(212, 126, 126, 0.4)",
             },
           }}
         >
@@ -828,9 +822,9 @@ const Dashboard: React.FC = () => {
               backgroundColor: "#e2e6ea",
             },
             "&.Mui-selected, &.Mui-focusVisible": {
-              backgroundColor: "#261cc9",
+              backgroundColor: "#ad0232",
               color: "white",
-              boxShadow: "0px 2px 8px rgba(0, 123, 255, 0.4)",
+              boxShadow: "0px 2px 8px rgba(212, 126, 126, 0.4)",
             },
           }}
         >
@@ -855,9 +849,9 @@ const Dashboard: React.FC = () => {
               backgroundColor: "#e2e6ea",
             },
             "&.Mui-selected, &.Mui-focusVisible": {
-              backgroundColor: "#261cc9",
+              backgroundColor: "#ad0232",
               color: "white",
-              boxShadow: "0px 2px 8px rgba(0, 123, 255, 0.4)",
+              boxShadow: "0px 2px 8px rgba(212, 126, 126, 0.4)",
             },
           }}
         >
@@ -1760,8 +1754,8 @@ const Dashboard: React.FC = () => {
               <div className="chart">
                 <div className="pie-chart">
                   {requests.map((item, index) => {
-                    const bgColor = violetShades[index % violetShades.length];
-                    const textColor = index < 3 ? "#fff" : "#fff"; // White on dark, deep red on light
+                    const bgColor = softCoolColors[index % softCoolColors.length];
+                    const textColor = index < 3 ? "#000" : "#000"; // White on dark, deep red on light
 
                     return (
                       <div
