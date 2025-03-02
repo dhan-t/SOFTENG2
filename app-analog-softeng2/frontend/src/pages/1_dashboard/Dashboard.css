@@ -58,7 +58,6 @@
 
 .chart {
   background-color: transparent;
-  color: #000000;
 }
 
 .bar-chart {
@@ -100,8 +99,11 @@
 }
 
 .tracking-logs {
-  list-style: none;
+  max-height: 15rem; /* Adjust height as needed (~5 rows) */
+  overflow-y: auto;
   padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
 .tracking-logs li {
