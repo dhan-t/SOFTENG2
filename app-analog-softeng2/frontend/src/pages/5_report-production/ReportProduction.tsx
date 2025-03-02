@@ -19,7 +19,7 @@ import Button from "@mui/material/Button";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 
-import WorkOrderSelector from "../../hooks/useDataWorkOrder";
+import useDataWorkOrder from "../../hooks/useDataWorkOrder";
 
 import {
   Event as EventIcon,
@@ -44,6 +44,25 @@ const SpeakerIcon = () => (
     🔊
   </span>
 );
+
+const WorkOrderSelector = () => {
+  const handleSelectionChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const workOrderId = event.target.value;
+    const selectedOrder = workOrders.find((order) => order.id === workOrderId);
+
+    if (selectedOrder) {
+      setSelectedWorkOrder(selectedOrder);
+      setFormData({
+        module: selectedOrder.module,
+        requestDate: selectedOrder.requestDate,
+        dueDate: selectedOrder.dueDate,
+        quantity: selectedOrder.quantity,
+      });
+    }
+  };
+};
 
 interface ProductionData {
   productId: string;
@@ -141,35 +160,35 @@ const ReportProduction: React.FC = () => {
 
   const columns: GridColDef[] = [
     { field: "index", headerName: "ID", width: 20, maxWidth: 20 },
-    { field: "id", headerName: "Request ID", width: 100, sortable: true },
+    { field: "id", headerName: "Request ID", flex: 1, sortable: true },
     {
       field: "dateRequested",
       headerName: "Date Requested",
-      width: 200,
+      flex: 1,
       sortable: true,
     },
     {
       field: "quantityRequested",
       headerName: "Requested Qty",
-      width: 150,
+      flex: 1,
       sortable: true,
     },
     {
       field: "dateProduced",
       headerName: "Date Fulfilled",
-      width: 200,
+      flex: 1,
       sortable: true,
     },
     {
       field: "quantityProduced",
       headerName: "Produced Qty",
-      width: 150,
+      flex: 1,
       sortable: true,
     },
     {
       field: "orderFulfilled",
       headerName: "Order Fulfilled?",
-      width: 100,
+      flex: 1,
       sortable: true,
       renderCell: (params) =>
         params.row.quantityProduced >= params.row.quantityRequested

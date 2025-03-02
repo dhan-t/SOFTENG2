@@ -392,8 +392,9 @@ connect()
     // starting from here fri_14
 
     // 📌 Work Orders: Submit New Work Order (with Tracking)
-    const submitWorkOrder = async (newWorkOrder: WorkOrder) => {
-      setLoading(true);
+    app.post("/api/workorder", async (req, res) => {
+      const newWorkOrder = req.body;
+
       try {
         const formattedWorkOrder = {
           ...newWorkOrder,
@@ -401,29 +402,23 @@ connect()
           dueDate: new Date(newWorkOrder.dueDate).toISOString(),
         };
 
-        const res = await fetch("http://localhost:5001/api/workorders", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formattedWorkOrder),
-        });
+        const workOrdersCollection = req.app.locals.db.collection("workorder");
+        const result = await workOrdersCollection.insertOne(formattedWorkOrder);
 
-        if (res.ok) {
-          await fetchWorkOrders();
-          return true;
+        if (result.acknowledged) {
+          res
+            .status(201)
+            .json({ message: "Work order submitted successfully" });
         } else {
-          const errorText = await res.text();
-          console.error("Failed to submit work order:", errorText);
-          setError("Failed to submit work order.");
-          return false;
+          res.status(500).json({ error: "Failed to submit work order" });
         }
       } catch (err) {
         console.error("Error submitting work order:", err);
-        setError("An error occurred.");
-        return false;
-      } finally {
-        setLoading(false);
+        res
+          .status(500)
+          .json({ error: "An error occurred while submitting work order" });
       }
-    };
+    });
 
     app.get("/api/workorders", async (req, res) => {
       try {
