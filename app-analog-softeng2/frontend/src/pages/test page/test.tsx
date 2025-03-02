@@ -1,36 +1,35 @@
 import React, { useState } from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { Box, Typography, Tabs, Tab } from "@mui/material";
-
 const data = {
   daily: [
-    { name: "Day 1", produced: 65, requirement: 70 },
-    { name: "Day 2", produced: 75, requirement: 70 },
-    { name: "Day 3", produced: 80, requirement: 70 },
-    { name: "Day 4", produced: 85, requirement: 70 },
-    { name: "Day 5", produced: 90, requirement: 70 },
-    { name: "Day 6", produced: 100, requirement: 70 },
-    { name: "Day 7", produced: 110, requirement: 70 }, // Assume this is today
+    { name: "Day 1", produced: 68, requirement: 70 },
+    { name: "Day 2", produced: 72, requirement: 70 },
+    { name: "Day 3", produced: 70, requirement: 70 },
+    { name: "Day 4", produced: 69, requirement: 70 },
+    { name: "Day 5", produced: 71, requirement: 70 },
+    { name: "Day 6", produced: 70, requirement: 70 },
+    { name: "Day 7", produced: 73, requirement: 70 }, // Assume this is today
   ],
   weekly: [
-    { name: "Week 1", produced: 450, requirement: 420 },
-    { name: "Week 2", produced: 470, requirement: 420 },
-    { name: "Week 3", produced: 500, requirement: 420 },
-    { name: "Week 4", produced: 550, requirement: 420 },
+    { name: "Week 1", produced: 420, requirement: 420 },
+    { name: "Week 2", produced: 415, requirement: 420 },
+    { name: "Week 3", produced: 425, requirement: 420 },
+    { name: "Week 4", produced: 410, requirement: 420 },
   ],
   monthly: [
-    { name: "Jan", produced: 1700, requirement: 1600 },
-    { name: "Feb", produced: 1800, requirement: 1600 },
-    { name: "Mar", produced: 1900, requirement: 1650 },
-    { name: "Apr", produced: 1950, requirement: 1650 },
-    { name: "May", produced: 2000, requirement: 1700 },
-    { name: "Jun", produced: 2100, requirement: 1700 },
-    { name: "Jul", produced: 2150, requirement: 1750 },
-    { name: "Aug", produced: 2200, requirement: 1750 },
-    { name: "Sep", produced: 2250, requirement: 1800 },
-    { name: "Oct", produced: 2300, requirement: 1800 },
-    { name: "Nov", produced: 2350, requirement: 1850 },
-    { name: "Dec", produced: 2400, requirement: 1850 },
+    { name: "Jan", produced: 1600, requirement: 1600 },
+    { name: "Feb", produced: 1550, requirement: 1600 },
+    { name: "Mar", produced: 1650, requirement: 1650 },
+    { name: "Apr", produced: 1620, requirement: 1650 },
+    { name: "May", produced: 1700, requirement: 1700 },
+    { name: "Jun", produced: 1680, requirement: 1700 },
+    { name: "Jul", produced: 1600, requirement: 1650 },
+    { name: "Aug", produced: 1580, requirement: 1650 },
+    { name: "Sep", produced: 1700, requirement: 1700 },
+    { name: "Oct", produced: 1650, requirement: 1700 },
+    { name: "Nov", produced: 1600, requirement: 1650 },
+    { name: "Dec", produced: 1550, requirement: 1650 },
   ],
 };
 
@@ -46,13 +45,16 @@ const CustomTabPanel: React.FC<{ index: number; value: number }> = ({
     </div>
   );
 };
-
 const LineChartComponent: React.FC = () => {
   const [tabIndex, setTabIndex] = useState(0); // Default to "Daily" tab
 
   // Assume "Day 7" is today
   const todayIndex = data.daily.length - 1;
   const todayData = data.daily[todayIndex];
+
+  // Get last week's and last month's data
+  const lastWeekData = data.weekly[data.weekly.length - 1];
+  const lastMonthData = data.monthly[data.monthly.length - 1];
 
   return (
     <div>
@@ -68,7 +70,7 @@ const LineChartComponent: React.FC = () => {
         <Tab label="Monthly" />
       </Tabs>
 
-      {/* ✅ Tab Content (Charts) */}
+      {/* ✅ Daily Chart & Summary */}
       <CustomTabPanel value={tabIndex} index={0}>
         <LineChart
           xAxis={[
@@ -80,11 +82,6 @@ const LineChartComponent: React.FC = () => {
               label: "Produced",
               color: "#4caf50",
               showMark: true,
-              markOptions: {
-                size: (index) => (index === todayIndex ? 10 : 5), // Highlight today's mark
-                color: (index) =>
-                  index === todayIndex ? "#f44336" : "#4caf50", // Different color for today
-              },
             },
             {
               data: data.daily.map((entry) => entry.requirement),
@@ -102,12 +99,13 @@ const LineChartComponent: React.FC = () => {
           </Typography>
           <Typography>
             {todayData.produced >= todayData.requirement
-              ? "Production meets or exceeds the requirement."
-              : "Production is below the requirement."}
+              ? "✅ Production meets or exceeds the requirement."
+              : "⚠️ Production is below the requirement."}
           </Typography>
         </Box>
       </CustomTabPanel>
 
+      {/* ✅ Weekly Chart & Summary */}
       <CustomTabPanel value={tabIndex} index={1}>
         <LineChart
           xAxis={[
@@ -132,8 +130,21 @@ const LineChartComponent: React.FC = () => {
           ]}
           height={400}
         />
+        <Box mt={2}>
+          <Typography variant="h6">Weekly Summary</Typography>
+          <Typography>
+            Produced: {lastWeekData.produced}, Requirement:{" "}
+            {lastWeekData.requirement}
+          </Typography>
+          <Typography>
+            {lastWeekData.produced >= lastWeekData.requirement
+              ? "✅ Weekly production meets or exceeds the requirement."
+              : "⚠️ Weekly production is below the requirement."}
+          </Typography>
+        </Box>
       </CustomTabPanel>
 
+      {/* ✅ Monthly Chart & Summary */}
       <CustomTabPanel value={tabIndex} index={2}>
         <LineChart
           xAxis={[
@@ -158,6 +169,18 @@ const LineChartComponent: React.FC = () => {
           ]}
           height={400}
         />
+        <Box mt={2}>
+          <Typography variant="h6">Monthly Summary</Typography>
+          <Typography>
+            Produced: {lastMonthData.produced}, Requirement:{" "}
+            {lastMonthData.requirement}
+          </Typography>
+          <Typography>
+            {lastMonthData.produced >= lastMonthData.requirement
+              ? "✅ Monthly production meets or exceeds the requirement."
+              : "⚠️ Monthly production is below the requirement."}
+          </Typography>
+        </Box>
       </CustomTabPanel>
     </div>
   );

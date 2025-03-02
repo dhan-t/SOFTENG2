@@ -66,3 +66,48 @@
 .styled-table .delete-button:hover {
   opacity: 80%;
 }
+
+.preview-card {
+  background-color: white;
+  border-radius: 1rem;
+  width: 40%;
+  padding: 1rem;
+  width: fixed;
+}
+
+.preview-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.preview-icon {
+  text-align: center;
+}
+
+.preview-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  height: fill;
+  width: fill;
+  flex-wrap: wrap;
+}
+
+.preview-module-code {
+  font-size: 2.4rem;
+}
+
+.preview-module-desc {
+  font-size: 1.6rem;
+}
+
+.chip-holder {
+  display: flex;
+  gap: 0.3rem;
+  overflow-x: visible;
+  max-width: 8rem; /* Adjust as needed */
+}
+
+.preview-chip {
+  font-weight: medium;
+}

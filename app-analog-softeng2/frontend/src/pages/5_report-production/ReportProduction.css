@@ -1,0 +1,75 @@
+.main-div {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.loading,
+.error {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+.form-holder {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1rem;
+  width: 100%;
+  height: fit-content;
+}
+
+.form {
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Gap between form groups */
+}
+
+.form h2 {
+  margin-bottom: -0.5rem;
+}
+
+.form input {
+  height: 1rem;
+}
+
+.preview-content {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.preview-content p {
+  font-size: 2rem; /* Adjust text size if needed */
+}
+
+/* Report Page Specific Styling */
+#report-preview {
+  background-color: #ffe0b2; /* Red 50 */
+}
+
+#report-title {
+  color: #bf360c; /* Deep Orange 900 */
+}
+
+#report-module-code {
+  color: #d84315; /* Deep Orange 700 */
+}
+
+#report-module-desc {
+  color: #e64a19; /* Deep Orange 600 */
+}
+
+/* Chips */
+#report-chip-quantity {
+  background-color: #ffccbc; /* Deep Orange 100 */
+  color: #bf360c; /* Deep Orange 900 */
+}
+
+#report-chip-phone,
+#report-chip-date,
+#report-chip-reporter {
+  background-color: #ffab91; /* Deep Orange 200 */
+  color: #bf360c; /* Deep Orange 900 */
+}

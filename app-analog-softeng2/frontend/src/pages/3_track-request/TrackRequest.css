@@ -1,0 +1,15 @@
+.tracking-dashboard {
+  padding: 20px;
+}
+
+.tracking-dashboard h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.loading,
+.error {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 20px;
+}
