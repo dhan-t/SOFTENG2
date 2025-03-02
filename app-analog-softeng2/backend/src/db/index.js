@@ -9,6 +9,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { generatePDF } from "./pdfGenerator.js";
 import notificationsRouter from "../routes/notifications.js";
+import { ObjectId } from "mongodb";
 
 dotenv.config({ path: "./config.env" });
 
@@ -114,7 +115,8 @@ connect()
     // Update User Profile
     app.put("/api/user/:email", async (req, res) => {
       const { email } = req.params;
-      const { firstName, lastName, birthday, address, profilePicture } = req.body;
+      const { firstName, lastName, birthday, address, profilePicture } =
+        req.body;
 
       try {
         const collection = db.collection("user");
@@ -223,7 +225,9 @@ connect()
           updatedAt: new Date(),
         });
 
-        await createNotification(`New logistics request: ${module} by ${requestedBy}`);
+        await createNotification(
+          `New logistics request: ${module} by ${requestedBy}`
+        );
 
         res
           .status(201)
@@ -372,7 +376,9 @@ connect()
           { $set: { status, updatedAt: new Date() } }
         );
 
-        await createNotification(`Tracking status updated: ${logId} to ${status}`);
+        await createNotification(
+          `Tracking status updated: ${logId} to ${status}`
+        );
 
         res
           .status(200)
@@ -382,6 +388,46 @@ connect()
         res.status(500).json({ error: "Failed to update tracking status" });
       }
     });
+
+    // starting from here fri_14
+
+    // 📌 Work Orders: Submit New Work Order (with Tracking)
+    app.post("/api/workorder", async (req, res) => {
+      const newWorkOrder = req.body;
+
+      try {
+        const formattedWorkOrder = {
+          ...newWorkOrder,
+          createdDate: new Date(newWorkOrder.createdDate).toISOString(),
+          dueDate: new Date(newWorkOrder.dueDate).toISOString(),
+        };
+
+        const workOrdersCollection = req.app.locals.db.collection("workorder");
+        const result = await workOrdersCollection.insertOne(formattedWorkOrder);
+
+        if (result.acknowledged) {
+          res.status(201).json({ message: "Work order submitted successfully" });
+        } else {
+          res.status(500).json({ error: "Failed to submit work order" });
+        }
+      } catch (err) {
+        console.error("Error submitting work order:", err);
+        res.status(500).json({ error: "An error occurred while submitting work order" });
+      }
+    });
+
+    app.get("/api/workorder", async (req, res) => {
+      try {
+        const workOrdersCollection = req.app.locals.db.collection("workorder");
+        const workOrders = await workOrdersCollection.find().toArray();
+        res.json(workOrders);
+      } catch (err) {
+        console.error("Error fetching work orders:", err);
+        res.status(500).json({ error: "Failed to fetch work orders" });
+      }
+    });
+
+    // ending from here fri_14
 
     // 📌 Reports: Generate PDF Report
     app.post("/api/reports", async (req, res) => {
