@@ -17,7 +17,6 @@ import SendIcon from "@mui/icons-material/Send";
 import Button from "@mui/material/Button";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
-  Event as EventIcon,
   Person as PersonIcon,
   HourglassBottom as HourglassBottomIcon,
   SmartphoneRounded as SmartphoneRoundedIcon,
@@ -25,32 +24,31 @@ import {
 } from "@mui/icons-material";
 import { Chip } from "@mui/material";
 
-const PhoneIcon = () => (
-  <span role="img" aria-label="phone">
-    📱
-  </span>
-);
-const FactoryIcons = () => (
-  <span role="img" aria-label="factory">
-    🏭
-  </span>
-);
-
 const phoneOptions = [
-  { code: "Galaxy S25", description: "Base model", icon: <PhoneIcon /> },
-  { code: "Galaxy S25+", description: "Middle model", icon: <PhoneIcon /> },
-  { code: "Galaxy S25U", description: "Top-tier model", icon: <PhoneIcon /> },
+  { code: "Galaxy S25", description: "Flaghship Phone" },
+  { code: "Galaxy S25+", description: "Flaghship Phone" },
+  { code: "Galaxy S25U", description: "Flaghship Phone" },
+  { code: "Galaxy S24FE", description: "Mid-range Phone" },
+  { code: "Galaxy A55", description: "Mid-range Phone" },
+  { code: "Galaxy A36", description: "Mid-range Phone" },
+  { code: "Galaxy A16", description: "Entry-level Phone" },
+  { code: "Galaxy A06", description: "Entry-level Phone" },
 ];
 
 const factoryList = [
-  { code: "Factory A", description: "Basic factory", icon: <FactoryIcons /> },
-  { code: "Factory B", description: "Middle factory", icon: <FactoryIcons /> },
-  {
-    code: "Factory C",
-    description: "Top-tier factory",
-    icon: <FactoryIcons />,
-  },
+  { code: "Factory A" },
+  { code: "Factory B" },
+  { code: "Factory C" },
+  { code: "Factory D" },
+  { code: "Factory E" },
+  { code: "Factory F" },
+  { code: "Factory G" },
+  { code: "Factory H" },
+  { code: "Factory I" },
+  { code: "Factory J" },
 ];
+
+const priorityOptions = ["Low", "Medium", "High"];
 
 const WorkOrder: React.FC = () => {
   const { workOrders, submitWorkOrder } = useWorkOrders();
@@ -63,7 +61,15 @@ const WorkOrder: React.FC = () => {
     requestDate: dayjs().format("YYYY-MM-DD"),
     dueDate: "",
     quantity: 0,
+    priority: "",
   });
+
+  const handlePriorityChange = (event: SelectChangeEvent<string>) => {
+    setFormData((prev) => ({
+      ...prev,
+      priority: event.target.value as "Low" | "Medium" | "High",
+    }));
+  };
 
   const handlePhoneChange = (event: SelectChangeEvent<string>) => {
     const selectedOption = phoneOptions.find(
@@ -94,8 +100,8 @@ const WorkOrder: React.FC = () => {
       description: formData.description,
       assignedTo: formData.recipient,
       createdDate: formData.requestDate,
-      dueDate: formData.dueDate, // You might want a separate field for this
-      priority: "Medium",
+      dueDate: formData.dueDate,
+      priority: formData.priority as "Low" | "Medium" | "High",
       quantity: formData.quantity,
     };
 
@@ -110,9 +116,10 @@ const WorkOrder: React.FC = () => {
           requestedBy: "",
           description: "",
           recipient: "",
-          requestDate: dayjs().format("YYYY-MM-DD"), // Reset to today's date
+          requestDate: dayjs().format("YYYY-MM-DD"),
           dueDate: "",
           quantity: 0,
+          priority: "", // Reset priority to default
         });
       } else {
         console.error("Failed to submit work order.");
@@ -186,7 +193,7 @@ const WorkOrder: React.FC = () => {
                   </MenuItem>
                   {phoneOptions.map((option) => (
                     <MenuItem key={option.code} value={option.code}>
-                      {option.code} - {option.description}
+                      {option.code} : {option.description}
                     </MenuItem>
                   ))}
                 </Select>
@@ -219,7 +226,7 @@ const WorkOrder: React.FC = () => {
                   </MenuItem>
                   {factoryList.map((option) => (
                     <MenuItem key={option.code} value={option.code}>
-                      {option.code} - {option.description}
+                      {option.code}
                     </MenuItem>
                   ))}
                 </Select>
@@ -256,6 +263,23 @@ const WorkOrder: React.FC = () => {
                   slotProps={{ textField: { fullWidth: true } }}
                 />
               </LocalizationProvider>
+            </div>
+
+            {/* Priority Dropdown */}
+            <div className="form-group">
+              <FormControl fullWidth required>
+                <InputLabel>Priority</InputLabel>
+                <Select
+                  value={formData.priority}
+                  onChange={handlePriorityChange}
+                >
+                  {priorityOptions.map((priority) => (
+                    <MenuItem key={priority} value={priority}>
+                      {priority}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </div>
 
             <div className="form-group">
