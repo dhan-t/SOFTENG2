@@ -174,7 +174,7 @@ const TrackRequest = () => {
                   backgroundColor: "#e2e6ea",
                 },
                 "&.Mui-selected, &.Mui-focusVisible": {
-                  backgroundColor: "#261cc9",
+                  backgroundColor: "#ad0232",
                   color: "white",
                 },
               }}
@@ -198,7 +198,7 @@ const TrackRequest = () => {
                   backgroundColor: "#e2e6ea",
                 },
                 "&.Mui-selected, &.Mui-focusVisible": {
-                  backgroundColor: "#261cc9",
+                  backgroundColor: "#ad0232",
                   color: "white",
                 },
               }}
@@ -222,7 +222,7 @@ const TrackRequest = () => {
                   backgroundColor: "#e2e6ea",
                 },
                 "&.Mui-selected, &.Mui-focusVisible": {
-                  backgroundColor: "#261cc9",
+                  backgroundColor: "#ad0232",
                   color: "white",
                 },
               }}
@@ -238,11 +238,13 @@ const TrackRequest = () => {
             displayEmpty
             sx={{
               fontFamily: "Poppins, sans-serif",
-              borderRadius: 2,
-              backgroundColor: "#f8f9fc",
-              boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)",
-              padding: "8px 12px",
-              width: "100%",
+
+              borderRadius: 2, // Soft rounded corners
+              backgroundColor: "#f8f9fc", // Light background for a softer feel
+              boxShadow: "0px 2px 5px rgba(161, 6, 6, 0.1)", // Subtle shadow
+              padding: "8px 12px", // More comfortable padding
+              width: "100%", // Adjust width
+
               "& .MuiSelect-select": {
                 padding: "7px",
               },
@@ -331,7 +333,9 @@ const TrackRequest = () => {
                       </Box>
 
                       <LocalShippingOutlined
-                        sx={{ fontSize: 90, color: "#424242" }}
+
+                        sx={{ fontSize: 90, color: "#5c011a",  }}
+
                       />
                     </Box>
 
@@ -360,7 +364,7 @@ const TrackRequest = () => {
 
                     {/* Recipient */}
                     <Box display="flex" alignItems="center" gap={1} mt={1}>
-                      <LocationOnIcon sx={{ color: "#5B47D2", fontSize: 18 }} />
+                      <LocationOnIcon sx={{ color: "#cf4a6f", fontSize: 18 }} />
                       <Box>
                         <Typography
                           variant="subtitle1"
@@ -389,13 +393,9 @@ const TrackRequest = () => {
                     >
                       <Box display="flex" alignItems="center" gap={1} mt={2}>
                         <Avatar
-                          sx={{
-                            bgcolor: "#5B47D2",
-                            width: 32,
-                            height: 32,
-                            p: 3,
-                            mr: 2,
-                          }}
+
+                          sx={{ bgcolor: "#f23a68", width: 32, height: 32, p: 3, mr: 2}}
+
                         >
                           {shipment.client.charAt(0)}
                         </Avatar>
@@ -427,7 +427,7 @@ const TrackRequest = () => {
                         <Button
                           variant="contained"
                           sx={{
-                            bgcolor: "#4F46E5",
+                            bgcolor: "#ad0232",
                             color: "white",
                             borderRadius: 2,
                             fontFamily: "Poppins, sans-serif",

@@ -500,14 +500,15 @@ const pieChartData = Object.keys(factoryCounts).map((key) => ({
   value: factoryCounts[key],
 }));
 const pieColors = [
-  "#FF6384",
-  "#36A2EB",
-  "#FFCE56",
-  "#4BC0C0",
-  "#9966FF",
-  "#E67373",
-  "#D6A2E8",
+  "#FFB3B3", // Soft pastel red
+  "#FF9999", // Light pastel red
+  "#FF7F7F", // Muted pastel red
+  "#FF6666", // Balanced pastel red
+  "#FF4D4D", // Slightly deeper pastel red
+  "#E67373", // Warm pastel red
+  "#D65C5C", // Darker pastel red
 ];
+
 
 // Line Chart
 const requestTrendsData = dataLogistics.reduce((acc, item) => {
@@ -519,9 +520,11 @@ const lineChartData = Object.keys(requestTrendsData).map((key) => ({
   requests: requestTrendsData[key],
 }));
 
+
 const ModulePie: React.FC = () => {
   return (
-    <div>
+    <div className="p-4">
+      
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
@@ -530,9 +533,13 @@ const ModulePie: React.FC = () => {
             nameKey="name"
             cx="50%"
             cy="50%"
+            innerRadius={50} // Added an inner radius for a donut chart effect
             outerRadius={100}
             fill="#8884d8"
-            label
+            label={({ name, percent }) =>
+              `${name} ${(percent * 100).toFixed(0)}%`
+            } // Improved label format
+            labelLine={false} // Removed lines for cleaner design
           >
             {pieChartData.map((_, index) => (
               <Cell
@@ -568,15 +575,15 @@ const ModuleLine: React.FC = () => {
 // Main logistic code
 const ModuleBar: React.FC = () => {
   return (
-    <div>
+    <div className="p-4">
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={barChartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
+          <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
+          <XAxis dataKey="name" tick={{ fill: "#555" }} />
+          <YAxis tick={{ fill: "#555" }} />
           <Tooltip />
           <Legend />
-          <Bar dataKey="quantity" fill="#ad0232" />
+          <Bar dataKey="quantity" fill="#a10a2f" radius={[10, 10, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -960,17 +967,17 @@ const Dashboard: React.FC = () => {
               </div>
 
               <div className="component-holder">
-                <h2>Shipping updates</h2>
-                <ul className="tracking-logs">
-                  {trackingLogs.map((log) => (
-                    <li key={log.logId}>
-                      <span className="module">{log.module}</span>: {log.status}{" "}
-                      (Updated by {log.updatedBy} on{" "}
-                      {new Date(log.updatedAt).toLocaleDateString()})
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <h2>Shipping updates</h2>
+              <ul className="tracking-logs">
+                {trackingLogs.map((log) => (
+                  <li key={log.logId}>
+                    <span className="module">{log.module}</span>: {log.status}{" "}
+                    (Updated by {log.updatedBy} on{" "}
+                    {new Date(log.updatedAt).toLocaleDateString()})
+                  </li>
+                ))}
+              </ul>
+            </div>
             </div>
             {/* End of left side components */}
 
