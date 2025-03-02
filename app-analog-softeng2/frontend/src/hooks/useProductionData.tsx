@@ -5,9 +5,6 @@ interface ProductionData {
   productName: string;
   quantityProduced: number;
   dateProduced: string;
-  dateRequested: string; // New field from Work Order
-  quantityRequested: number; // New field from Work Order
-  fulfilledBy: string; // New field for fulfillment tracking
 }
 
 export const useProductionData = () => {
@@ -36,13 +33,9 @@ export const useProductionData = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newData),
       });
-      if (!res.ok) throw new Error("Failed to add production data");
-
-      await fetchProductionData(); // Refresh data after adding
-      return res.json(); // ✅ Return response to check in `handleSubmit`
+      if (res.ok) await fetchProductionData();
     } catch (err) {
-      console.error("Failed to add production data:", err);
-      throw err; // ✅ Ensure `handleSubmit` catches this
+      setError("Failed to add production data.");
     }
   };
 

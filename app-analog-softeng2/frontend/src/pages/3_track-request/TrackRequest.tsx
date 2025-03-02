@@ -23,9 +23,7 @@ import "./TrackRequest.css";
 const TrackRequest = () => {
   const [status, setStatus] = useState("Pending");
   const [selectedFactory, setSelectedFactory] = useState("");
-
-  // Hardcoded shipment data
-  const shipments = [
+  const [shipments, setShipments] = useState([
     {
       id: "REQ123",
       moduleOrigin: "Rd. Santa Ana, Illinois 85486",
@@ -106,7 +104,7 @@ const TrackRequest = () => {
       factory: "Factory J",
       status: "In-Transit",
     },
-  ];
+  ]);
 
   // Handle status change
   const handleStatusChange = (event, newStatus) => {
@@ -114,15 +112,21 @@ const TrackRequest = () => {
   };
 
   // Handle moving shipment to the next status
-  const updateShipmentStatus = (shipment) => {
-    if (shipment.status === "Pending") {
-      shipment.status = "In-Transit";
-    } else if (shipment.status === "In Transit") {
-      shipment.status = "Out-for-Delivery";
-    } else if (shipment.status === "Out for Delivery") {
-      shipment.status = "Delivered";
-    }
-    setStatus(status); // Trigger re-render
+  const updateShipmentStatus = (shipmentId) => {
+    const updatedShipments = shipments.map((shipment) => {
+      if (shipment.id === shipmentId) {
+        if (shipment.status === "Pending") {
+          return { ...shipment, status: "In-Transit" };
+        } else if (shipment.status === "In-Transit") {
+          return { ...shipment, status: "Out-for-Delivery" };
+        } else if (shipment.status === "Out-for-Delivery") {
+          return { ...shipment, status: "Delivered" };
+        }
+      }
+      return shipment;
+    });
+
+    setShipments(updatedShipments);
   };
 
   return (
@@ -144,9 +148,9 @@ const TrackRequest = () => {
               borderRadius: "17px!important",
               fontSize: "0.8rem",
               transition: "all 0.2s ease-in-out",
-              display: "flex", // Ensure flexbox is applied
+              display: "flex",
               width: "100%",
-              gap: "1rem", // Adjust gap between buttons
+              gap: "1rem",
               "&.Mui-selected, &.Mui-focusVisible": {
                 backgroundColor: "#261cc9",
                 color: "white",
@@ -234,34 +238,43 @@ const TrackRequest = () => {
             displayEmpty
             sx={{
               fontFamily: "Poppins, sans-serif",
-              borderRadius: 2, // Soft rounded corners
-              backgroundColor: "#f8f9fc", // Light background for a softer feel
-              boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)", // Subtle shadow
-              padding: "8px 12px", // More comfortable padding
-              width: "100%", // Adjust width
+              borderRadius: 2,
+              backgroundColor: "#f8f9fc",
+              boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)",
+              padding: "8px 12px",
+              width: "100%",
               "& .MuiSelect-select": {
-              padding: "7px", // Ensure text alignment
+                padding: "7px",
               },
             }}
-            >
+          >
             <MenuItem value="" sx={{ fontFamily: "Poppins, sans-serif" }}>
               Select Factory
             </MenuItem>
-            <MenuItem value="Factory A" sx={{ fontFamily: "Poppins, sans-serif" }}>
+            <MenuItem
+              value="Factory A"
+              sx={{ fontFamily: "Poppins, sans-serif" }}
+            >
               Factory A
             </MenuItem>
-            <MenuItem value="Factory B" sx={{ fontFamily: "Poppins, sans-serif" }}>
+            <MenuItem
+              value="Factory B"
+              sx={{ fontFamily: "Poppins, sans-serif" }}
+            >
               Factory B
             </MenuItem>
-            <MenuItem value="Factory C" sx={{ fontFamily: "Poppins, sans-serif" }}>
+            <MenuItem
+              value="Factory C"
+              sx={{ fontFamily: "Poppins, sans-serif" }}
+            >
               Factory C
             </MenuItem>
-            </Select>
+          </Select>
 
           <div
             style={{
-              height: "100%", // Set a fixed height for the container
-              overflowY: "auto", // Enables vertical scrolling
+              height: "100%",
+              overflowY: "auto",
               paddingRight: "5px",
               fontFamily: "Poppins, sans-serif",
             }}
@@ -283,7 +296,7 @@ const TrackRequest = () => {
                     padding: 2,
                     mb: 2,
                     backgroundColor: "#f8f9fc",
-                    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",                  
+                    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
                   }}
                 >
                   <CardContent sx={{ fontFamily: "Poppins, sans-serif" }}>
@@ -294,19 +307,31 @@ const TrackRequest = () => {
                       alignItems="center"
                     >
                       <Box>
-                        <Typography variant="subtitle2" color="textSecondary" fontFamily="Poppins, sans-serif">
+                        <Typography
+                          variant="subtitle2"
+                          color="textSecondary"
+                          fontFamily="Poppins, sans-serif"
+                        >
                           Shipment number
                         </Typography>
-                        <Typography variant="h6" fontWeight="bold" fontFamily="Poppins, sans-serif">
+                        <Typography
+                          variant="h6"
+                          fontWeight="bold"
+                          fontFamily="Poppins, sans-serif"
+                        >
                           {shipment.id}
                         </Typography>
-                        <Typography variant="body2" color="textSecondary" fontFamily="Poppins, sans-serif">
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          fontFamily="Poppins, sans-serif"
+                        >
                           Camera Modules
                         </Typography>
                       </Box>
 
                       <LocalShippingOutlined
-                        sx={{ fontSize: 90, color: "#424242",  }}
+                        sx={{ fontSize: 90, color: "#424242" }}
                       />
                     </Box>
 
@@ -316,10 +341,18 @@ const TrackRequest = () => {
                     <Box display="flex" alignItems="center" gap={1}>
                       <CircleIcon sx={{ color: "#2ECC71", fontSize: 14 }} />
                       <Box>
-                        <Typography variant="subtitle1" fontWeight="bold" fontFamily="Poppins, sans-serif">
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="bold"
+                          fontFamily="Poppins, sans-serif"
+                        >
                           Module Origin
                         </Typography>
-                        <Typography variant="body2" color="textSecondary" fontFamily="Poppins, sans-serif">
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          fontFamily="Poppins, sans-serif"
+                        >
                           {shipment.moduleOrigin}
                         </Typography>
                       </Box>
@@ -329,10 +362,18 @@ const TrackRequest = () => {
                     <Box display="flex" alignItems="center" gap={1} mt={1}>
                       <LocationOnIcon sx={{ color: "#5B47D2", fontSize: 18 }} />
                       <Box>
-                        <Typography variant="subtitle1" fontWeight="bold" fontFamily="Poppins, sans-serif">
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="bold"
+                          fontFamily="Poppins, sans-serif"
+                        >
                           Recipient
                         </Typography>
-                        <Typography variant="body2" color="textSecondary" fontFamily="Poppins, sans-serif">
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          fontFamily="Poppins, sans-serif"
+                        >
                           {shipment.recipient}
                         </Typography>
                       </Box>
@@ -348,18 +389,36 @@ const TrackRequest = () => {
                     >
                       <Box display="flex" alignItems="center" gap={1} mt={2}>
                         <Avatar
-                          sx={{ bgcolor: "#5B47D2", width: 32, height: 32, p: 3, mr: 2}}
+                          sx={{
+                            bgcolor: "#5B47D2",
+                            width: 32,
+                            height: 32,
+                            p: 3,
+                            mr: 2,
+                          }}
                         >
                           {shipment.client.charAt(0)}
                         </Avatar>
                         <Box>
-                          <Typography variant="subtitle2" color="textSecondary" fontFamily="Poppins, sans-serif">
+                          <Typography
+                            variant="subtitle2"
+                            color="textSecondary"
+                            fontFamily="Poppins, sans-serif"
+                          >
                             Client
                           </Typography>
-                          <Typography variant="subtitle1" fontWeight="bold" fontFamily="Poppins, sans-serif">
+                          <Typography
+                            variant="subtitle1"
+                            fontWeight="bold"
+                            fontFamily="Poppins, sans-serif"
+                          >
                             {shipment.client}
                           </Typography>
-                          <Typography variant="body2" color="textSecondary" fontFamily="Poppins, sans-serif">
+                          <Typography
+                            variant="body2"
+                            color="textSecondary"
+                            fontFamily="Poppins, sans-serif"
+                          >
                             {shipment.factory}
                           </Typography>
                         </Box>
@@ -376,7 +435,7 @@ const TrackRequest = () => {
                             paddingX: 3,
                             paddingY: 1,
                           }}
-                          onClick={() => updateShipmentStatus(shipment)}
+                          onClick={() => updateShipmentStatus(shipment.id)}
                         >
                           {shipment.status === "Pending"
                             ? "Transit"
