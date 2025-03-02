@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useProductionData } from "../../hooks/useProductionData";
+import { useWorkOrders } from "../../hooks/useWorkOrder";
 import "./ReportProduction.css";
 import "../components/global.css";
 import Header from "../components/Header";
@@ -9,197 +10,81 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
-import Chip from "@mui/material/Chip";
-
-import CancelIcon from "@mui/icons-material/Cancel";
-import SaveIcon from "@mui/icons-material/Save";
-import EditIcon from "@mui/icons-material/Edit";
 
 import Button from "@mui/material/Button";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-
-import useDataWorkOrder from "../../hooks/useDataWorkOrder";
-
-import {
-  Event as EventIcon,
-  Person as PersonIcon,
-  WidgetsRounded as WidgetsRoundedIcon,
-  SmartphoneRounded as SmartphoneRoundedIcon,
-} from "@mui/icons-material";
-
-// Define your icons as SVGs or use an icon library
-const CameraIcon = () => (
-  <span role="img" aria-label="camera">
-    📷
-  </span>
-);
-const RectangleIcon = () => (
-  <span role="img" aria-label="rectangle">
-    📱
-  </span>
-);
-const SpeakerIcon = () => (
-  <span role="img" aria-label="speaker">
-    🔊
-  </span>
-);
-
-const WorkOrderSelector = () => {
-  const handleSelectionChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const workOrderId = event.target.value;
-    const selectedOrder = workOrders.find((order) => order.id === workOrderId);
-
-    if (selectedOrder) {
-      setSelectedWorkOrder(selectedOrder);
-      setFormData({
-        module: selectedOrder.module,
-        requestDate: selectedOrder.requestDate,
-        dueDate: selectedOrder.dueDate,
-        quantity: selectedOrder.quantity,
-      });
-    }
-  };
-};
-
-interface ProductionData {
-  productId: string;
-  productName: string;
-  quantityProduced: number;
-  dateProduced: string;
-  moduleCode: string;
-  description: string;
-  reportedBy: string;
-}
-
-interface ModuleOption {
-  code: string;
-  description: string;
-  icon: JSX.Element;
-}
+import SaveIcon from "@mui/icons-material/Save";
 
 const ReportProduction: React.FC = () => {
-  const {
-    productionData,
-    fetchProductionData,
-    addProductionData,
-    updateProductionData,
-    deleteProductionData,
-    loading,
-    error,
-  } = useProductionData();
+  const { productionData, fetchProductionData, addProductionData } =
+    useProductionData();
+  const { workOrders, loading, error } = useWorkOrders(); // Used only for autofill
 
-  const [formData, setFormData] = useState<ProductionData>({
+  const [formData, setFormData] = useState({
     productId: "",
     productName: "",
     quantityProduced: 0,
-    dateProduced: "",
-    moduleCode: "",
-    description: "",
-    reportedBy: "",
+    dateProduced: dayjs().format("YYYY-MM-DD"),
+    dateRequested: "",
+    quantityRequested: 0,
+    fulfilledBy: "",
   });
-  const [editMode, setEditMode] = useState<string | null>(null);
-
-  const moduleOptions: ModuleOption[] = [
-    { code: "CMR123", description: "Camera module", icon: <CameraIcon /> },
-    { code: "HSN123", description: "Housing module", icon: <RectangleIcon /> },
-    { code: "SPK123", description: "Speaker module", icon: <SpeakerIcon /> },
-  ];
-
-  const handleModuleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    const selectedValue = event.target.value as string;
-    const selectedOption = moduleOptions.find(
-      (option) => option.code === selectedValue
-    );
-
-    setFormData({
-      ...formData,
-      moduleCode: selectedOption?.code || "",
-      description: selectedOption?.description || "",
-    });
-  };
 
   useEffect(() => {
     fetchProductionData();
   }, []);
 
+  // Handle Work Order Selection for Autofill
+  const handleWorkOrderChange = (event: any) => {
+    const selectedId = event.target.value;
+    const selectedOrder = workOrder.find((order) => order._id === selectedId);
+
+    if (selectedOrder) {
+      setFormData({
+        ...formData,
+        productId: selectedOrder._id ?? "",
+        productName: selectedOrder.module, // Assuming 'module' represents the product name
+        dateRequested: selectedOrder.createdDate ?? "",
+        quantityRequested: selectedOrder.quantity ?? 0,
+      });
+    }
+  };
+
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (editMode) {
-      await updateProductionData(formData);
-    } else {
-      await addProductionData(formData);
+
+    // Ensure all fields are passed correctly
+    const newEntry = {
+      productId: formData.productId,
+      productName: formData.productName,
+      quantityProduced: formData.quantityProduced,
+      dateProduced: formData.dateProduced,
+      dateRequested: formData.dateRequested, // From work order
+      quantityRequested: formData.quantityRequested, // From work order
+      fulfilledBy: formData.fulfilledBy, // Manually entered
+    };
+
+    try {
+      const response = await addProductionData(newEntry);
+      console.log("Production data added:", response);
+    } catch (error) {
+      console.error("Error adding production data:", error);
+      alert("Failed to add production data. Check console for details.");
     }
+
+    // Reset form after submission
     setFormData({
       productId: "",
       productName: "",
       quantityProduced: 0,
-      dateProduced: "",
-      moduleCode: "",
-      description: "",
-      reportedBy: "",
+      dateProduced: dayjs().format("YYYY-MM-DD"),
+      dateRequested: "",
+      quantityRequested: 0,
+      fulfilledBy: "",
     });
-    setEditMode(null);
   };
-
-  const handleEdit = (item: ProductionData) => {
-    setFormData({
-      ...item,
-      dateProduced: item.dateProduced.split("T")[0], // Convert date to YYYY-MM-DD format
-    });
-    setEditMode(item.productId);
-  };
-
-  const rows = productionData.map((item, index) => ({
-    ...item,
-    id: item.productId || index,
-    index: index + 1,
-  }));
-
-  const columns: GridColDef[] = [
-    { field: "index", headerName: "ID", width: 20, maxWidth: 20 },
-    { field: "id", headerName: "Request ID", flex: 1, sortable: true },
-    {
-      field: "dateRequested",
-      headerName: "Date Requested",
-      flex: 1,
-      sortable: true,
-    },
-    {
-      field: "quantityRequested",
-      headerName: "Requested Qty",
-      flex: 1,
-      sortable: true,
-    },
-    {
-      field: "dateProduced",
-      headerName: "Date Fulfilled",
-      flex: 1,
-      sortable: true,
-    },
-    {
-      field: "quantityProduced",
-      headerName: "Produced Qty",
-      flex: 1,
-      sortable: true,
-    },
-    {
-      field: "orderFulfilled",
-      headerName: "Order Fulfilled?",
-      flex: 1,
-      sortable: true,
-      renderCell: (params) =>
-        params.row.quantityProduced >= params.row.quantityRequested
-          ? "✅"
-          : "❌",
-    },
-  ];
-
-  const paginationModel = { page: 0, pageSize: 5 };
-  if (loading) return <div className="loading">Loading...</div>;
-  if (error) return <div className="error">{error}</div>;
 
   return (
     <div className="main-div">
@@ -208,82 +93,86 @@ const ReportProduction: React.FC = () => {
       <div className="form-and-card">
         <div className="form-holder">
           <form onSubmit={handleSubmit} className="form">
-            <h2>{editMode ? "Edit report" : "Report production"}</h2>
+            <h2>Report Production</h2>
 
-            {/*ALLCHANGE connect to database. should reference workorder IDs.*/}
+            {/* Select Work Order (Autofill) */}
             <div className="form-group">
               <FormControl fullWidth variant="outlined">
                 <InputLabel>Select Work Order</InputLabel>
                 <Select
-                  value={formData.moduleCode}
-                  onChange={handleModuleChange}
-                  label="Module Code"
+                  value={formData.productId}
+                  onChange={handleWorkOrderChange}
+                  label="Select Work Order"
                   required
                 >
                   <MenuItem value="">
-                    <em>Select Workorder</em>
+                    <em>Select Work Order</em>
                   </MenuItem>
-                  {moduleOptions.map((option) => (
-                    <MenuItem key={option.code} value={option.code}>
-                      {option.code} - {option.description}
+                  {workOrders.map((order) => (
+                    <MenuItem key={order._id} value={order._id}>
+                      {order._id} - {order.module}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </div>
 
-            {/*ALLCHANGE connect to database. autofill phone model based on work order ID.*/}
+            {/* Product Name (Autofilled) */}
             <div className="form-group">
               <TextField
-                label="Phone model AUTOFILL"
+                label="Product Name"
                 variant="outlined"
                 type="text"
-                value={formData.productId}
-                onChange={(e) =>
-                  setFormData({ ...formData, productId: e.target.value })
-                }
-                required
+                value={formData.productName}
                 fullWidth
+                disabled
               />
             </div>
 
-            {/*ALLCHANGE connect to database.
-            - fucntion should autofill to work order request date*/}
+            {/* Date Requested (Autofilled) */}
             <div className="form-group">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
-                  label="Date requested"
+                  label="Date Requested"
                   value={
-                    formData.requestDate ? dayjs(formData.requestDate) : null
+                    formData.dateRequested
+                      ? dayjs(formData.dateRequested)
+                      : null
                   }
-                  onChange={(newValue) =>
-                    setFormData({
-                      ...formData,
-                      requestDate: newValue
-                        ? newValue.format("YYYY-MM-DD")
-                        : "",
-                    })
-                  }
+                  disabled
                   slotProps={{ textField: { fullWidth: true } }}
                 />
               </LocalizationProvider>
             </div>
 
-            {/*ALLCHANGE name of employee.*/}
+            {/* Quantity Requested (Autofilled) */}
             <div className="form-group">
               <TextField
-                label="Reporter"
+                label="Quantity Requested"
+                variant="outlined"
+                type="number"
+                value={formData.quantityRequested}
+                fullWidth
+                disabled
+              />
+            </div>
+
+            {/* Fulfilled by (Manually Entered) */}
+            <div className="form-group">
+              <TextField
+                label="Fulfilled by"
                 variant="outlined"
                 type="text"
-                value={formData.productName}
+                value={formData.fulfilledBy}
                 onChange={(e) =>
-                  setFormData({ ...formData, productName: e.target.value })
+                  setFormData({ ...formData, fulfilledBy: e.target.value })
                 }
                 required
                 fullWidth
               />
             </div>
 
+            {/* Quantity Produced */}
             <div className="form-group">
               <TextField
                 label="Quantity Produced"
@@ -301,21 +190,16 @@ const ReportProduction: React.FC = () => {
               />
             </div>
 
-            {/*ALLCHANGE connect to database. fulfillment date.
-            - fucntion should autofill to current date*/}
+            {/* Date Produced (Defaults to today) */}
             <div className="form-group">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
-                  label="Date fulfilled"
-                  value={
-                    formData.requestDate ? dayjs(formData.requestDate) : null
-                  }
-                  onChange={(newValue) =>
+                  label="Date Produced"
+                  value={dayjs(formData.dateProduced)}
+                  onChange={(newDate) =>
                     setFormData({
                       ...formData,
-                      requestDate: newValue
-                        ? newValue.format("YYYY-MM-DD")
-                        : "",
+                      dateProduced: dayjs(newDate).format("YYYY-MM-DD"),
                     })
                   }
                   slotProps={{ textField: { fullWidth: true } }}
@@ -323,134 +207,17 @@ const ReportProduction: React.FC = () => {
               </LocalizationProvider>
             </div>
 
+            {/* Submit Button */}
             <Button
               type="submit"
               variant="contained"
-              disableElevation
-              color={editMode ? "primary" : "success"}
-              startIcon={editMode ? <EditIcon /> : <SaveIcon />}
+              color="success"
+              startIcon={<SaveIcon />}
             >
-              {editMode ? "Update" : "Add"}
+              Add Report
             </Button>
-            {editMode && (
-              <Button
-                type="button"
-                variant="contained"
-                color="error"
-                disableElevation
-                startIcon={<CancelIcon />}
-                onClick={() => setEditMode(null)}
-              >
-                Cancel
-              </Button>
-            )}
           </form>
         </div>
-
-        <div id="report-preview" className="preview-card">
-          {/* Preview Card */}
-          <h2 className="preview-title" id="report-title">
-            Report Preview
-          </h2>
-
-          {/* Always show a smartphone icon */}
-          <div className="preview-icon">
-            <SmartphoneRoundedIcon sx={{ fontSize: 300, color: "#E65100" }} />
-          </div>
-
-          <div className="preview-details">
-            <div>
-              <h2 id="report-module-code">
-                {formData.moduleCode || "Module Code"}
-              </h2>
-              <h3 id="report-module-desc">
-                {formData.description || "Module Description"}
-              </h3>
-            </div>
-
-            <div className="chip-holder">
-              {/* Quantity Produced */}
-              <Chip
-                label={
-                  formData.quantityProduced
-                    ? `${formData.quantityProduced} pc`
-                    : "Qtyss"
-                }
-                sx={{
-                  fontWeight: "medium",
-                  backgroundColor: "#FFCCBC",
-                  color: "#BF360C",
-                }}
-              />
-
-              {/* Phone Model */}
-              <Chip
-                icon={
-                  <SmartphoneRoundedIcon
-                    sx={{ color: "#e65100", fontSize: 25, paddingLeft: 1 }}
-                  />
-                }
-                label={formData.productId || "Phone Model"}
-                sx={{
-                  fontWeight: "medium",
-                  backgroundColor: "#FFF3E0",
-                  color: "#E65100",
-                }}
-              />
-
-              {/* Date Fulfilled */}
-              <Chip
-                icon={
-                  <EventIcon
-                    sx={{ color: "#E65100", fontSize: 25, paddingLeft: 1 }}
-                  />
-                }
-                label={formData.dateProduced || "Fulfilled"}
-                sx={{
-                  fontWeight: "medium",
-                  backgroundColor: "#FFF3E0",
-                  color: "#E65100",
-                }}
-              />
-            </div>
-
-            <div className="chip-holder">
-              {/* Reporter (Employee) */}
-              <Chip
-                icon={
-                  <PersonIcon
-                    sx={{ color: "#e65100", fontSize: 25, paddingLeft: 1 }}
-                  />
-                }
-                label={formData.reportedBy || "Reporter"}
-                sx={{
-                  fontWeight: "medium",
-                  backgroundColor: "#FFF3E0",
-                  color: "#E65100",
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="styled-table">
-        <h2>Production Reports</h2>
-        <DataGrid
-          checkboxSelection
-          rows={rows}
-          columns={columns}
-          initialState={{ pagination: { paginationModel } }}
-          pageSizeOptions={[5, 10, 50, 100]}
-          sx={{
-            backgroundColor: "white", // Set background to white
-            border: "none", // Remove border if needed
-
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "#f5f5f5", // Optional: header background color
-            },
-          }}
-        />
       </div>
     </div>
   );

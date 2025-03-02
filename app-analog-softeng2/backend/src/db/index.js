@@ -252,10 +252,25 @@ connect()
 
     // 📌 Production Data: Create
     app.post("/api/production", async (req, res) => {
-      const { productId, productName, quantityProduced, dateProduced } =
-        req.body;
+      const {
+        productId,
+        productName,
+        quantityProduced,
+        dateProduced,
+        dateRequested, // New field
+        quantityRequested, // New field
+        fulfilledBy, // New field
+      } = req.body;
 
-      if (!productId || !productName || !quantityProduced || !dateProduced) {
+      if (
+        !productId ||
+        !productName ||
+        !quantityProduced ||
+        !dateProduced ||
+        !dateRequested || // Ensure all required fields are passed
+        !quantityRequested ||
+        !fulfilledBy
+      ) {
         return res.status(400).json({ error: "All fields are required" });
       }
 
@@ -266,10 +281,12 @@ connect()
           productName,
           quantityProduced,
           dateProduced: new Date(dateProduced),
+          dateRequested: new Date(dateRequested), // Store as date
+          quantityRequested,
+          fulfilledBy,
         };
 
         await collection.insertOne(newProduction);
-
         await createNotification(`New production data added: ${productName}`);
 
         res.status(201).json({ message: "Production data added successfully" });
@@ -279,7 +296,7 @@ connect()
       }
     });
 
-    // 📌 Production Data: Get All
+    // 📌 Production Data: Get All (No change needed)
     app.get("/api/production", async (req, res) => {
       try {
         const collection = db.collection("production");
@@ -293,10 +310,25 @@ connect()
 
     // 📌 Production Data: Update
     app.put("/api/production", async (req, res) => {
-      const { productId, productName, quantityProduced, dateProduced } =
-        req.body;
+      const {
+        productId,
+        productName,
+        quantityProduced,
+        dateProduced,
+        dateRequested, // New field
+        quantityRequested, // New field
+        fulfilledBy, // New field
+      } = req.body;
 
-      if (!productId || !productName || !quantityProduced || !dateProduced) {
+      if (
+        !productId ||
+        !productName ||
+        !quantityProduced ||
+        !dateProduced ||
+        !dateRequested || // Ensure all required fields are present
+        !quantityRequested ||
+        !fulfilledBy
+      ) {
         return res.status(400).json({ error: "All fields are required" });
       }
 
@@ -309,6 +341,9 @@ connect()
               productName,
               quantityProduced,
               dateProduced: new Date(dateProduced),
+              dateRequested: new Date(dateRequested),
+              quantityRequested,
+              fulfilledBy,
             },
           }
         );
@@ -324,7 +359,7 @@ connect()
       }
     });
 
-    // 📌 Production Data: Delete
+    // 📌 Production Data: Delete (No changes needed)
     app.delete("/api/production", async (req, res) => {
       const { productId } = req.body;
 
