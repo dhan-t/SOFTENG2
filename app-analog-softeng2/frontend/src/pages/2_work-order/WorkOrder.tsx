@@ -95,7 +95,7 @@ const WorkOrder: React.FC = () => {
       assignedTo: formData.recipient,
       createdDate: formData.requestDate,
       dueDate: formData.dueDate, // You might want a separate field for this
-      priority: "Medium",
+      priority: "Medium" as "Medium" | "Low" | "High",
       quantity: formData.quantity,
     };
 

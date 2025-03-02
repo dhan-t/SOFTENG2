@@ -21,7 +21,7 @@ export const useWorkOrders = () => {
   const fetchWorkOrders = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5001/api/workorders");
+      const res = await fetch("http://localhost:5001/api/workorder");
       if (!res.ok) throw new Error("Failed to fetch work orders");
       const data = await res.json();
       setWorkOrders(data);
@@ -37,7 +37,7 @@ export const useWorkOrders = () => {
   const submitWorkOrder = async (newWorkOrder: WorkOrder) => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5001/api/workorders", {
+      const res = await fetch("http://localhost:5001/api/workorder", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,7 +68,7 @@ export const useWorkOrders = () => {
     setLoading(true);
     try {
       const res = await fetch(
-        `http://localhost:5001/api/workorders/${workOrderId}`,
+        `http://localhost:5001/api/workorder/${workOrderId}`,
         {
           method: "PUT",
           headers: {

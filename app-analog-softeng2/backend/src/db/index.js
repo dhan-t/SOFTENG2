@@ -420,9 +420,9 @@ connect()
       }
     });
 
-    app.get("/api/workorders", async (req, res) => {
+    app.get("/api/workorder", async (req, res) => {
       try {
-        const workOrdersCollection = db.collection("workorders");
+        const workOrdersCollection = req.app.locals.db.collection("workorder");
         const workOrders = await workOrdersCollection.find().toArray();
         res.json(workOrders);
       } catch (err) {
