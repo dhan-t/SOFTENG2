@@ -154,7 +154,7 @@
 }
 
 .nav-item.active .nav-icon {
-  color: #4F46E5; /* Blue icon */
+  color: #bb1010; /* Blue icon */
 }
 
 /* Items in nav */
@@ -174,7 +174,7 @@
   top: 10%;
   height: 80%;
   width: 4px;
-  background-color: #4F46E5; 
+  background-color: #bb1010; 
   border-radius: 4px;
 }
 

@@ -88,7 +88,7 @@
 }
 
 .input-field {
-  color: #5280e3;
+  color: #000000;
   display: flex;
   height: 100%;
   font-size: 1rem;
@@ -127,7 +127,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background-color: #b7bef3;
+  background-color: #f3b7ce;
   background-size: cover;
   background-position: center;
   cursor: pointer;
