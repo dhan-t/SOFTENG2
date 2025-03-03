@@ -203,7 +203,7 @@ connect()
         requestDate,
         quantity,
       } = req.body;
-    
+
       if (
         !module ||
         !requestedBy ||
@@ -214,11 +214,11 @@ connect()
       ) {
         return res.status(400).json({ error: "All fields are required" });
       }
-    
+
       try {
         const logisticsCollection = db.collection("logistics");
         const trackingCollection = db.collection("tracking");
-    
+
         const newRequest = {
           module,
           requestedBy,
@@ -228,10 +228,10 @@ connect()
           quantity,
           status: "Pending", // Default status
         };
-    
+
         // Insert into logistics
         const result = await logisticsCollection.insertOne(newRequest);
-    
+
         // Create a tracking log
         await trackingCollection.insertOne({
           logId: result.insertedId, // Use the logistics request ID as the log ID
@@ -244,11 +244,11 @@ connect()
           recipient, // Add recipient
           client: requestedBy, // Add client
         });
-    
+
         await createNotification(
           `New logistics request: ${module} by ${requestedBy}`
         );
-    
+
         res
           .status(201)
           .json({ message: "Logistics request submitted successfully" });
@@ -856,11 +856,9 @@ connect()
           "Error fetching produced quantity distribution data:",
           err
         );
-        res
-          .status(500)
-          .json({
-            error: "Failed to fetch produced quantity distribution data",
-          });
+        res.status(500).json({
+          error: "Failed to fetch produced quantity distribution data",
+        });
       }
     });
 

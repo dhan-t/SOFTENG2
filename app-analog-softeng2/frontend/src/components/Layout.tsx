@@ -10,7 +10,12 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
-  const noNavbarRoutes = ["/", "/register", "/forgot-password", "/reset-password"]; // Routes without the navbar
+  const noNavbarRoutes = [
+    "/",
+    "/register",
+    "/forgot-password",
+    "/reset-password",
+  ]; // Routes without the navbar
   const [isExpanded, setIsExpanded] = useState(true); // Navbar state
   const [loading, setLoading] = useState(false);
 
