@@ -47,7 +47,7 @@ const upload = multer({ storage });
 
 // Configure Nodemailer
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // You can use other services like SendGrid, Mailgun, etc.
+  service: "gmail", // You can use other services like SendGrid, Mailgun, etc.
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -267,11 +267,23 @@ connect()
 
     // 📌 Production Data: Create
     app.post("/api/production", async (req, res) => {
-      const { workOrderID, dateRequested, fulfilledBy, dateFulfilled, producedQty } = req.body;
+      const {
+        workOrderID,
+        dateRequested,
+        fulfilledBy,
+        dateFulfilled,
+        producedQty,
+      } = req.body;
 
       console.log("Received production data:", req.body); // Log the request body
 
-      if (!workOrderID || !dateRequested || !fulfilledBy || !dateFulfilled || !producedQty) {
+      if (
+        !workOrderID ||
+        !dateRequested ||
+        !fulfilledBy ||
+        !dateFulfilled ||
+        !producedQty
+      ) {
         return res.status(400).json({ error: "All fields are required" });
       }
 
@@ -312,9 +324,23 @@ connect()
 
     // 📌 Production Data: Update
     app.put("/api/production", async (req, res) => {
-      const { id, workOrderID, dateRequested, fulfilledBy, dateFulfilled, producedQty } = req.body;
+      const {
+        id,
+        workOrderID,
+        dateRequested,
+        fulfilledBy,
+        dateFulfilled,
+        producedQty,
+      } = req.body;
 
-      if (!id || !workOrderID || !dateRequested || !fulfilledBy || !dateFulfilled || !producedQty) {
+      if (
+        !id ||
+        !workOrderID ||
+        !dateRequested ||
+        !fulfilledBy ||
+        !dateFulfilled ||
+        !producedQty
+      ) {
         return res.status(400).json({ error: "All fields are required" });
       }
 
@@ -337,7 +363,9 @@ connect()
 
         await createNotification(`Production data updated: ${workOrderID}`);
 
-        res.status(200).json({ message: "Production data updated successfully" });
+        res
+          .status(200)
+          .json({ message: "Production data updated successfully" });
       } catch (err) {
         console.error("Error updating production data:", err);
         res.status(500).json({ error: "Failed to update production data" });
@@ -358,7 +386,9 @@ connect()
 
         await createNotification(`Production data deleted: ${id}`);
 
-        res.status(200).json({ message: "Production data deleted successfully" });
+        res
+          .status(200)
+          .json({ message: "Production data deleted successfully" });
       } catch (err) {
         console.error("Error deleting production data:", err);
         res.status(500).json({ error: "Failed to delete production data" });
@@ -425,13 +455,17 @@ connect()
         const result = await workOrdersCollection.insertOne(formattedWorkOrder);
 
         if (result.acknowledged) {
-          res.status(201).json({ message: "Work order submitted successfully" });
+          res
+            .status(201)
+            .json({ message: "Work order submitted successfully" });
         } else {
           res.status(500).json({ error: "Failed to submit work order" });
         }
       } catch (err) {
         console.error("Error submitting work order:", err);
-        res.status(500).json({ error: "An error occurred while submitting work order" });
+        res
+          .status(500)
+          .json({ error: "An error occurred while submitting work order" });
       }
     });
 
@@ -449,26 +483,30 @@ connect()
     app.put("/api/workorder/:workOrderId", async (req, res) => {
       const { workOrderId } = req.params;
       const { status } = req.body;
-    
+
       if (!status) {
         return res.status(400).json({ error: "Status is required" });
       }
-    
+
       try {
         const workOrdersCollection = req.app.locals.db.collection("workorder");
         const result = await workOrdersCollection.updateOne(
           { _id: new ObjectId(workOrderId) },
           { $set: { status, updatedAt: new Date() } }
         );
-    
+
         if (result.modifiedCount > 0) {
-          res.status(200).json({ message: "Work order status updated successfully" });
+          res
+            .status(200)
+            .json({ message: "Work order status updated successfully" });
         } else {
           res.status(500).json({ error: "Failed to update work order status" });
         }
       } catch (err) {
         console.error("Error updating work order status:", err);
-        res.status(500).json({ error: "An error occurred while updating work order status" });
+        res.status(500).json({
+          error: "An error occurred while updating work order status",
+        });
       }
     });
 
@@ -500,49 +538,6 @@ connect()
       } catch (err) {
         console.error("Error generating PDF report:", err);
         res.status(500).json({ error: "Failed to generate report" });
-      }
-    });
-
-        // Update the forgot password endpoint in your backend (index.js)
-    app.post("/api/forgot-password", async (req, res) => {
-      const { email } = req.body;
-
-      try {
-        const collection = db.collection("user");
-        const user = await collection.findOne({ email });
-
-        if (!user) {
-          return res.status(404).json({ error: "User not found" });
-        }
-
-        // Generate a password reset token (you can use JWT or any other method)
-        const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
-          expiresIn: "1h",
-        });
-
-        // Send the reset token to the user's email
-        const mailOptions = {
-          from: process.env.EMAIL_USER,
-          to: email,
-          subject: "Password Reset",
-          html: `
-            <p>You requested a password reset. Click the link below to reset your password:</p>
-            <a href="http://localhost:5173/reset-password?token=${resetToken}">Reset Password</a>
-          `,
-        };
-
-        transporter.sendMail(mailOptions, (error, info) => {
-          if (error) {
-            console.error("Error sending email:", error);
-            return res.status(500).json({ error: "Failed to send email" });
-          } else {
-            console.log("Email sent:", info.response);
-            res.status(200).json({ message: "Password reset link sent to your email." });
-          }
-        });
-      } catch (err) {
-        console.error("Error during password reset request:", err);
-        res.status(500).json({ error: "Failed to process password reset request" });
       }
     });
 
@@ -580,16 +575,67 @@ connect()
             return res.status(500).json({ error: "Failed to send email" });
           } else {
             console.log("Email sent:", info.response);
-            res.status(200).json({ message: "Password reset link sent to your email." });
+            res
+              .status(200)
+              .json({ message: "Password reset link sent to your email." });
           }
         });
       } catch (err) {
         console.error("Error during password reset request:", err);
-        res.status(500).json({ error: "Failed to process password reset request" });
+        res
+          .status(500)
+          .json({ error: "Failed to process password reset request" });
       }
     });
 
-        // Add this endpoint to your backend (index.js)
+    // Update the forgot password endpoint in your backend (index.js)
+    app.post("/api/forgot-password", async (req, res) => {
+      const { email } = req.body;
+
+      try {
+        const collection = db.collection("user");
+        const user = await collection.findOne({ email });
+
+        if (!user) {
+          return res.status(404).json({ error: "User not found" });
+        }
+
+        // Generate a password reset token (you can use JWT or any other method)
+        const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
+          expiresIn: "1h",
+        });
+
+        // Send the reset token to the user's email
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: email,
+          subject: "Password Reset",
+          html: `
+            <p>You requested a password reset. Click the link below to reset your password:</p>
+            <a href="http://localhost:5173/reset-password?token=${resetToken}">Reset Password</a>
+          `,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.error("Error sending email:", error);
+            return res.status(500).json({ error: "Failed to send email" });
+          } else {
+            console.log("Email sent:", info.response);
+            res
+              .status(200)
+              .json({ message: "Password reset link sent to your email." });
+          }
+        });
+      } catch (err) {
+        console.error("Error during password reset request:", err);
+        res
+          .status(500)
+          .json({ error: "Failed to process password reset request" });
+      }
+    });
+
+    // Add this endpoint to your backend (index.js)
     app.post("/api/reset-password", async (req, res) => {
       const { token, password } = req.body;
 
@@ -636,7 +682,8 @@ connect()
     });
 
     app.post("/api/settings", authenticateToken, async (req, res) => {
-      const { pushNotifications, darkMode, emailNotifications, autoLogout } = req.body;
+      const { pushNotifications, darkMode, emailNotifications, autoLogout } =
+        req.body;
 
       try {
         const collection = db.collection("settings");
