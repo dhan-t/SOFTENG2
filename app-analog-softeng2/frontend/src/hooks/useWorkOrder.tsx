@@ -42,7 +42,7 @@ export const useWorkOrders = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(newWorkOrder),
+        body: JSON.stringify({ ...newWorkOrder, status: newWorkOrder.status || "Pending" }), // Include status
       });
 
       if (res.ok) {

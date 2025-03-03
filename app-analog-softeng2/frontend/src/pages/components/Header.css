@@ -3,17 +3,19 @@
   width: 100%;
   justify-content: space-between;
   align-items: center;
+  gap: 1.5rem;
 }
 
 .welcome-message {
   display: flex;
   flex-direction: column;
   height: fit-content max-content;
+  margin-left: 15px;
 }
 
 .user-greeting {
   width: max-content;
-  font-weight: 600;
+  font-weight:600;
   font-size: 30px;
   color: #242c52;
 }
@@ -25,16 +27,18 @@
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 10px 10px;
-  background-color: white;
-  border-radius: 40px;
-  width: 550px;
-  box-shadow: 0px 10px 20px 0px rgba(133, 133, 133, 0.1); /* Subtle shadow */
-}
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px 10px;
+    background-color: white;
+    border-radius: 40px;
+    width: 550px; 
+    box-shadow: 0px 10px 20px 0px rgba(133, 133, 133, 0.1); /* Subtle shadow */
+
+ }
+
 
 .search-bar {
   display: flex;
@@ -45,17 +49,17 @@
   border: 1px solid white; /* Light gray border */
   border-radius: 20px;
   padding: 5px 10px;
-  background-color: #f3f6fd;
+  background-color: #f3f6fd ;
 }
 
-.search-bar .placeholder {
+.search-bar .placeholder{
   color: #a4add4;
 }
 
 .button {
   background-color: transparent;
   cursor: pointer;
-  width: 22px; /* Reduced width */
+  width: 22px;  /* Reduced width */
   height: 22px; /* Reduced height */
   border: none;
   display: flex;
@@ -63,6 +67,7 @@
   align-items: center;
   padding: 22px; /* Ensure proper spacing */
 }
+
 
 .button:focus {
   outline: none;
@@ -83,12 +88,12 @@
   flex-grow: 2;
   border: none;
   outline: none;
-  font-size: 0.8rem;
+  font-size: .8rem;
   background-color: transparent;
 }
 
 .input-field {
-  color: #000000;
+  color: #5280e3;
   display: flex;
   height: 100%;
   font-size: 1rem;
@@ -117,7 +122,7 @@
   flex-direction: row;
   align-items: center;
   text-align: center;
-  justify-content: space-evenly;
+  justify-content:space-evenly;
   gap: 1.2rem;
   position: relative;
   padding-left: 10px;
@@ -127,7 +132,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background-color: #f3b7ce;
+  background-color: #b7bef3;
   background-size: cover;
   background-position: center;
   cursor: pointer;
@@ -138,12 +143,7 @@
   top: 60px;
   right: 60px; /* Move the popup to the left */
   width: 300px;
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.9
-  ); /* Slightly transparent background */
+  background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent background */
   border: 1px solid #ccc;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -221,12 +221,7 @@
   top: 60px;
   right: 0;
   width: 200px;
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.9
-  ); /* Slightly transparent background */
+  background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent background */
   border: 1px solid #ccc;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
