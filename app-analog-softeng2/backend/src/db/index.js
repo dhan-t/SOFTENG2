@@ -508,11 +508,9 @@ connect()
         }
       } catch (err) {
         console.error("Error updating work order status:", err);
-        res
-          .status(500)
-          .json({
-            error: "An error occurred while updating work order status",
-          });
+        res.status(500).json({
+          error: "An error occurred while updating work order status",
+        });
       }
     });
 
@@ -721,6 +719,148 @@ connect()
       } catch (err) {
         console.error("Error saving settings:", err);
         res.status(500).json({ error: "Failed to save settings" });
+      }
+    });
+
+    // 📌 Piechart logic. Logistics/ModuleReqs
+    app.get("/api/logistics-summary", async (req, res) => {
+      try {
+        const collection = db.collection("logistics");
+        const logisticsData = await collection.find().toArray();
+
+        // Count occurrences of each recipient (Factory A, B, etc.)
+        const factoryCounts = logisticsData.reduce((acc, item) => {
+          acc[item.recipient] = (acc[item.recipient] || 0) + 1;
+          return acc;
+        }, {});
+
+        const pieChartData = Object.keys(factoryCounts).map((key) => ({
+          name: key,
+          value: factoryCounts[key],
+        }));
+
+        res.status(200).json(pieChartData);
+      } catch (err) {
+        console.error("Error fetching logistics summary:", err);
+        res.status(500).json({ error: "Failed to fetch logistics summary" });
+      }
+    });
+
+    // 📌 Barchart logic. Logistics/ModuleReqs
+    app.get("/api/module-chart", async (req, res) => {
+      try {
+        res.json(
+          await db
+            .collection("logistics")
+            .aggregate([
+              { $group: { _id: "$module", count: { $sum: 1 } } },
+              { $sort: { count: -1 } },
+            ])
+            .toArray()
+            .then((data) =>
+              data.map((item) => ({ name: item._id, value: item.count }))
+            )
+        );
+      } catch (err) {
+        console.error("Error fetching module chart data:", err);
+        res.status(500).json({ error: "Failed to fetch module chart data" });
+      }
+    });
+
+    // 📌 Gaugechart logic. Logistics/ModuleReqs
+    app.get("/api/fulfillment-rate", async (req, res) => {
+      try {
+        const data = await db
+          .collection("logistics")
+          .aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }])
+          .toArray();
+
+        const total = data.reduce((sum, item) => sum + item.count, 0);
+        const pending = data.find((item) => item._id === "Pending")?.count || 0;
+        const fulfilled = total - pending;
+
+        res.json([
+          { name: "Pending", value: pending },
+          { name: "Fulfilled", value: fulfilled },
+        ]);
+      } catch (err) {
+        console.error("Error fetching fulfillment data:", err);
+        res.status(500).json({ error: "Failed to fetch fulfillment data" });
+      }
+    });
+
+    // 📌 Bar Chart logic. Production/Order Fulfillment
+    app.get("/api/order-fulfillment", async (req, res) => {
+      try {
+        const data = await db
+          .collection("production")
+          .aggregate([
+            {
+              $group: {
+                _id: "$orderFulfilled", // Corrected column name
+                count: { $sum: 1 }, // Count the number of orders
+              },
+            },
+          ])
+          .toArray();
+
+        // Format data for the bar chart
+        const formattedData = [
+          {
+            name: "Fulfilled",
+            value: data.find((item) => item._id === true)?.count || 0,
+          },
+          {
+            name: "Unfulfilled",
+            value: data.find((item) => item._id === false)?.count || 0,
+          },
+        ];
+
+        res.json(formattedData);
+      } catch (err) {
+        console.error("Error fetching order fulfillment data:", err);
+        res
+          .status(500)
+          .json({ error: "Failed to fetch order fulfillment data" });
+      }
+    });
+
+    // 📌 Histogram logic. Production/Produced Quantity Distribution
+    app.get("/api/produced-quantity-distribution", async (req, res) => {
+      try {
+        const data = await db
+          .collection("production")
+          .aggregate([
+            {
+              $bucket: {
+                groupBy: "$producedQty", // Group by producedQty
+                boundaries: [0, 100, 200, 300, 400, 500], // Define bin ranges
+                default: "Other", // Handle values outside the boundaries
+                output: {
+                  count: { $sum: 1 }, // Count the number of orders in each bin
+                },
+              },
+            },
+          ])
+          .toArray();
+
+        // Format data for the histogram
+        const formattedData = data.map((item) => ({
+          range: `${item._id} - ${item._id + 99}`, // Define the range for each bin
+          count: item.count, // Number of orders in this bin
+        }));
+
+        res.json(formattedData);
+      } catch (err) {
+        console.error(
+          "Error fetching produced quantity distribution data:",
+          err
+        );
+        res
+          .status(500)
+          .json({
+            error: "Failed to fetch produced quantity distribution data",
+          });
       }
     });
 
