@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -15,107 +15,67 @@ import {
 import LocalShippingOutlined from "@mui/icons-material/LocalShippingOutlined";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CircleIcon from "@mui/icons-material/Circle";
-import { MapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Header from "../components/Header";
+import { useTracking } from "../../hooks/useTracking";
+import { useLogistics } from "../../hooks/useLogistics";
+import { useAuth } from "../../hooks/useAuth"; // Import useAuth hook and User type
 import "./TrackRequest.css";
 
+const factoryLocations: { [key: string]: LatLngExpression } = {
+  "Factory A": [14.5995, 120.9842], // Manila
+  "Factory B": [10.3157, 123.8854], // Cebu
+  "Factory C": [7.1907, 125.4553], // Davao
+  "Factory D": [15.4826, 120.5976], // Tarlac
+  "Factory E": [16.4023, 120.5960], // Baguio
+  "Factory F": [13.6218, 123.1948], // Naga
+  "Factory G": [8.2280, 124.2452], // Cagayan de Oro
+  "Factory H": [6.9214, 122.0790], // Zamboanga
+  "Factory I": [12.8797, 121.7740], // Lucena
+  "Factory J": [14.6760, 121.0437], // Quezon City
+};
+
 const TrackRequest = () => {
+  const { trackingLogs, fetchTrackingLogs, updateTrackingStatus, loading, error } = useTracking();
+  const { requests } = useLogistics();
+  const { user } = useAuth(); // Get the logged-in user's information
   const [status, setStatus] = useState("Pending");
   const [selectedFactory, setSelectedFactory] = useState("");
-  const [shipments, setShipments] = useState([
-    {
-      id: "REQ123",
-      moduleOrigin: "Rd. Santa Ana, Illinois 85486",
-      recipient: "Rd. Inglewood, Maine 98380",
-      client: "Requester",
-      factory: "Factory A",
-      status: "Pending",
-    },
-    {
-      id: "REQ124",
-      moduleOrigin: "Rd. Brooklyn, New York 11201",
-      recipient: "Rd. Austin, Texas 73301",
-      client: "Requester",
-      factory: "Factory B",
-      status: "In-Transit",
-    },
-    {
-      id: "REQ125",
-      moduleOrigin: "Rd. San Diego, California 92101",
-      recipient: "Rd. Miami, Florida 33101",
-      client: "Requester",
-      factory: "Factory C",
-      status: "Out-for-Delivery",
-    },
-    {
-      id: "REQ126",
-      moduleOrigin: "Rd. Seattle, Washington 98101",
-      recipient: "Rd. Denver, Colorado 80201",
-      client: "Requester",
-      factory: "Factory D",
-      status: "Delivered",
-    },
-    {
-      id: "REQ127",
-      moduleOrigin: "Rd. Dallas, Texas 75201",
-      recipient: "Rd. Atlanta, Georgia 30301",
-      client: "Requester",
-      factory: "Factory E",
-      status: "Pending",
-    },
-    {
-      id: "REQ128",
-      moduleOrigin: "Rd. San Francisco, California 94101",
-      recipient: "Rd. Boston, Massachusetts 02101",
-      client: "Requester",
-      factory: "Factory F",
-      status: "In-Transit",
-    },
-    {
-      id: "REQ129",
-      moduleOrigin: "Rd. Houston, Texas 77001",
-      recipient: "Rd. Philadelphia, Pennsylvania 19101",
-      client: "Requester",
-      factory: "Factory G",
-      status: "Out-for-Delivery",
-    },
-    {
-      id: "REQ130",
-      moduleOrigin: "Rd. Phoenix, Arizona 85001",
-      recipient: "Rd. Charlotte, North Carolina 28201",
-      client: "Requester",
-      factory: "Factory H",
-      status: "Delivered",
-    },
-    {
-      id: "REQ131",
-      moduleOrigin: "Rd. Las Vegas, Nevada 89101",
-      recipient: "Rd. Chicago, Illinois 60601",
-      client: "Requester",
-      factory: "Factory I",
-      status: "Pending",
-    },
-    {
-      id: "REQ132",
-      moduleOrigin: "Rd. Orlando, Florida 32801",
-      recipient: "Rd. Detroit, Michigan 48201",
-      client: "Requester",
-      factory: "Factory J",
-      status: "In-Transit",
-    },
-  ]);
+  const [profile, setProfile] = useState({
+    firstName: "",
+    profilePicture: "",
+  });
 
-  // Handle status change
-  interface Shipment {
-    id: string;
-    moduleOrigin: string;
-    recipient: string;
-    client: string;
-    factory: string;
-    status: string;
-  }
+  useEffect(() => {
+    fetchTrackingLogs();
+  }, []);
+  
+  useEffect(() => {
+    console.log(trackingLogs); // Log the tracking logs to verify the data
+    console.log(requests); // Log the logistics requests to verify the data
+  }, [trackingLogs, requests]);
+
+  useEffect(() => {
+    // Fetch user profile from the backend
+    const fetchProfile = async () => {
+      if (user) {
+        try {
+          const response = await fetch(`http://localhost:5001/api/user/${user}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          setProfile(data);
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+        }
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
 
   const handleStatusChange = (
     event: React.MouseEvent<HTMLElement>,
@@ -124,32 +84,38 @@ const TrackRequest = () => {
     if (newStatus !== null) setStatus(newStatus);
   };
 
-  // Handle moving shipment to the next status
-  interface Shipment {
-    id: string;
-    moduleOrigin: string;
-    recipient: string;
-    client: string;
-    factory: string;
-    status: string;
-  }
-
-  const updateShipmentStatus = (shipmentId: string): void => {
-    const updatedShipments = shipments.map((shipment: Shipment) => {
-      if (shipment.id === shipmentId) {
-        if (shipment.status === "Pending") {
-          return { ...shipment, status: "In-Transit" };
-        } else if (shipment.status === "In-Transit") {
-          return { ...shipment, status: "Out-for-Delivery" };
-        } else if (shipment.status === "Out-for-Delivery") {
-          return { ...shipment, status: "Delivered" };
-        }
-      }
-      return shipment;
-    });
-
-    setShipments(updatedShipments);
+  const updateShipmentStatus = async (shipmentId: string, currentStatus: string) => {
+    let newStatus = "";
+    if (currentStatus === "Pending") {
+      newStatus = "In-Transit";
+    } else if (currentStatus === "In-Transit") {
+      newStatus = "Out-for-Delivery";
+    } else if (currentStatus === "Out-for-Delivery") {
+      newStatus = "Delivered";
+    }
+    console.log(`Updating status of ${shipmentId} to ${newStatus}`); // Debugging statement
+    await updateTrackingStatus(shipmentId, newStatus);
+    fetchTrackingLogs(); // Re-fetch tracking logs to update the UI
   };
+
+  if (loading) return <div className="loading">Loading...</div>;
+  if (error) return <div className="error">Error: {error}</div>;
+
+  // Combine tracking logs with logistics requests
+  const combinedLogs = trackingLogs.map((log) => {
+    const request = requests.find((req) => req._id === log.logId);
+    return {
+      ...log,
+      recipient: request ? request.recipient : "Unknown"
+    };
+  });
+
+    // Filter combinedLogs based on selectedFactory
+    const filteredLogs = combinedLogs.filter(
+      (shipment) =>
+        shipment.status === status &&
+        (selectedFactory === "" || shipment.recipient === selectedFactory)
+    );
 
   return (
     <div className="main-div">
@@ -260,13 +226,11 @@ const TrackRequest = () => {
             displayEmpty
             sx={{
               fontFamily: "Poppins, sans-serif",
-
               borderRadius: 2, // Soft rounded corners
               backgroundColor: "#f8f9fc", // Light background for a softer feel
               boxShadow: "0px 2px 5px rgba(161, 6, 6, 0.1)", // Subtle shadow
               padding: "8px 12px", // More comfortable padding
               width: "100%", // Adjust width
-
               "& .MuiSelect-select": {
                 padding: "7px",
               },
@@ -275,24 +239,11 @@ const TrackRequest = () => {
             <MenuItem value="" sx={{ fontFamily: "Poppins, sans-serif" }}>
               Select Factory
             </MenuItem>
-            <MenuItem
-              value="Factory A"
-              sx={{ fontFamily: "Poppins, sans-serif" }}
-            >
-              Factory A
-            </MenuItem>
-            <MenuItem
-              value="Factory B"
-              sx={{ fontFamily: "Poppins, sans-serif" }}
-            >
-              Factory B
-            </MenuItem>
-            <MenuItem
-              value="Factory C"
-              sx={{ fontFamily: "Poppins, sans-serif" }}
-            >
-              Factory C
-            </MenuItem>
+            {Object.keys(factoryLocations).map((factory) => (
+              <MenuItem key={factory} value={factory} sx={{ fontFamily: "Poppins, sans-serif" }}>
+                {factory}
+              </MenuItem>
+            ))}
           </Select>
 
           <div
@@ -303,26 +254,19 @@ const TrackRequest = () => {
               fontFamily: "Poppins, sans-serif",
             }}
           >
-            {shipments
-              .filter(
-                (shipment) =>
-                  shipment.status === status &&
-                  (selectedFactory === "" ||
-                    shipment.factory === selectedFactory)
-              )
-              .map((shipment) => (
-                <Card
-                  key={shipment.id}
-                  sx={{
-                    height: "fit-content",
-                    borderRadius: 3,
-                    width: "100%",
-                    padding: 2,
-                    mb: 2,
-                    backgroundColor: "#f8f9fc",
-                    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                  }}
-                >
+            {filteredLogs.map((shipment) => (
+              <Card
+                key={shipment.logId}
+                sx={{
+                  height: "fit-content",
+                  borderRadius: 3,
+                  width: "100%",
+                  padding: 2,
+                  mb: 2,
+                  backgroundColor: "#f8f9fc",
+                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                }}
+              >
                   <CardContent sx={{ fontFamily: "Poppins, sans-serif" }}>
                     {/* Shipment Header */}
                     <Box
@@ -343,21 +287,21 @@ const TrackRequest = () => {
                           fontWeight="bold"
                           fontFamily="Poppins, sans-serif"
                         >
-                          {shipment.id}
+                          {shipment.logId.length > 8
+                            ? `${shipment.logId.substring(0, 8)}...`
+                            : shipment.logId}
                         </Typography>
                         <Typography
                           variant="body2"
                           color="textSecondary"
                           fontFamily="Poppins, sans-serif"
                         >
-                          Camera Modules
+                          {shipment.module}
                         </Typography>
                       </Box>
 
                       <LocalShippingOutlined
-
-                        sx={{ fontSize: 90, color: "#5c011a",  }}
-
+                        sx={{ fontSize: 90, color: "#5c011a" }}
                       />
                     </Box>
 
@@ -365,7 +309,7 @@ const TrackRequest = () => {
 
                     {/* Module Origin */}
                     <Box display="flex" alignItems="center" gap={1}>
-                      <CircleIcon sx={{ color: "#2ECC71", fontSize: 14 }} />
+                      <CircleIcon sx={{ color: "#2ECC71", fontSize: 14, marginBottom: 2.5 }} />
                       <Box>
                         <Typography
                           variant="subtitle1"
@@ -379,14 +323,14 @@ const TrackRequest = () => {
                           color="textSecondary"
                           fontFamily="Poppins, sans-serif"
                         >
-                          {shipment.moduleOrigin}
+                          {shipment.moduleOrigin || "Tokyo, Japan"}
                         </Typography>
                       </Box>
                     </Box>
 
                     {/* Recipient */}
                     <Box display="flex" alignItems="center" gap={1} mt={1}>
-                      <LocationOnIcon sx={{ color: "#cf4a6f", fontSize: 18 }} />
+                      <LocationOnIcon sx={{ color: "#cf4a6f", fontSize: 18, marginBottom: 2.5 }} />
                       <Box>
                         <Typography
                           variant="subtitle1"
@@ -400,7 +344,7 @@ const TrackRequest = () => {
                           color="textSecondary"
                           fontFamily="Poppins, sans-serif"
                         >
-                          {shipment.recipient}
+                          {shipment.recipient || "Unknown"}
                         </Typography>
                       </Box>
                     </Box>
@@ -415,11 +359,9 @@ const TrackRequest = () => {
                     >
                       <Box display="flex" alignItems="center" gap={1} mt={2}>
                         <Avatar
-
-                          sx={{ bgcolor: "#f23a68", width: 32, height: 32, p: 3, mr: 2}}
-
+                          src={profile.profilePicture || ""}
                         >
-                          {shipment.client.charAt(0)}
+                          {profile.firstName ? profile.firstName.charAt(0) : "?"}
                         </Avatar>
                         <Box>
                           <Typography
@@ -434,7 +376,7 @@ const TrackRequest = () => {
                             fontWeight="bold"
                             fontFamily="Poppins, sans-serif"
                           >
-                            {shipment.client}
+                            {profile.firstName || "Unknown"}
                           </Typography>
                           <Typography
                             variant="body2"
@@ -457,7 +399,7 @@ const TrackRequest = () => {
                             paddingX: 3,
                             paddingY: 1,
                           }}
-                          onClick={() => updateShipmentStatus(shipment.id)}
+                          onClick={() => updateShipmentStatus(shipment.logId, shipment.status)}
                         >
                           {shipment.status === "Pending"
                             ? "Transit"
@@ -476,8 +418,8 @@ const TrackRequest = () => {
         {/* Right Panel - Map */}
         <div className="map-side">
           <MapContainer
-            center={[14.6091, 120.9892]} // Sampaloc, Manila
-            zoom={13}
+            center={[12.8797, 121.7740]} // Center of the Philippines
+            zoom={6}
             style={{
               height: "100%",
               width: "100%",
@@ -489,6 +431,11 @@ const TrackRequest = () => {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
+            {Object.entries(factoryLocations).map(([factory, position]) => (
+              <Marker key={factory} position={position}>
+                <Popup>{factory}</Popup>
+              </Marker>
+            ))}
           </MapContainer>
         </div>
       </div>

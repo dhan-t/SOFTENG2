@@ -6,6 +6,10 @@ interface TrackingLog {
   status: string;
   updatedBy: string;
   updatedAt: string;
+  factory: string; // Add factory
+  moduleOrigin: string; // Add moduleOrigin
+  recipient: string; // Add recipient
+  client: string; // Add client
 }
 
 export const useTracking = () => {
