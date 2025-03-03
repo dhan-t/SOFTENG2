@@ -12,6 +12,7 @@ import { generatePDF } from "./pdfGenerator.js";
 import notificationsRouter from "../routes/notifications.js";
 import nodemailer from "nodemailer";
 import { authenticateToken } from "../middleware/auth.js";
+import { ObjectId } from "mongodb";
 
 dotenv.config({ path: "./config.env" });
 
@@ -355,8 +356,8 @@ connect()
               fulfilledBy,
               dateFulfilled: new Date(dateFulfilled),
               producedQty,
-              orderFulfilled: producedQty >= 100, // Example logic for order fulfillment
-              orderOnTime: new Date(dateFulfilled) <= new Date(dateRequested), // Example logic for on-time fulfillment
+              orderFulfilled: producedQty >= 100,
+              orderOnTime: new Date(dateFulfilled) <= new Date(dateRequested),
             },
           }
         );
@@ -437,8 +438,6 @@ connect()
       }
     });
 
-    // starting from here fri_14
-
     // 📌 Work Orders: Submit New Work Order (with Tracking)
     app.post("/api/workorder", async (req, res) => {
       const newWorkOrder = req.body;
@@ -448,7 +447,7 @@ connect()
           ...newWorkOrder,
           createdDate: new Date(newWorkOrder.createdDate).toISOString(),
           dueDate: new Date(newWorkOrder.dueDate).toISOString(),
-          status: newWorkOrder.status || "Pending", // Default status to "Pending" if not provided
+          status: newWorkOrder.status || "Pending",
         };
 
         const workOrdersCollection = req.app.locals.db.collection("workorder");
@@ -504,37 +503,34 @@ connect()
         }
       } catch (err) {
         console.error("Error updating work order status:", err);
-        res.status(500).json({
-          error: "An error occurred while updating work order status",
-        });
+        res
+          .status(500)
+          .json({
+            error: "An error occurred while updating work order status",
+          });
       }
     });
-
-    // ending from here fri_14
 
     // 📌 Reports: Generate PDF Report
     app.post("/api/reports", async (req, res) => {
       try {
         const { productionData, logisticsData, trackingData } = req.body;
 
-        // Ensure the data is valid
         if (!productionData || !logisticsData || !trackingData) {
           return res
             .status(400)
             .json({ error: "All data fields are required" });
         }
 
-        // Generate the PDF
         const pdfBuffer = await generatePDF(
           productionData,
           logisticsData,
           trackingData
         );
 
-        // Send the PDF as a response
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Disposition", "attachment; filename=report.pdf");
-        res.send(Buffer.from(pdfBuffer)); // Ensure the buffer is sent correctly
+        res.send(Buffer.from(pdfBuffer));
       } catch (err) {
         console.error("Error generating PDF report:", err);
         res.status(500).json({ error: "Failed to generate report" });
@@ -588,7 +584,7 @@ connect()
       }
     });
 
-    // Update the forgot password endpoint in your backend (index.js)
+    // Password Reset
     app.post("/api/forgot-password", async (req, res) => {
       const { email } = req.body;
 
@@ -600,12 +596,10 @@ connect()
           return res.status(404).json({ error: "User not found" });
         }
 
-        // Generate a password reset token (you can use JWT or any other method)
         const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
           expiresIn: "1h",
         });
 
-        // Send the reset token to the user's email
         const mailOptions = {
           from: process.env.EMAIL_USER,
           to: email,
@@ -664,7 +658,7 @@ connect()
       }
     });
 
-    // Add these endpoints to your backend (index.js)
+    // User Settings
     app.get("/api/settings", authenticateToken, async (req, res) => {
       try {
         const collection = db.collection("settings");

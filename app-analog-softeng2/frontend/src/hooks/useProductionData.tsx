@@ -9,6 +9,7 @@ interface ProductionData {
   producedQty: number;
   orderFulfilled: boolean;
   orderOnTime: boolean;
+  phoneModel?: string; // Add phone model to ProductionData
 }
 
 export const useProductionData = () => {

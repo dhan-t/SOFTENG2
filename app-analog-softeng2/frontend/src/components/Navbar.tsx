@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "./logos/image 1.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -8,6 +8,7 @@ import StickyNote2RoundedIcon from '@mui/icons-material/StickyNote2Rounded';
 import InventoryRoundedIcon from '@mui/icons-material/InventoryRounded';
 import FindReplaceRoundedIcon from '@mui/icons-material/FindReplaceRounded';
 import LibraryAddCheckRoundedIcon from '@mui/icons-material/LibraryAddCheckRounded';
+import { useAuth } from "../hooks/useAuth";
 import "./Navbar.css";
 
 interface NavbarProps {
@@ -19,6 +20,34 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
   const navigate = useNavigate();
   const location = useLocation(); // Get the current route
   const [activeItem, setActiveItem] = useState(location.pathname); // Track active item
+  const { user, logout } = useAuth();
+  const [profile, setProfile] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    profilePicture: "",
+  });
+
+  useEffect(() => {
+    // Fetch user profile from the backend
+    const fetchProfile = async () => {
+      if (user) {
+        try {
+          const response = await fetch(`http://localhost:5001/api/user/${user}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          console.log("Fetched profile:", data);
+          setProfile(data);
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+        }
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
 
   const handleItemClick = (path: string) => {
     setActiveItem(path);
@@ -26,6 +55,7 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
   };  
 
   const handleLogout = () => {
+    logout();
     navigate("/");
   };
 
@@ -79,25 +109,33 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
         />
         <NavbarItem
           text="Report production"
-          link="/reportproduction"
+          link="/production"
           isExpanded={isExpanded}
           icon={<LibraryAddCheckRoundedIcon />}
-          active={activeItem === "/reportproduction"}
+          active={activeItem === "/production"}
           onClick={handleItemClick}
         />
       </ul>
 
       <div className="navbar-bottom">
         <div className="user-info">
-          <img
-            src="https://ui-avatars.com/api/?background=c7d2fe&color=3730a3&bold=true"
-            alt="User Avatar"
-            className="user-avatar"
-          />
+          {profile.profilePicture ? (
+            <img
+              src={profile.profilePicture}
+              alt="User Avatar"
+              className="user-avatar"
+            />
+          ) : (
+            <img
+              src="https://ui-avatars.com/api/?background=c7d2fe&color=3730a3&bold=true"
+              alt="User Avatar"
+              className="user-avatar"
+            />
+          )}
           {isExpanded && (
             <div className="user-details">
-              <h4>John Doe</h4>
-              <span>johndoe@gmail.com</span>
+              <h4>{`${profile.firstName} ${profile.lastName}`}</h4>
+              <span>{profile.email}</span>
             </div>
           )}
         </div>
