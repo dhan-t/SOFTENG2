@@ -24,7 +24,6 @@ import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@m
 import {
   Event as EventIcon,
   Person as PersonIcon,
-  WidgetsRounded as WidgetsRoundedIcon,
   SmartphoneRounded as SmartphoneRoundedIcon,
 } from "@mui/icons-material";
 
@@ -55,13 +54,13 @@ const ReportProduction: React.FC = () => {
 
   const [formData, setFormData] = useState<ProductionData>({
     workOrderID: "",
+    phoneModel: "", // Add phone model to form data
     dateRequested: "",
     fulfilledBy: "",
     dateFulfilled: "",
     producedQty: 0,
     orderFulfilled: false,
-    orderOnTime: false,
-    phoneModel: "", // Add phone model to form data
+    orderOnTime: false
   });
   const [editMode, setEditMode] = useState<string | null>(null);
 
@@ -100,13 +99,13 @@ const ReportProduction: React.FC = () => {
     }
     setFormData({
       workOrderID: "",
+      phoneModel: "", // Reset phone model
       dateRequested: "",
       fulfilledBy: "",
       dateFulfilled: "",
       producedQty: 0,
       orderFulfilled: false,
-      orderOnTime: false,
-      phoneModel: "", // Reset phone model
+      orderOnTime: false
     });
     setEditMode(null);
   };
@@ -124,7 +123,16 @@ const ReportProduction: React.FC = () => {
     fetchProductionData(); // Refresh the data after deletion
   };
 
-  const rows = productionData.map((item, index) => ({
+  // Merge productionData with workOrders to include phoneModel
+  const mergedData = productionData.map((item) => {
+    const workOrder = workOrders.find((order) => order.id === item.workOrderID);
+    return {
+      ...item,
+      phoneModel: workOrder?.module || "",
+    };
+  });
+
+  const rows = mergedData.map((item, index) => ({
     ...item,
     id: item.id || index,
     index: index + 1,
@@ -133,6 +141,12 @@ const ReportProduction: React.FC = () => {
   const columns: GridColDef[] = [
     { field: "index", headerName: "ID", width: 20, maxWidth: 20 },
     { field: "workOrderID", headerName: "Work Order ID", width: 100, sortable: true },
+    {
+    field: "phoneModel",
+    headerName: "Phone Model",
+    width: 150,
+    sortable: true,
+    },
     {
       field: "dateRequested",
       headerName: "Date Requested",

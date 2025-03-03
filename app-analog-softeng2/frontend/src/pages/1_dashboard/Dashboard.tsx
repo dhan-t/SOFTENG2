@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { IconType } from "react-icons/lib";
 import { useProductionData } from "../../hooks/useProductionData";
 import { useLogistics } from "../../hooks/useLogistics";
 import { useTracking } from "../../hooks/useTracking";
+import { useWorkOrders } from "../../hooks/useWorkOrder";
 import "./Dashboard.css";
 import Header from "../components/Header";
 import { FaBox, FaTruck, FaUser, FaClipboardList } from "react-icons/fa";
 import LineChartComponent from "../test page/test";
-import { ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { ToggleButton, ToggleButtonGroup, Box } from "@mui/material";
 import { TrendingUp, TrendingDown } from "@mui/icons-material";
 import { AssignmentTurnedIn } from "@mui/icons-material";
 import {
@@ -26,27 +27,17 @@ import {
   LineChart,
   Line,
   CartesianGrid,
+  RadialBarChart,
+  RadialBar,
 } from "recharts";
 import {
   Card,
   CardContent,
   Typography,
   LinearProgress,
-  Box,
   Chip,
 } from "@mui/material";
-import { green } from "@mui/material/colors";
 import { useReports } from "../../hooks/useReports";
-
-// ✅ Small components stuff
-interface CardProps {
-  type: "progress" | "rate" | "summary";
-  title: string;
-  currentValue?: number;
-  maxValue?: number;
-  oldValue?: number;
-  description?: string;
-}
 
 const GenerateReport = () => {
   const { productionData } = useProductionData();
@@ -72,129 +63,158 @@ const GenerateReport = () => {
   );
 };
 
-const UnifiedCard: React.FC<CardProps> = ({
+// ✅ Small dashboard cards
+interface UnifiedCardProps {
+  type: "rate" | "progress" | "summary";
+  title: string;
+  icon?: React.ReactNode; // Icon Component
+  currentValue: number;
+  maxValue?: number; // Required for "progress" type
+  oldValue?: number; // Required for "rate" type
+  description?: string;
+}
+// ✅ Small dashboard cards
+const UnifiedCard: React.FC<UnifiedCardProps> = ({
   type,
   title,
-  currentValue = 0,
-  maxValue = 0,
+  currentValue,
+  maxValue = 100,
   oldValue = 0,
   description = "",
 }) => {
+  // ✅ Calculate percentage change (for "rate" type)
   const difference = currentValue - oldValue;
   const isPositive = difference >= 0;
-  const percentageChange =
-    oldValue !== 0
-      ? ((difference / Math.abs(oldValue)) * 100).toFixed(2) // Format to 2 decimal places
-      : "0.00"; // Prevent NaN and ensure consistent output
+  const percentageChange = oldValue
+    ? ((difference / Math.abs(oldValue)) * 100).toFixed(2)
+    : "0.00";
 
-  // ✅ Dynamically select icon & color (Only for "rate" cards)
+  // ✅ Select the correct icon & color dynamically
   const IconComponent = isPositive ? TrendingUp : TrendingDown;
   const iconColor = isPositive ? "green" : "red";
 
-  {
-    /* Small dashboard component builder*/
-  }
   return (
-    <div className={`small-dashboard-card ${type}-card`}>
-      <CardContent
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          height: "fit-content",
-        }}
-      >
-        {/* Left Side */}
+    <Card
+      sx={{
+        boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
+        borderRadius: 5,
+        paddingLeft: 2,
+        paddingRight: 2,
+        width: "100%",
+        backgroundColor: "white",
+      }}
+    >
+      <CardContent sx={{ display: "flex", flexDirection: "column" }}>
+        {/* Title & Icon */}
         <Box
           sx={{
-            flex: 7,
-            width: "fill-container",
-            borderRadius: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
           }}
         >
+          {/* Allow title to take the remaining space and align it to the right */}
           <Typography
             variant="h6"
-            className="card-title"
-            sx={{ fontSize: "1.1rem", fontWeight: "bold" }}
+            sx={{
+              fontWeight: "bold",
+              color: "#09194f",
+              textAlign: "left", // Aligns text to the right
+            }}
           >
             {title}
           </Typography>
-          <Typography variant="h4" color="primary" className="card-value">
-            {currentValue}
-          </Typography>
-          <Typography
-            variant="body2"
-            color="textSecondary"
-            className="card-units"
-            sx={{ fontSize: ".8rem" }}
-          >
-            {type === "rate" ? "vs. previous value" : description}
-          </Typography>
         </Box>
 
-        {/* ✅ Right Side: Show only if "rate" type */}
+        {/* Rate Indicator */}
         {type === "rate" && (
           <Box
             sx={{
               display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center", // ✅ Center vertically
-              width: "100%", // ✅ Ensure full width
-              height: "100%", // ✅ Ensure full height
-              mt: 5,
+              alignItems: "top",
+              justifyContent: "space-between",
             }}
           >
-            {/* ✅ Dynamic Icon */}
+            {/* Current Value */}
+            <Typography
+              variant="h4"
+              color="primary"
+              sx={{ fontWeight: 500, fontSize: "3rem", textAlign: "baseline" }}
+            >
+              {currentValue}
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              {description}
+            </Typography>
+            {/* Icon and Chip (Stacked) */}
             <Box
               sx={{
                 display: "flex",
+                flexDirection: "column", // Stack items vertically
                 alignItems: "center",
-                alignSelf: "flex-start", // Moves only the icon up/down without shifting other content
-                position: "relative", // Allows independent movement
-                top: 85, // Moves the icon up
-                right: 115,
+                // Center items horizontally
               }}
             >
-              <IconComponent
-                sx={{
-                  fontSize: "4rem",
-                  color: iconColor,
-                  mt: -10,
-                }}
+              <IconComponent sx={{ fontSize: "3rem", color: iconColor }} />
+              <Chip
+                label={`${percentageChange}%`}
+                sx={{ backgroundColor: iconColor, color: "white", mt: 0.5 }} // Adds spacing between icon and chip
               />
             </Box>
+          </Box>
+        )}
 
-            {/* ✅ Percentage Change */}
-            <Chip
-              label={`${percentageChange}%`}
-              sx={{
-                fontSize: "1rem",
-                backgroundColor: isPositive ? "green" : "red",
-                color: "white",
-                fontWeight: "bold",
-                mr: 50,
-                mt: 10,
-              }}
-            />
+        {/* Text for "summary" type */}
+        {type === "summary" && description && (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Typography
+              variant="h4"
+              color="primary"
+              sx={{ fontWeight: 500, fontSize: "3rem", textAlign: "baseline" }}
+            >
+              {currentValue}
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              {description}
+            </Typography>
           </Box>
         )}
       </CardContent>
 
-      {/* ✅ Progress Bar for "progress" type */}
+      {/* Progress Bar for "progress" type */}
       {type === "progress" && (
-        <Box sx={{ width: "100%", mt: 1 }}>
+        <Box
+          sx={{
+            alignItems: "top",
+            justifyContent: "space-between",
+            marginLeft: 2,
+            marginRight: 2,
+          }}
+        >
+          <Typography
+            variant="h4"
+            color="primary"
+            sx={{ fontWeight: 500, fontSize: "3rem", textAlign: "top" }}
+          >
+            {currentValue}
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            {description}
+          </Typography>
           <LinearProgress
             variant="determinate"
             value={(currentValue / maxValue) * 100}
-            sx={{
-              marginLeft: 2,
-              marginRight: 2,
-            }}
           />
         </Box>
       )}
-    </div>
+    </Card>
   );
 };
 
@@ -465,30 +485,243 @@ const dataLogistics = [
   },
 ];
 
-// Bar Chart
-const barChartData = dataLogistics.map((item) => ({
-  name: item.moduleCode,
-  quantity: item.quantity,
-}));
+// ✅ Barchart
+const fetchBarChartData = (
+  apiUri: string,
+  setState: React.Dispatch<React.SetStateAction<any[]>>
+) => {
+  useEffect(() => {
+    fetch(apiUri)
+      .then((res) => res.json())
+      .then((data) => setState(data))
+      .catch((err) => console.error("Error fetching bar chart data:", err));
+  }, [apiUri]);
+};
 
-// Pie Chart
-const factoryCounts = dataLogistics.reduce((acc, item) => {
-  acc[item.recipient] = (acc[item.recipient] || 0) + 1;
-  return acc;
-}, {} as Record<string, number>);
-const pieChartData = Object.keys(factoryCounts).map((key) => ({
-  name: key,
-  value: factoryCounts[key],
-}));
-const pieColors = [
-  "#FF6384",
-  "#36A2EB",
-  "#FFCE56",
-  "#4BC0C0",
-  "#9966FF",
+// ✅ Barchart
+const CustomBarChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
+  const [barChartData, setBarChartData] = useState<
+    { name: string; value: number }[]
+  >([]);
+
+  fetchBarChartData(apiUri, setBarChartData);
+
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={barChartData}>
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Bar dataKey="value" fill="#a10a2f" />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+};
+
+// ✅ Piechart
+const piechartCOLORS = [
+  "#FFB3B3",
+  "#FF9999",
+  "#FF7F7F",
+  "#FF6666",
+  "#FF4D4D",
   "#E67373",
-  "#D6A2E8",
+  "#D65C5C",
 ];
+// ✅ Piechart
+const PieChartComponent: React.FC<{ apiUrl: string }> = ({ apiUrl }) => {
+  const [chartData, setChartData] = useState([]);
+
+  useEffect(() => {
+    fetch(apiUrl)
+      .then((res) => res.json())
+      .then((data) => setChartData(data))
+      .catch((err) => console.error("Error fetching pie chart data:", err));
+  }, [apiUrl]);
+
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <PieChart>
+        <Pie
+          data={chartData}
+          dataKey="value"
+          nameKey="name"
+          cx="50%"
+          cy="50%"
+          outerRadius={100}
+          label
+        >
+          {chartData.map((entry, index) => (
+            <Cell
+              key={`cell-${index}`}
+              fill={piechartCOLORS[index % piechartCOLORS.length]}
+            />
+          ))}
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+};
+
+// ✅ Gaugechart
+const fetchGaugeChartData = (
+  apiUri: string,
+  setState: React.Dispatch<React.SetStateAction<any[]>>
+) => {
+  useEffect(() => {
+    fetch(apiUri)
+      .then((res) => res.json())
+      .then((data) => setState(data))
+      .catch((err) => console.error("Error fetching gauge chart data:", err));
+  }, [apiUri]);
+};
+
+// ✅ Gaugechart
+const GaugeChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
+  const [gaugeData, setGaugeData] = useState<{ name: string; value: number }[]>(
+    []
+  );
+
+  fetchGaugeChartData(apiUri, setGaugeData);
+
+  return (
+    <ResponsiveContainer width="100%" height={250}>
+      <RadialBarChart
+        cx="50%"
+        cy="50%"
+        innerRadius="60%"
+        outerRadius="100%"
+        barSize={20}
+        data={gaugeData}
+      >
+        <RadialBar
+          background
+          dataKey="value"
+          fill="#FF4D4D"
+        />
+        <Tooltip />
+        <Legend />
+      </RadialBarChart>
+    </ResponsiveContainer>
+  );
+};
+
+// ✅ Module linechart
+const ModuleLineChart = ({ apiUri }: { apiUri: string }) => {
+  const [data, setData] = useState([]);
+  const [view, setView] = useState("daily");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${apiUri}?view=${view}`);
+        const result = await response.json();
+        setData(result);
+      } catch (error) {
+        console.error("Error fetching line chart data:", error);
+      }
+    };
+
+    fetchData();
+  }, [apiUri, view]); // Fetch data when URI or view changes
+
+  return (
+    <div>
+      {/* Toggle View Buttons */}
+      <ToggleButtonGroup
+        value={view}
+        exclusive
+        onChange={(event, newView) => newView && setView(newView)}
+        aria-label="view toggle"
+      >
+        <ToggleButton value="daily">Daily</ToggleButton>
+        <ToggleButton value="weekly">Weekly</ToggleButton>
+        <ToggleButton value="monthly">Monthly</ToggleButton>
+      </ToggleButtonGroup>
+
+      {/* Line Chart */}
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <CartesianGrid stroke="#ccc" />
+          <Tooltip />
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke="#FF4D4D"
+            strokeWidth={2}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+// ✅ Production Stackedbarchart
+const StackedBarChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
+  const [chartData, setChartData] = useState<
+    { workOrderId: string; producedQty: number; orderedQty: number }[]
+  >([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(apiUri);
+        const data = await response.json();
+        setChartData(data);
+      } catch (error) {
+        console.error("Error fetching stacked bar chart data:", error);
+      }
+    };
+    fetchData();
+  }, [apiUri]);
+
+  return (
+    <ResponsiveContainer width={700} height={400}>
+      <BarChart data={chartData}>
+        <XAxis dataKey="workOrderId" label={{ value: "Work Order ID", position: "insideBottom", offset: -5 }} />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="orderedQty" stackId="a" fill="#42a5f5" />
+        <Bar dataKey="producedQty" stackId="a" fill="#66bb6a" />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+};
+
+// ✅ Production Barchart late fulfillment
+const LateWorkOrdersChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
+  const [lateWorkOrders, setLateWorkOrders] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(apiUri);
+        const data = await response.json();
+        setLateWorkOrders(data.lateWorkOrders);
+      } catch (error) {
+        console.error("Error fetching late work orders data:", error);
+      }
+    };
+    fetchData();
+  }, [apiUri]);
+
+  const chartData = [{ name: "Late Work Orders", count: lateWorkOrders }];
+
+  return (
+    <BarChart width={500} height={300} data={chartData}>
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="name" />
+      <YAxis />
+      <Tooltip />
+      <Bar dataKey="count" fill="#ff7300" />
+    </BarChart>
+  );
+};
 
 // Line Chart
 const requestTrendsData = dataLogistics.reduce((acc, item) => {
@@ -499,35 +732,6 @@ const lineChartData = Object.keys(requestTrendsData).map((key) => ({
   date: key,
   requests: requestTrendsData[key],
 }));
-
-const ModulePie: React.FC = () => {
-  return (
-    <div>
-      <ResponsiveContainer width="100%" height={300}>
-        <PieChart>
-          <Pie
-            data={pieChartData}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            outerRadius={100}
-            fill="#8884d8"
-            label
-          >
-            {pieChartData.map((_, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={pieColors[index % pieColors.length]}
-              />
-            ))}
-          </Pie>
-          <Tooltip />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
 
 const ModuleLine: React.FC = () => {
   return (
@@ -541,24 +745,6 @@ const ModuleLine: React.FC = () => {
           <Legend />
           <Line type="monotone" dataKey="requests" stroke="#ff9800" />
         </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
-
-// Main logistic code
-const ModuleBar: React.FC = () => {
-  return (
-    <div>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={barChartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="quantity" fill="#4caf50" />
-        </BarChart>
       </ResponsiveContainer>
     </div>
   );
@@ -586,35 +772,46 @@ interface Reminder {
 
 const Heatmap = () => {
   const { productionData, loading, error } = useProductionData();
+  const { workOrders } = useWorkOrders();
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
   if (productionData.length === 0) return <p>No production data available.</p>;
 
+  // Merge productionData with workOrders to include phoneModel
+  const mergedData = productionData.map((item) => {
+    const workOrder = workOrders.find((order) => order._id === item.workOrderID);
+    return {
+      ...item,
+      phoneModel: workOrder?.module || "Unknown Model",
+    };
+  });
+
   // Calculate max value for normalization
   const maxProduced = Math.max(
-    ...productionData.map((item) => item.quantityProduced),
+    ...mergedData.map((item) => item.producedQty),
     1
   );
 
   return (
     <div className="heatmap">
-      {[...productionData] // Create a copy to avoid modifying the original array
+      {[...mergedData] // Create a copy to avoid modifying the original array
         .reverse() // Reverse the order so the latest push is first
         .map((item) => {
-          const intensity = (item.quantityProduced / maxProduced) * 255;
+          const intensity = (item.producedQty / maxProduced) * 500; // Keeps colors soft and balanced
           return (
             <div
-              key={item.productId}
+              key={item.workOrderID}
               className="heatmap-cell"
               style={{
-                backgroundColor: `rgb(${255 - intensity}, ${
-                  255 - intensity
-                }, 255)`, // Blue scale
+                backgroundColor: `rgb(${280 - intensity / 5}, ${
+                  90 - intensity / 5
+                }, ${130 - intensity / 3})`,
+                // Soft Red → Coral → Light Pink
               }}
             >
-              <span className="product-name">{item.productName}</span>
-              <span className="product-quantity">{item.quantityProduced}</span>
+              <span className="product-name">{item.phoneModel}</span>
+              <span className="product-quantity">{item.producedQty}</span>
             </div>
           );
         })}
@@ -652,10 +849,17 @@ const Dashboard: React.FC = () => {
   } = useProductionData();
 
   const {
+    workOrders,
+    loading: workOrdersLoading,
+    error: workOrdersError,
+  } = useWorkOrders();
+
+  const {
     requests,
     loading: logisticsLoading,
     error: logisticsError,
   } = useLogistics();
+
   const {
     trackingLogs,
     loading: trackingLoading,
@@ -698,6 +902,7 @@ const Dashboard: React.FC = () => {
     }
     return null;
   };
+
   const handleDayHover = (date: Date) => {
     const formattedDate = date.toISOString().split("T")[0];
     const reminderForDate = reminders.find(
@@ -705,10 +910,23 @@ const Dashboard: React.FC = () => {
     );
     return reminderForDate ? reminderForDate.title : null;
   };
-  if (productionLoading || logisticsLoading || trackingLoading)
+
+  if (productionLoading || workOrdersLoading || logisticsLoading || trackingLoading)
     return <div className="loading">Loading...</div>;
-  if (productionError || logisticsError || trackingError)
+  if (productionError || workOrdersError || logisticsError || trackingError)
     return <div className="error">Error loading data.</div>;
+
+  // Calculate dynamic values
+  const totalActiveWorkOrders = workOrders.length;
+  const completedWorkOrders = workOrders.filter(order => order.status === "Completed").length;
+  const pendingModuleRequests = requests.filter(request => request.status === "Pending").length;
+  const shipmentsInTransit = trackingLogs.filter(log => log.status === "In Transit").length;
+
+  // Calculate production view values
+  const productionRate = productionData.reduce((acc, item) => acc + item.producedQty, 0) / productionData.length || 0;
+  const lateFulfillments = productionData.filter(item => !item.orderOnTime).length;
+  const totalUnitsProduced = productionData.reduce((acc, item) => acc + item.producedQty, 0);
+  const fulfillmentEfficiency = (productionData.filter(item => item.orderFulfilled).length / productionData.length) * 100 || 0;
 
   const inventoryItems: SummaryItem[] = [
     {
@@ -742,6 +960,14 @@ const Dashboard: React.FC = () => {
       iconBgColor: "#F6F2FF",
       iconColor: "#A461D8",
     },
+  ];
+
+  const softCoolColors = [
+    "#D64550", // Soft Crimson
+    "#E57373", // Light Coral
+    "#F28E8E", // Warm Pastel Red
+    "#F8B6B6", // Pale Blush Red
+    "#FDDCDC", // Very Soft Pink
   ];
 
   return (
@@ -785,9 +1011,9 @@ const Dashboard: React.FC = () => {
               backgroundColor: "#e2e6ea",
             },
             "&.Mui-selected, &.Mui-focusVisible": {
-              backgroundColor: "#261cc9",
+              backgroundColor: "#ad0232",
               color: "white",
-              boxShadow: "0px 2px 8px rgba(0, 123, 255, 0.4)",
+              boxShadow: "0px 2px 8px rgba(212, 126, 126, 0.4)",
             },
           }}
         >
@@ -812,9 +1038,9 @@ const Dashboard: React.FC = () => {
               backgroundColor: "#e2e6ea",
             },
             "&.Mui-selected, &.Mui-focusVisible": {
-              backgroundColor: "#261cc9",
+              backgroundColor: "#ad0232",
               color: "white",
-              boxShadow: "0px 2px 8px rgba(0, 123, 255, 0.4)",
+              boxShadow: "0px 2px 8px rgba(212, 126, 126, 0.4)",
             },
           }}
         >
@@ -839,9 +1065,9 @@ const Dashboard: React.FC = () => {
               backgroundColor: "#e2e6ea",
             },
             "&.Mui-selected, &.Mui-focusVisible": {
-              backgroundColor: "#261cc9",
+              backgroundColor: "#ad0232",
               color: "white",
-              boxShadow: "0px 2px 8px rgba(0, 123, 255, 0.4)",
+              boxShadow: "0px 2px 8px rgba(212, 126, 126, 0.4)",
             },
           }}
         >
@@ -855,241 +1081,41 @@ const Dashboard: React.FC = () => {
       {view === "all" && (
         <div className="main-div">
           <div className="small-holder">
-            <Box
-              sx={{
-                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
-                borderRadius: 6,
-                p: 1,
-                backgroundColor: "white",
-                minWidth: "220px",
-                minHeight: "150px",
-              }}
-            >
-              <UnifiedCard
-                type="progress"
-                title={
-                  <Typography
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start", // to the top
-                      alignSelf: "flex-start", // same height as text
-                      fontFamily: "Poppins, sans-serif", // Ensures the title also uses Poppins
-                      fontWeight: 600, // Optional: Makes it stand out
-                      whiteSpace: "nowrap", // Prevents text from wrapping to a new line
-                      overflow: "hidden", // Ensures no extra spacing issues
-                      fontSize: "1.05rem",
-                      color: "#09194f",
-                    }}
-                  >
-                    <AssignmentTurnedIn
-                      sx={{
-                        fontSize: "1.3rem",
-                        mr: 6,
-                        mt: 0.5,
-                        color: "#0f38bf",
-                      }}
-                    />
-                    Daily Quota
-                  </Typography>
-                }
-                currentValue={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 500,
-                      fontSize: "2.5rem",
-                      mt: 5,
+            {/* ✅ Daily Quota Progress Card */}
+            <UnifiedCard
+              type="summary"
+              title="Total Active Work Orders"
+              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+              currentValue={totalActiveWorkOrders} // DYNAMICVALUE
+              description="in 24 hours"
+            />
 
-                      mb: -1.3,
-                    }}
-                  >
-                    94
-                  </Typography>
-                }
-                maxValue={100}
-              />
-            </Box>
+            {/* ✅ Unresolved Requests Summary */}
+            <UnifiedCard
+              type="summary"
+              title="Completed Work Orders"
+              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+              currentValue={completedWorkOrders} // DYNAMICVALUE
+              description="in 24 hours"
+            />
 
-            <Box
-              sx={{
-                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
-                borderRadius: 6,
-                p: 0.7,
-                backgroundColor: "white",
-                minWidth: "280px",
-                minHeight: "150px",
-                display: "flex",
-                flexDirection: "column", // Makes sure children are stacked vertically
-                justifyContent: "space-between", // Pushes description to the bottom
-              }}
-            >
-              <UnifiedCard
-                type="summary"
-                title={
-                  <Typography
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start", // Aligns icon and text properly
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      fontSize: "1rem",
-                      color: "#09194f",
-                      mt: 1,
-                    }}
-                  >
-                    <AssignmentTurnedIn
-                      sx={{ fontSize: "1.3rem", mr: 4, color: "#0f38bf" }}
-                    />
-                    Unresolved Requests
-                  </Typography>
-                }
-                currentValue={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 500,
-                      fontSize: "2.5rem",
-                      mt: 5,
-                      ml: 1,
-                    }}
-                  >
-                    10
-                  </Typography>
-                }
-                description={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontSize: "0.85rem",
-                      color: "#6b7280", // Soft gray color
-                      textAlign: "left",
-                      ml: 1,
-                    }}
-                  >
-                    Total revenue for the month
-                  </Typography>
-                }
-              />
-            </Box>
+            {/* ✅ Weekly Trend Rate Card */}
+            <UnifiedCard
+              type="summary"
+              title="Pending Module Requests"
+              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+              currentValue={pendingModuleRequests} // DYNAMICVALUE
+              description="in 24 hours"
+            />
 
-            <Box
-              sx={{
-                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
-                borderRadius: 6,
-                p: 0.7,
-                backgroundColor: "white",
-                width: "350px", // Set a fixed width
-                maxWidth: "260px",
-                minHeight: "150px",
-                display: "flex",
-                flexDirection: "column", // Makes sure children are stacked vertically
-                justifyContent: "space-between", // Pushes description to the bottom
-                flexShrink: 0, // Prevents resizing due to content
-              }}
-            >
-              <UnifiedCard
-                type="rate"
-                title={
-                  <Typography
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start", // Aligns icon and text properly
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      fontSize: "1.1rem",
-                      color: "#09194f",
-                      mt: 1,
-                      mr: 6,
-                    }}
-                  >
-                    <AssignmentTurnedIn
-                      sx={{ fontSize: "1.3rem", mr: 8, color: "#0f38bf" }}
-                    />
-                    Weekly Trend
-                  </Typography>
-                }
-                currentValue={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 500,
-                      fontSize: "2.5rem",
-                      mt: 5,
-                    }}
-                  >
-                    90
-                  </Typography>
-                }
-                oldValue={120}
-              />
-            </Box>
-
-            <Box
-              sx={{
-                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
-                borderRadius: 6,
-                p: 0.7,
-                backgroundColor: "white",
-                minWidth: "280px",
-                minHeight: "150px",
-                display: "flex",
-                flexDirection: "column", // Makes sure children are stacked vertically
-                justifyContent: "space-between", // Pushes description to the bottom
-              }}
-            >
-              <UnifiedCard
-                type="summary"
-                title={
-                  <Typography
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start", // Aligns icon and text properly
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      fontSize: "1.1rem",
-                      color: "#09194f",
-                      mt: 1,
-                    }}
-                  >
-                    <AssignmentTurnedIn
-                      sx={{ fontSize: "1.3rem", mr: 6, color: "#0f38bf" }}
-                    />
-                    Monthly Revenue
-                  </Typography>
-                }
-                currentValue={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 500,
-                      fontSize: "2.5rem",
-                      mt: 5,
-                    }}
-                  >
-                    5000
-                  </Typography>
-                }
-                description={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontSize: "0.85rem",
-                      color: "#6b7280", // Soft gray color
-                      textAlign: "left",
-                      ml: 1,
-                    }}
-                  >
-                    Total revenue for the month
-                  </Typography>
-                }
-              />
-            </Box>
+            {/* ✅ Monthly Revenue Summary */}
+            <UnifiedCard
+              type="summary"
+              title="Shipments in Transit"
+              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+              currentValue={shipmentsInTransit} // DYNAMICVALUE
+              description="vs 30 days"
+            />
           </div>
 
           <div className="dashboard-contents">
@@ -1106,19 +1132,26 @@ const Dashboard: React.FC = () => {
                 <h2>Recent requests</h2>
                 <div className="chart">
                   <div className="pie-chart">
-                    {requests.map((item) => (
-                      <div
-                        key={item._id}
-                        className="slice"
-                        style={{
-                          backgroundColor: `#${Math.floor(
-                            Math.random() * 16777215
-                          ).toString(16)}`,
-                        }}
-                      >
-                        <span>{item.module}</span>
-                      </div>
-                    ))}
+                    {requests.map((item, index) => {
+                      const bgColor =
+                        softCoolColors[index % softCoolColors.length];
+                      const textColor = index < 3 ? "#000" : "#000"; // Darker colors get white text, lighter get dark text
+
+                      return (
+                        <div
+                          key={item._id}
+                          className="slice"
+                          style={{
+                            backgroundColor: bgColor,
+                            color: textColor, // Dynamic font color
+                            borderRadius: "12px",
+                            padding: "8px 17px 10px",
+                          }}
+                        >
+                          <span>{item.module}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -1198,251 +1231,41 @@ const Dashboard: React.FC = () => {
       {view === "production" && (
         <div className="main-div">
           <div className="small-holder">
-            <Box
-              sx={{
-                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
-                borderRadius: 6,
-                p: 1,
-                backgroundColor: "white",
-                minWidth: "230px",
-                minHeight: "150px",
-              }}
-            >
-              <UnifiedCard
-                type="progress"
-                title={
-                  <Typography
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start", // to the top
-                      alignSelf: "flex-start", // same height as text
-                      fontFamily: "Poppins, sans-serif", // Ensures the title also uses Poppins
-                      fontWeight: 600, // Optional: Makes it stand out
-                      whiteSpace: "nowrap", // Prevents text from wrapping to a new line
-                      overflow: "hidden", // Ensures no extra spacing issues
-                      mt: 1,
-                      fontSize: "1rem",
-                      color: "#09194f",
-                    }}
-                  >
-                    <AssignmentTurnedIn
-                      sx={{
-                        fontSize: "1.3rem",
-                        mr: 6,
-                        mt: 0.5,
-                        color: "#0f38bf",
-                      }}
-                    />
-                    Today's Yield
-                  </Typography>
-                }
-                currentValue={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 500,
-                      fontSize: "2.5rem",
-                      mt: 5,
+            {/* ✅ Daily Quota Progress Card */}
+            <UnifiedCard
+              type="rate"
+              title="Production Rate"
+              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+              currentValue={productionRate} // DYNAMICVALUE
+              oldValue={58} // You can replace this with a dynamic value if needed
+            />
 
-                      mb: -1.3,
-                    }}
-                  >
-                    94
-                  </Typography>
-                }
-                maxValue={100}
-              />
-            </Box>
+            {/* ✅ Unresolved Requests Summary */}
+            <UnifiedCard
+              type="summary"
+              title="Late Fulfillments "
+              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+              currentValue={lateFulfillments} // DYNAMICVALUE
+              description="in 24 hours"
+            />
 
-            <Box
-              sx={{
-                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
-                borderRadius: 6,
-                minWidth: "270px",
-                minHeight: "120px",
-                height: 200,
-                display: "flex",
-                flexDirection: "column", // Makes sure children are stacked vertically
-                justifyContent: "space-between", // Pushes description to the bottom
-              }}
-            >
-              <UnifiedCard
-                type="summary"
-                sx={{ backgroundColor: "transparent" }} // ✅ Remove white background
-                title={
-                  <Typography
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start", // Aligns icon and text properly
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                      fontSize: "1rem",
-                      color: "#09194f",
-                      maxWidth: "220px",
-                      whiteSpace: "normal",
-                      wordBreak: "break-word", // Ensures proper line breaking
-                      textAlign: "right",
-                      mt: 2,
-                    }}
-                  >
-                    <AssignmentTurnedIn
-                      sx={{
-                        fontSize: "1.4rem",
-                        mr: 2,
-                        color: "#0f38bf",
-                        ml: 1,
-                      }}
-                    />
-                    Unresolved production issues
-                  </Typography>
-                }
-                currentValue={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 500,
-                      fontSize: "2.5rem",
-                      mt: 2,
-                      ml: 1,
-                    }}
-                  >
-                    10
-                  </Typography>
-                }
-                description={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontSize: "0.85rem",
-                      color: "#6b7280", // Soft gray color
-                      textAlign: "left",
-                      ml: 1,
-                    }}
-                  >
-                    Total revenue for the month
-                  </Typography>
-                }
-              />
-            </Box>
+            {/* ✅ Weekly Trend Rate Card */}
+            <UnifiedCard
+              type="summary"
+              title="Total Units Produced"
+              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+              currentValue={totalUnitsProduced} // DYNAMICVALUE
+              description="in 24 hours"
+            />
 
-            <Box
-              sx={{
-                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
-                borderRadius: 6,
-                p: 0.7,
-                backgroundColor: "white",
-                width: "300px", // Set a fixed width
-                maxWidth: "270px",
-                minHeight: "150px",
-                display: "flex",
-                flexDirection: "column", // Makes sure children are stacked vertically
-                justifyContent: "space-between", // Pushes description to the bottom
-                flexShrink: 0, // Prevents resizing due to content
-              }}
-            >
-              <UnifiedCard
-                type="rate"
-                title={
-                  <Typography
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start", // Aligns icon and text properly
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      fontSize: "1rem",
-                      color: "#09194f",
-                      mt: 1,
-                      mr: 7,
-                    }}
-                  >
-                    <AssignmentTurnedIn
-                      sx={{ fontSize: "1.2rem", mr: 5, color: "#0f38bf" }}
-                    />
-                    Performance Rate
-                  </Typography>
-                }
-                currentValue={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 500,
-                      fontSize: "2.5rem",
-                      mt: 5,
-                    }}
-                  >
-                    90
-                  </Typography>
-                }
-                oldValue={120}
-              />
-            </Box>
-
-            <Box
-              sx={{
-                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
-                borderRadius: 6,
-                p: 0.7,
-                backgroundColor: "white",
-                minWidth: 230,
-                minHeight: "150px",
-                display: "flex",
-                flexDirection: "column", // Makes sure children are stacked vertically
-                justifyContent: "space-between", // Pushes description to the bottom
-              }}
-            >
-              <UnifiedCard
-                type="summary"
-                title={
-                  <Typography
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start", // Aligns icon and text properly
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      fontSize: "1rem",
-                      color: "#09194f",
-                      mt: 1,
-                    }}
-                  >
-                    <AssignmentTurnedIn
-                      sx={{ fontSize: "1.3rem", mr: 4, color: "#0f38bf" }}
-                    />
-                    Production Revenue
-                  </Typography>
-                }
-                currentValue={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 500,
-                      fontSize: "2.5rem",
-                      mt: 5,
-                      ml: 1,
-                    }}
-                  >
-                    5000
-                  </Typography>
-                }
-                description={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontSize: "0.85rem",
-                      color: "#6b7280", // Soft gray color
-                      textAlign: "left",
-                      ml: 1,
-                    }}
-                  >
-                    Total revenue for the month
-                  </Typography>
-                }
-              />
-            </Box>
+            {/* ✅ Monthly Revenue Summary */}
+            <UnifiedCard
+              type="rate"
+              title="Fulfillment Efficiency"
+              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+              currentValue={fulfillmentEfficiency} // DYNAMICVALUE
+              oldValue={100} // You can replace this with a dynamic value if needed
+            />
           </div>
 
           <div className="dashboard-contents">
@@ -1452,6 +1275,7 @@ const Dashboard: React.FC = () => {
                 <LineChartComponent />
               </div>
             </div>
+
             <div className="smaller-components">
               <div className="component-holder">
                 <SummaryCard title="Logistics Summary" items={logisticsItems} />
@@ -1471,339 +1295,63 @@ const Dashboard: React.FC = () => {
       {view === "logistics" && (
         <div className="main-div">
           <div className="small-holder">
-            <Box
-              sx={{
-                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
-                borderRadius: 6,
-                p: 1,
-                backgroundColor: "white",
-                minWidth: "230px",
-                minHeight: "150px",
-              }}
-            >
-              <UnifiedCard
-                type="progress"
-                title={
-                  <Typography
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start", // Aligns icon and text properly
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                      fontSize: "1rem",
-                      color: "#09194f",
-                      maxWidth: "220px",
-                      whiteSpace: "normal",
-                      wordBreak: "break-word", // Ensures proper line breaking
-                      textAlign: "right",
-                    }}
-                  >
-                    <AssignmentTurnedIn
-                      sx={{ fontSize: "1.3rem", mr: 6, color: "#0f38bf" }}
-                    />
-                    Components delivered today
-                  </Typography>
-                }
-                currentValue={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 500,
-                      fontSize: "2.5rem",
-                      mb: -2,
-                      mt: 3,
-                    }}
-                  >
-                    94
-                  </Typography>
-                }
-                maxValue={100}
-              />
-            </Box>
+            {/* ✅ Daily Quota Progress Card */}
+            <UnifiedCard
+              type="summary"
+              title="Total Module Requests "
+              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+              currentValue={94} // DYNAMICVALUE
+              description="in 24 hours"
+            />
 
-            <Box
-              sx={{
-                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
-                borderRadius: 6,
-                minWidth: "270px",
-                minHeight: "120px",
-                height: 210,
-                display: "flex",
-                flexDirection: "column", // Makes sure children are stacked vertically
-                justifyContent: "space-between", // Pushes description to the bottom
-              }}
-            >
-              <UnifiedCard
-                type="summary"
-                sx={{ backgroundColor: "transparent" }} // ✅ Remove white background
-                title={
-                  <Typography
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start", // Aligns icon and text properly
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                      fontSize: "1rem",
-                      color: "#09194f",
-                      maxWidth: "220px",
-                      whiteSpace: "normal",
-                      wordBreak: "break-word", // Ensures proper line breaking
-                      textAlign: "right",
-                      mt: 1,
-                    }}
-                  >
-                    <AssignmentTurnedIn
-                      sx={{
-                        fontSize: "1.4rem",
-                        mr: 2,
-                        color: "#0f38bf",
-                        ml: 1,
-                        mt: 1.5,
-                      }}
-                    />
-                    Open missing component requests
-                  </Typography>
-                }
-                currentValue={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 500,
-                      fontSize: "2.5rem",
+            {/* ✅ Unresolved Requests Summary */}
+            <UnifiedCard
+              type="summary"
+              title="Fulfilled Module Requests"
+              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+              currentValue={10} // DYNAMICVALUE
+              description="in 24 hours"
+            />
 
-                      ml: 1,
-                    }}
-                  >
-                    10
-                  </Typography>
-                }
-                description={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontSize: "0.85rem",
-                      color: "#6b7280", // Soft gray color
-                      textAlign: "left",
-                      ml: 1,
-                    }}
-                  >
-                    Total revenue for the month
-                  </Typography>
-                }
-              />
-            </Box>
+            {/* ✅ Weekly Trend Rate Card */}
+            <UnifiedCard
+              type="summary"
+              title="Pending Shipments"
+              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+              currentValue={90} // DYNAMICVALUE
+              description="in 24 hours"
+            />
 
-            <Box
-              sx={{
-                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
-                borderRadius: 6,
-                p: 0.7,
-                backgroundColor: "white",
-                width: "300px", // Set a fixed width
-                maxWidth: "270px",
-                minHeight: "150px",
-                display: "flex",
-                flexDirection: "column", // Makes sure children are stacked vertically
-                justifyContent: "space-between", // Pushes description to the bottom
-                flexShrink: 0, // Prevents resizing due to content
-              }}
-            >
-              <UnifiedCard
-                type="rate"
-                title={
-                  <Typography
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start", // Aligns icon and text properly
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      fontSize: ".9rem",
-                      color: "#09194f",
-                      mt: 1,
-                      mr: 7,
-                    }}
-                  >
-                    <AssignmentTurnedIn
-                      sx={{ fontSize: "1.2rem", mr: 3, color: "#0f38bf" }}
-                    />
-                    Requested parts trend
-                  </Typography>
-                }
-                currentValue={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 500,
-                      fontSize: "2.5rem",
-                      mt: 5,
-                    }}
-                  >
-                    90
-                  </Typography>
-                }
-                oldValue={120}
-              />
-            </Box>
-
-            <Box
-              sx={{
-                boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
-                borderRadius: 6,
-                p: 0.7,
-                backgroundColor: "white",
-                minWidth: 230,
-                minHeight: "150px",
-                display: "flex",
-                flexDirection: "column", // Makes sure children are stacked vertically
-                justifyContent: "space-between", // Pushes description to the bottom
-              }}
-            >
-              <UnifiedCard
-                type="summary"
-                title={
-                  <Typography
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start", // Aligns icon and text properly
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                      fontSize: "1rem",
-                      color: "#09194f",
-                      maxWidth: "220px",
-                      whiteSpace: "normal",
-                      wordBreak: "break-word", // Ensures proper line breaking
-                      textAlign: "right",
-                    }}
-                  >
-                    <AssignmentTurnedIn
-                      sx={{ fontSize: "1.3rem", mr: 4, color: "#0f38bf" }}
-                    />
-                    Cost of missing components
-                  </Typography>
-                }
-                currentValue={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 500,
-                      fontSize: "2.5rem",
-                      mb: -1,
-                      mt: 4,
-                    }}
-                  >
-                    5000
-                  </Typography>
-                }
-                description={
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      fontSize: "0.85rem",
-                      color: "#6b7280", // Soft gray color
-                      textAlign: "left",
-                      mt: 1,
-                    }}
-                  >
-                    Total revenue for the month
-                  </Typography>
-                }
-              />
-            </Box>
+            {/* ✅ Monthly Revenue Summary */}
+            <UnifiedCard
+              type="summary"
+              title="Average Delivery Time"
+              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+              currentValue={88}
+              description="in 24 hours"
+            />
           </div>
 
           <div className="dashboard-contents">
             <div className="bigger-components">
               <div className="component-holder">
                 <h2>Most Requested Items</h2>
-                <ModuleBar />
-              </div>
-              <div className="component-holder">
-                <h2>Factory Request Distribuition</h2>
-                <ModulePie />
-              </div>
-              <div className="component-holder">
-                <h2>Request Trends Over Time</h2>
-                <ModuleLine />
+                <CustomBarChart apiUri="http://localhost:5001/api/module-chart" />
               </div>
             </div>
             <div className="smaller-components">
               <div className="component-holder">
-                <h2>Logistics Summary</h2>
-                <div className="chart">
-                  <div className="pie-chart">
-                    {requests.map((item) => (
-                      <div
-                        key={item._id}
-                        className="slice"
-                        style={{
-                          backgroundColor: `#${Math.floor(
-                            Math.random() * 16777215
-                          ).toString(16)}`,
-                        }}
-                      >
-                        <span>{item.module}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <h2>Factory Request Distribuition</h2>
+                <PieChartComponent apiUrl="http://localhost:5001/api/logistics-summary" />
+              </div>
+              <div className="component-holder">
+                <h2>Module Request Fulfillment Rate</h2>
+                <GaugeChart apiUri="http://localhost:5001/api/fulfillment-rate" />
               </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* Tracking will be removed in prod
-      {view === "tracking" && (
-        <div className="main-div">
-          <div className="small-holder">
-            <UnifiedCard
-              type="progress"
-              title="Modules updated today"
-              currentValue={94}
-              maxValue={100}
-            />
-            <UnifiedCard
-              type="summary"
-              title="Requests pending update"
-              currentValue={10}
-              description="Total revenue for the month"
-            />
-            <UnifiedCard
-              type="rate"
-              title="Status updates vs. last week"
-              currentValue={90}
-              oldValue={120}
-            />
-            <UnifiedCard
-              type="summary"
-              title="Financial impact of delays"
-              currentValue={5000}
-              description="Total revenue for the month"
-            />
-          </div>
-          <div className="component-holder">
-            <TrackingTest />
-          </div>
-          <div className="component-holder">
-            <h2>Tracking Summary</h2>
-            <ul className="tracking-logs">
-              {trackingLogs.map((log) => (
-                <li key={log.logId}>
-                  <span className="module">{log.module}</span>: {log.status}{" "}
-                  (Updated by {log.updatedBy} on{" "}
-                  {new Date(log.updatedAt).toLocaleDateString()})
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-      )}*/}
     </div>
   );
 };
