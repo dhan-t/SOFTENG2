@@ -45,25 +45,6 @@ const SpeakerIcon = () => (
   </span>
 );
 
-const WorkOrderSelector = () => {
-  const handleSelectionChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const workOrderId = event.target.value;
-    const selectedOrder = workOrders.find((order) => order.id === workOrderId);
-
-    if (selectedOrder) {
-      setSelectedWorkOrder(selectedOrder);
-      setFormData({
-        module: selectedOrder.module,
-        requestDate: selectedOrder.requestDate,
-        dueDate: selectedOrder.dueDate,
-        quantity: selectedOrder.quantity,
-      });
-    }
-  };
-};
-
 interface ProductionData {
   productId: string;
   productName: string;
@@ -157,10 +138,15 @@ const ReportProduction: React.FC = () => {
     id: item.productId || index,
     index: index + 1,
   }));
-
   const columns: GridColDef[] = [
-    { field: "index", headerName: "ID", width: 20, maxWidth: 20 },
-    { field: "id", headerName: "Request ID", flex: 1, sortable: true },
+    { field: "index", headerName: "ID", width: 50 },
+    { field: "_id", headerName: "Request ID", flex: 1, sortable: true },
+    {
+      field: "workOrderID",
+      headerName: "Work Order ID",
+      flex: 1,
+      sortable: true,
+    },
     {
       field: "dateRequested",
       headerName: "Date Requested",
@@ -168,13 +154,7 @@ const ReportProduction: React.FC = () => {
       sortable: true,
     },
     {
-      field: "quantityRequested",
-      headerName: "Requested Qty",
-      flex: 1,
-      sortable: true,
-    },
-    {
-      field: "dateProduced",
+      field: "dateFulfilled",
       headerName: "Date Fulfilled",
       flex: 1,
       sortable: true,
@@ -190,10 +170,7 @@ const ReportProduction: React.FC = () => {
       headerName: "Order Fulfilled?",
       flex: 1,
       sortable: true,
-      renderCell: (params) =>
-        params.row.quantityProduced >= params.row.quantityRequested
-          ? "✅"
-          : "❌",
+      renderCell: (params) => (params.row.orderFulfilled ? "✅" : "❌"),
     },
   ];
 

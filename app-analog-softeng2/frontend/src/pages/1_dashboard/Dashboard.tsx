@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { IconType } from "react-icons/lib";
@@ -26,6 +26,8 @@ import {
   LineChart,
   Line,
   CartesianGrid,
+  RadialBarChart,
+  RadialBar,
 } from "recharts";
 import {
   Card,
@@ -60,7 +62,7 @@ const GenerateReport = () => {
   );
 };
 
-// ✅ Define props for better reusability
+// ✅ Small dashboard cards
 interface UnifiedCardProps {
   type: "rate" | "progress" | "summary";
   title: string;
@@ -70,11 +72,10 @@ interface UnifiedCardProps {
   oldValue?: number; // Required for "rate" type
   description?: string;
 }
-
+// ✅ Small dashboard cards
 const UnifiedCard: React.FC<UnifiedCardProps> = ({
   type,
   title,
-  icon,
   currentValue,
   maxValue = 100,
   oldValue = 0,
@@ -320,7 +321,6 @@ const trackingData = [
     quantity: 210,
   },
 ];
-
 const TrackingTest: React.FC = () => {
   const statusCounts = trackingData.reduce((acc, item) => {
     acc[item.status] = (acc[item.status] || 0) + 1;
@@ -484,31 +484,257 @@ const dataLogistics = [
   },
 ];
 
-// Bar Chart
-const barChartData = dataLogistics.map((item) => ({
-  name: item.moduleCode,
-  quantity: item.quantity,
-}));
+// ✅ Barchart
+const fetchBarChartData = (
+  apiUri: string,
+  setState: React.Dispatch<React.SetStateAction<any[]>>
+) => {
+  useEffect(() => {
+    fetch(apiUri)
+      .then((res) => res.json())
+      .then((data) => setState(data))
+      .catch((err) => console.error("Error fetching bar chart data:", err));
+  }, [apiUri]);
+};
 
-// Pie Chart
-const factoryCounts = dataLogistics.reduce((acc, item) => {
-  acc[item.recipient] = (acc[item.recipient] || 0) + 1;
-  return acc;
-}, {} as Record<string, number>);
-const pieChartData = Object.keys(factoryCounts).map((key) => ({
-  name: key,
-  value: factoryCounts[key],
-}));
-const pieColors = [
-  "#FFB3B3", // Soft pastel red
-  "#FF9999", // Light pastel red
-  "#FF7F7F", // Muted pastel red
-  "#FF6666", // Balanced pastel red
-  "#FF4D4D", // Slightly deeper pastel red
-  "#E67373", // Warm pastel red
-  "#D65C5C", // Darker pastel red
+// ✅ Barchart
+const CustomBarChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
+  const [barChartData, setBarChartData] = useState<
+    { name: string; value: number }[]
+  >([]);
+
+  fetchBarChartData(apiUri, setBarChartData);
+
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={barChartData}>
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Bar dataKey="value" fill="#a10a2f" />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+};
+
+// ✅ Piechart
+const piechartCOLORS = [
+  "#FFB3B3",
+  "#FF9999",
+  "#FF7F7F",
+  "#FF6666",
+  "#FF4D4D",
+  "#E67373",
+  "#D65C5C",
 ];
+// ✅ Piechart
+const PieChartComponent: React.FC<{ apiUrl: string }> = ({ apiUrl }) => {
+  const [chartData, setChartData] = useState([]);
 
+  useEffect(() => {
+    fetch(apiUrl)
+      .then((res) => res.json())
+      .then((data) => setChartData(data))
+      .catch((err) => console.error("Error fetching pie chart data:", err));
+  }, [apiUrl]);
+
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <PieChart>
+        <Pie
+          data={chartData}
+          dataKey="value"
+          nameKey="name"
+          cx="50%"
+          cy="50%"
+          outerRadius={100}
+          label
+        >
+          {chartData.map((entry, index) => (
+            <Cell
+              key={`cell-${index}`}
+              fill={piechartCOLORS[index % piechartCOLORS.length]}
+            />
+          ))}
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+};
+
+// ✅ Gaugechart
+const fetchGaugeChartData = (
+  apiUri: string,
+  setState: React.Dispatch<React.SetStateAction<any[]>>
+) => {
+  useEffect(() => {
+    fetch(apiUri)
+      .then((res) => res.json())
+      .then((data) => setState(data))
+      .catch((err) => console.error("Error fetching gauge chart data:", err));
+  }, [apiUri]);
+};
+
+// ✅ Gaugechart
+const GaugeChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
+  const [gaugeData, setGaugeData] = useState<{ name: string; value: number }[]>(
+    []
+  );
+
+  fetchGaugeChartData(apiUri, setGaugeData);
+
+  return (
+    <ResponsiveContainer width="100%" height={250}>
+      <RadialBarChart
+        cx="50%"
+        cy="50%"
+        innerRadius="60%"
+        outerRadius="100%"
+        barSize={20}
+        data={gaugeData}
+      >
+        <RadialBar
+          minAngle={15}
+          background
+          clockWise
+          dataKey="value"
+          fill="#FF4D4D"
+        />
+        <Tooltip />
+        <Legend />
+      </RadialBarChart>
+    </ResponsiveContainer>
+  );
+};
+
+// ✅ Module linechart
+const ModuleLineChart = ({ apiUri }: { apiUri: string }) => {
+  const [data, setData] = useState([]);
+  const [view, setView] = useState("daily");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${apiUri}?view=${view}`);
+        const result = await response.json();
+        setData(result);
+      } catch (error) {
+        console.error("Error fetching line chart data:", error);
+      }
+    };
+
+    fetchData();
+  }, [apiUri, view]); // Fetch data when URI or view changes
+
+  return (
+    <div>
+      {/* Toggle View Buttons */}
+      <ToggleButtonGroup
+        value={view}
+        exclusive
+        onChange={(event, newView) => newView && setView(newView)}
+        aria-label="view toggle"
+      >
+        <ToggleButton value="daily">Daily</ToggleButton>
+        <ToggleButton value="weekly">Weekly</ToggleButton>
+        <ToggleButton value="monthly">Monthly</ToggleButton>
+      </ToggleButtonGroup>
+
+      {/* Line Chart */}
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <CartesianGrid stroke="#ccc" />
+          <Tooltip />
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke="#FF4D4D"
+            strokeWidth={2}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+// ✅ Production Stackedbarchart
+const StackedBarChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
+  const [chartData, setChartData] = useState<
+    { workOrderId: string; producedQty: number; orderedQty: number }[]
+  >([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(apiUri);
+        const data = await response.json();
+        setChartData(data);
+      } catch (error) {
+        console.error("Error fetching stacked bar chart data:", error);
+      }
+    };
+    fetchData();
+  }, [apiUri]);
+
+  return (
+    <BarChart
+      dataset={chartData}
+      xAxis={[
+        { scaleType: "band", dataKey: "workOrderId", label: "Work Order ID" },
+      ]}
+      series={[
+        {
+          dataKey: "orderedQty",
+          label: "Ordered Quantity",
+          stack: "total",
+          color: "#42a5f5",
+        },
+        {
+          dataKey: "producedQty",
+          label: "Produced Quantity",
+          stack: "total",
+          color: "#66bb6a",
+        },
+      ]}
+      width={700}
+      height={400}
+    />
+  );
+};
+
+// ✅ Production Barchart late fulfillment
+const LateWorkOrdersChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
+  const [lateWorkOrders, setLateWorkOrders] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(apiUri);
+        const data = await response.json();
+        setLateWorkOrders(data.lateWorkOrders);
+      } catch (error) {
+        console.error("Error fetching late work orders data:", error);
+      }
+    };
+    fetchData();
+  }, [apiUri]);
+
+  const chartData = [{ name: "Late Work Orders", count: lateWorkOrders }];
+
+  return (
+    <BarChart width={500} height={300} data={chartData}>
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="name" />
+      <YAxis />
+      <Tooltip />
+      <Bar dataKey="count" fill="#ff7300" />
+    </BarChart>
+  );
+};
 
 // Line Chart
 const requestTrendsData = dataLogistics.reduce((acc, item) => {
@@ -519,41 +745,6 @@ const lineChartData = Object.keys(requestTrendsData).map((key) => ({
   date: key,
   requests: requestTrendsData[key],
 }));
-
-
-const ModulePie: React.FC = () => {
-  return (
-    <div className="p-4">
-      
-      <ResponsiveContainer width="100%" height={300}>
-        <PieChart>
-          <Pie
-            data={pieChartData}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            innerRadius={50} // Added an inner radius for a donut chart effect
-            outerRadius={100}
-            fill="#8884d8"
-            label={({ name, percent }) =>
-              `${name} ${(percent * 100).toFixed(0)}%`
-            } // Improved label format
-            labelLine={false} // Removed lines for cleaner design
-          >
-            {pieChartData.map((_, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={pieColors[index % pieColors.length]}
-              />
-            ))}
-          </Pie>
-          <Tooltip />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
 
 const ModuleLine: React.FC = () => {
   return (
@@ -567,24 +758,6 @@ const ModuleLine: React.FC = () => {
           <Legend />
           <Line type="monotone" dataKey="requests" stroke="#ff9800" />
         </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
-
-// Main logistic code
-const ModuleBar: React.FC = () => {
-  return (
-    <div className="p-4">
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={barChartData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
-          <XAxis dataKey="name" tick={{ fill: "#555" }} />
-          <YAxis tick={{ fill: "#555" }} />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="quantity" fill="#a10a2f" radius={[10, 10, 0, 0]} />
-        </BarChart>
       </ResponsiveContainer>
     </div>
   );
@@ -623,7 +796,6 @@ const Heatmap = () => {
     1
   );
 
-  
   return (
     <div className="heatmap">
       {[...productionData] // Create a copy to avoid modifying the original array
@@ -635,11 +807,11 @@ const Heatmap = () => {
               key={item.productId}
               className="heatmap-cell"
               style={{
-                backgroundColor: `rgb(${280 - intensity / 5}, ${90 - intensity / 5}, ${130 - intensity / 3})`, 
+                backgroundColor: `rgb(${280 - intensity / 5}, ${
+                  90 - intensity / 5
+                }, ${130 - intensity / 3})`,
                 // Soft Red → Coral → Light Pink
               }}
-              
-              
             >
               <span className="product-name">{item.productName}</span>
               <span className="product-quantity">{item.quantityProduced}</span>
@@ -777,7 +949,7 @@ const Dashboard: React.FC = () => {
     "#E57373", // Light Coral
     "#F28E8E", // Warm Pastel Red
     "#F8B6B6", // Pale Blush Red
-   "#FDDCDC", // Very Soft Pink
+    "#FDDCDC", // Very Soft Pink
   ];
 
   return (
@@ -938,15 +1110,15 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
 
-
               <div className="component-holder">
                 <h2>Recent requests</h2>
                 <div className="chart">
                   <div className="pie-chart">
                     {requests.map((item, index) => {
-                      const bgColor = softCoolColors[index % softCoolColors.length];
+                      const bgColor =
+                        softCoolColors[index % softCoolColors.length];
                       const textColor = index < 3 ? "#000" : "#000"; // Darker colors get white text, lighter get dark text
-                      
+
                       return (
                         <div
                           key={item._id}
@@ -967,17 +1139,17 @@ const Dashboard: React.FC = () => {
               </div>
 
               <div className="component-holder">
-              <h2>Shipping updates</h2>
-              <ul className="tracking-logs">
-                {trackingLogs.map((log) => (
-                  <li key={log.logId}>
-                    <span className="module">{log.module}</span>: {log.status}{" "}
-                    (Updated by {log.updatedBy} on{" "}
-                    {new Date(log.updatedAt).toLocaleDateString()})
-                  </li>
-                ))}
-              </ul>
-            </div>
+                <h2>Shipping updates</h2>
+                <ul className="tracking-logs">
+                  {trackingLogs.map((log) => (
+                    <li key={log.logId}>
+                      <span className="module">{log.module}</span>: {log.status}{" "}
+                      (Updated by {log.updatedBy} on{" "}
+                      {new Date(log.updatedAt).toLocaleDateString()})
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
             {/* End of left side components */}
 
@@ -1085,6 +1257,7 @@ const Dashboard: React.FC = () => {
                 <LineChartComponent />
               </div>
             </div>
+
             <div className="smaller-components">
               <div className="component-holder">
                 <SummaryCard title="Logistics Summary" items={logisticsItems} />
@@ -1145,48 +1318,21 @@ const Dashboard: React.FC = () => {
             <div className="bigger-components">
               <div className="component-holder">
                 <h2>Most Requested Items</h2>
-                <ModuleBar />
-              </div>
-              <div className="component-holder">
-                <h2>Factory Request Distribuition</h2>
-                <ModulePie />
-              </div>
-              <div className="component-holder">
-                <h2>Request Trends Over Time</h2>
-                <ModuleLine />
+                <CustomBarChart apiUri="http://localhost:5001/api/module-chart" />
               </div>
             </div>
             <div className="smaller-components">
-            <div className="component-holder">
-              <h2>Logistics Summary</h2>
-              <div className="chart">
-                <div className="pie-chart">
-                  {requests.map((item, index) => {
-                    const bgColor = softCoolColors[index % softCoolColors.length];
-                    const textColor = index < 3 ? "#000" : "#000"; // White on dark, deep red on light
-
-                    return (
-                      <div
-                        key={item._id}
-                        className="slice"
-                        style={{
-                          backgroundColor: bgColor,
-                          color: textColor,
-                          borderRadius: "12px", // ⬅️ Rounded boxes
-                          padding: "8px 12px", // ⬅️ Better spacing
-                        }}
-                      >
-                        <span>{item.module}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+              <div className="component-holder">
+                <h2>Factory Request Distribuition</h2>
+                <PieChartComponent apiUrl="http://localhost:5001/api/logistics-summary" />
+              </div>
+              <div className="component-holder">
+                <h2>Module Request Fulfillment Rate</h2>
+                <GaugeChart apiUri="http://localhost:5001/api/fulfillment-rate" />
               </div>
             </div>
-          </div>            
           </div>
-          </div>
-        
+        </div>
       )}
     </div>
   );

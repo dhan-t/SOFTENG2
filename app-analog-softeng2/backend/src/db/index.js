@@ -497,6 +497,73 @@ connect()
       }
     });
 
+    // 📌 Piechart logic. Logistics/ModuleReqs
+    app.get("/api/logistics-summary", async (req, res) => {
+      try {
+        const collection = db.collection("logistics");
+        const logisticsData = await collection.find().toArray();
+
+        // Count occurrences of each recipient (Factory A, B, etc.)
+        const factoryCounts = logisticsData.reduce((acc, item) => {
+          acc[item.recipient] = (acc[item.recipient] || 0) + 1;
+          return acc;
+        }, {});
+
+        const pieChartData = Object.keys(factoryCounts).map((key) => ({
+          name: key,
+          value: factoryCounts[key],
+        }));
+
+        res.status(200).json(pieChartData);
+      } catch (err) {
+        console.error("Error fetching logistics summary:", err);
+        res.status(500).json({ error: "Failed to fetch logistics summary" });
+      }
+    });
+
+    // 📌 Barchart logic. Logistics/ModuleReqs
+    app.get("/api/module-chart", async (req, res) => {
+      try {
+        res.json(
+          await db
+            .collection("logistics")
+            .aggregate([
+              { $group: { _id: "$module", count: { $sum: 1 } } },
+              { $sort: { count: -1 } },
+            ])
+            .toArray()
+            .then((data) =>
+              data.map((item) => ({ name: item._id, value: item.count }))
+            )
+        );
+      } catch (err) {
+        console.error("Error fetching module chart data:", err);
+        res.status(500).json({ error: "Failed to fetch module chart data" });
+      }
+    });
+
+    // 📌 Gaugechart logic. Logistics/ModuleReqs
+    app.get("/api/fulfillment-rate", async (req, res) => {
+      try {
+        const data = await db
+          .collection("logistics")
+          .aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }])
+          .toArray();
+
+        const total = data.reduce((sum, item) => sum + item.count, 0);
+        const pending = data.find((item) => item._id === "Pending")?.count || 0;
+        const fulfilled = total - pending;
+
+        res.json([
+          { name: "Pending", value: pending },
+          { name: "Fulfilled", value: fulfilled },
+        ]);
+      } catch (err) {
+        console.error("Error fetching fulfillment data:", err);
+        res.status(500).json({ error: "Failed to fetch fulfillment data" });
+      }
+    });
+
     // Start server
     const PORT = process.env.PORT || 5001;
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
