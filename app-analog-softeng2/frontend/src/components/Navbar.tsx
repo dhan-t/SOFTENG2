@@ -3,11 +3,11 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "./logos/image 1.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import StickyNote2RoundedIcon from "@mui/icons-material/StickyNote2Rounded";
-import InventoryRoundedIcon from "@mui/icons-material/InventoryRounded";
-import FindReplaceRoundedIcon from "@mui/icons-material/FindReplaceRounded";
-import LibraryAddCheckRoundedIcon from "@mui/icons-material/LibraryAddCheckRounded";
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import StickyNote2RoundedIcon from '@mui/icons-material/StickyNote2Rounded';
+import InventoryRoundedIcon from '@mui/icons-material/InventoryRounded';
+import FindReplaceRoundedIcon from '@mui/icons-material/FindReplaceRounded';
+import LibraryAddCheckRoundedIcon from '@mui/icons-material/LibraryAddCheckRounded';
 import { useAuth } from "../hooks/useAuth";
 import "./Navbar.css";
 
@@ -33,9 +33,7 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
     const fetchProfile = async () => {
       if (user) {
         try {
-          const response = await fetch(
-            `http://localhost:5001/api/user/${user}`
-          );
+          const response = await fetch(`http://localhost:5001/api/user/${user}`);
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
@@ -53,8 +51,8 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
 
   const handleItemClick = (path: string) => {
     setActiveItem(path);
-    navigate(path);
-  };
+    navigate(path); 
+  };  
 
   const handleLogout = () => {
     logout();
@@ -77,11 +75,11 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
       </div>
 
       <ul className="nav-links">
-        <NavbarItem
-          text="Dashboard"
-          link="/dashboard"
-          isExpanded={isExpanded}
-          icon={<HomeRoundedIcon />}
+        <NavbarItem 
+          text="Dashboard" 
+          link="/dashboard" 
+          isExpanded={isExpanded} 
+          icon={<HomeRoundedIcon />} 
           active={activeItem === "/dashboard"}
           onClick={handleItemClick}
         />
@@ -141,7 +139,7 @@ const Navbar: React.FC<NavbarProps> = ({ isExpanded, setIsExpanded }) => {
             </div>
           )}
         </div>
-
+        
         <div className="separator"></div>
 
         <button className="logout-btn" onClick={handleLogout}>
@@ -171,10 +169,7 @@ const NavbarItem: React.FC<NavbarItemProps> = ({
   onClick,
 }) => {
   return (
-    <li
-      className={`nav-item ${active ? "active" : ""}`}
-      onClick={() => onClick(link)}
-    >
+    <li className={`nav-item ${active ? "active" : ""}`} onClick={() => onClick(link)}>
       <Link to={link} className="nav-link">
         <span className="nav-icon">{icon}</span>
         {isExpanded && <span className="nav-text">{text}</span>}
