@@ -48,7 +48,7 @@ const upload = multer({ storage });
 
 // Configure Nodemailer
 const transporter = nodemailer.createTransport({
-  service: "gmail", // You can use other services like SendGrid, Mailgun, etc.
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -203,7 +203,7 @@ connect()
         requestDate,
         quantity,
       } = req.body;
-
+    
       if (
         !module ||
         !requestedBy ||
@@ -214,11 +214,11 @@ connect()
       ) {
         return res.status(400).json({ error: "All fields are required" });
       }
-
+    
       try {
         const logisticsCollection = db.collection("logistics");
         const trackingCollection = db.collection("tracking");
-
+    
         const newRequest = {
           module,
           requestedBy,
@@ -228,10 +228,10 @@ connect()
           quantity,
           status: "Pending", // Default status
         };
-
+    
         // Insert into logistics
         const result = await logisticsCollection.insertOne(newRequest);
-
+    
         // Create a tracking log
         await trackingCollection.insertOne({
           logId: result.insertedId, // Use the logistics request ID as the log ID
@@ -239,12 +239,16 @@ connect()
           status: "Pending",
           updatedBy: requestedBy,
           updatedAt: new Date(),
+          factory: recipient, // Add factory
+          moduleOrigin: "Tokyo, Japan", // Set moduleOrigin to Tokyo, Japan
+          recipient, // Add recipient
+          client: requestedBy, // Add client
         });
-
+    
         await createNotification(
           `New logistics request: ${module} by ${requestedBy}`
         );
-
+    
         res
           .status(201)
           .json({ message: "Logistics request submitted successfully" });
@@ -401,6 +405,7 @@ connect()
       try {
         const collection = db.collection("tracking");
         const trackingLogs = await collection.find().toArray();
+        console.log(trackingLogs);
         res.status(200).json(trackingLogs);
       } catch (err) {
         console.error("Error fetching tracking logs:", err);
@@ -537,50 +542,69 @@ connect()
       }
     });
 
-    // Update the forgot password endpoint in your backend (index.js)
-    app.post("/api/forgot-password", async (req, res) => {
-      const { email } = req.body;
-
+    // 📌 Piechart logic. Logistics/ModuleReqs
+    app.get("/api/logistics-summary", async (req, res) => {
       try {
-        const collection = db.collection("user");
-        const user = await collection.findOne({ email });
+        const collection = db.collection("logistics");
+        const logisticsData = await collection.find().toArray();
 
-        if (!user) {
-          return res.status(404).json({ error: "User not found" });
-        }
+        const factoryCounts = logisticsData.reduce((acc, item) => {
+          acc[item.recipient] = (acc[item.recipient] || 0) + 1;
+          return acc;
+        }, {});
 
-        // Generate a password reset token (you can use JWT or any other method)
-        const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
-          expiresIn: "1h",
-        });
+        const pieChartData = Object.keys(factoryCounts).map((key) => ({
+          name: key,
+          value: factoryCounts[key],
+        }));
 
-        // Send the reset token to the user's email
-        const mailOptions = {
-          from: process.env.EMAIL_USER,
-          to: email,
-          subject: "Password Reset",
-          html: `
-            <p>You requested a password reset. Click the link below to reset your password:</p>
-            <a href="http://localhost:5173/reset-password?token=${resetToken}">Reset Password</a>
-          `,
-        };
-
-        transporter.sendMail(mailOptions, (error, info) => {
-          if (error) {
-            console.error("Error sending email:", error);
-            return res.status(500).json({ error: "Failed to send email" });
-          } else {
-            console.log("Email sent:", info.response);
-            res
-              .status(200)
-              .json({ message: "Password reset link sent to your email." });
-          }
-        });
+        res.status(200).json(pieChartData);
       } catch (err) {
-        console.error("Error during password reset request:", err);
-        res
-          .status(500)
-          .json({ error: "Failed to process password reset request" });
+        console.error("Error fetching logistics summary:", err);
+        res.status(500).json({ error: "Failed to fetch logistics summary" });
+      }
+    });
+
+    // 📌 Barchart logic. Logistics/ModuleReqs
+    app.get("/api/module-chart", async (req, res) => {
+      try {
+        res.json(
+          await db
+            .collection("logistics")
+            .aggregate([
+              { $group: { _id: "$module", count: { $sum: 1 } } },
+              { $sort: { count: -1 } },
+            ])
+            .toArray()
+            .then((data) =>
+              data.map((item) => ({ name: item._id, value: item.count }))
+            )
+        );
+      } catch (err) {
+        console.error("Error fetching module chart data:", err);
+        res.status(500).json({ error: "Failed to fetch module chart data" });
+      }
+    });
+
+    // 📌 Gaugechart logic. Logistics/ModuleReqs
+    app.get("/api/fulfillment-rate", async (req, res) => {
+      try {
+        const data = await db
+          .collection("logistics")
+          .aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }])
+          .toArray();
+
+        const total = data.reduce((sum, item) => sum + item.count, 0);
+        const pending = data.find((item) => item._id === "Pending")?.count || 0;
+        const fulfilled = total - pending;
+
+        res.json([
+          { name: "Pending", value: pending },
+          { name: "Fulfilled", value: fulfilled },
+        ]);
+      } catch (err) {
+        console.error("Error fetching fulfillment data:", err);
+        res.status(500).json({ error: "Failed to fetch fulfillment data" });
       }
     });
 
@@ -629,7 +653,6 @@ connect()
       }
     });
 
-    // Add this endpoint to your backend (index.js)
     app.post("/api/reset-password", async (req, res) => {
       const { token, password } = req.body;
 
