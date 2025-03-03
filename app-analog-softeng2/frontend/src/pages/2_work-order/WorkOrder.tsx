@@ -97,6 +97,7 @@ const WorkOrder: React.FC = () => {
       dueDate: formData.dueDate, // You might want a separate field for this
       priority: "Medium" as "Medium" | "Low" | "High",
       quantity: formData.quantity,
+      status: "Pending", // Default status to "Pending"
     };
 
     console.log("Submitting:", formattedData);

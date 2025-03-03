@@ -21,7 +21,8 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const error = await login(email, password);
+    const remember = (document.getElementById('remember') as HTMLInputElement).checked;
+    const error = await login(email, password, remember);
 
     if (error) {
       setErrorMessage(error);
@@ -76,7 +77,7 @@ const Login: React.FC = () => {
               <input type="checkbox" id="remember" style={{ marginRight: '8px' }}/>
               <label htmlFor="remember">Remember for 30 days</label>
             </div>
-            <button type="button" className="forgot-password">
+            <button type="button" className="forgot-password" onClick={() => navigate("/forgot-password")}>
               Forgot password?
             </button>
           </div>

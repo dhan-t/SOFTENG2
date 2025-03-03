@@ -25,7 +25,7 @@
   align-items: center;
   padding: 16px;
   transition: background-color 0.3s ease;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #d1d5db; /* Light gray border */
 }
 
 .navbar-top:hover {
@@ -37,10 +37,9 @@
   align-items: center;
   justify-content: center; /* Center the logo horizontally */
   cursor: pointer; /* Make the logo clickable */
-  width: 50%;
-  height: 50%;
+  width: 100%;
+  height: 100%;
   padding: 5px;
-  margin-bottom: 20px; /* Light gray border */
 }
 
 .navbar-top .logo-container img {
@@ -90,14 +89,21 @@
   padding: 0;
   margin: 0;
   flex-grow: 1;
-  margin-top: 20px;
   align-items: center; /* Centers icons in collapsed mode */
   justify-content: center; /* Ensures icons stay centered */
 }
 
 .navbar.collapsed .nav-item {
-  justify-content: center; /* icons are centered in collapsed mode */
-} 
+  justify-content: center; /* Ensures items are centered */
+  display: flex;
+  width: 100%;
+}
+
+.navbar.collapsed .nav-icon {
+  margin: 0; /* Remove unnecessary margins */
+  width: auto;
+  text-align: center;
+}
 
 .navbar.collapsed .nav-text {
   display: none; /* Hide text when collapsed */
@@ -194,8 +200,24 @@
 
 .user-details {
   margin-left: 13px;
-  font-size: 12px;
-  
+  font-size: 12px; 
+}
+
+/* Center user info in collapsed mode */
+.navbar.collapsed .user-info {
+  justify-content: center;
+  flex-direction: column; /* Stack avatar and text */
+  text-align: center;
+}
+
+/* Adjust user avatar in collapsed mode */
+.navbar.collapsed .user-avatar {
+  margin-left: 0; /* Remove left margin */
+}
+
+/* Hide user details text when collapsed */
+.navbar.collapsed .user-details {
+  display: none;
 }
 
 .navbar-bottom .separator {
@@ -217,7 +239,8 @@
   align-items: left;
   gap: 17px; /* Space between icon and text */
   margin-bottom: 5px;
-  padding-left: 25px;
+  padding-bottom: 6px;
+  padding-left: 15px;
   border-radius: 5px;
 }
 
@@ -226,13 +249,12 @@
   background-color: #f0f0f0;;
 }
 
-/* Center the logout button in collapsed mode */
+/* Center the logout button */
 .navbar.collapsed .logout-btn {
   justify-content: center;
+  padding-left: 10px; /* Remove left padding */
 }
 
 .navbar.collapsed .logout-btn span {
   display: none; /* Hide the "Logout" text in collapsed mode */
 }
-
-
