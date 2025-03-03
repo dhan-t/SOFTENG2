@@ -12,6 +12,7 @@ import { generatePDF } from "./pdfGenerator.js";
 import notificationsRouter from "../routes/notifications.js";
 import nodemailer from "nodemailer";
 import { authenticateToken } from "../middleware/auth.js";
+import { ObjectId } from "mongodb";
 
 dotenv.config({ path: "./config.env" });
 
@@ -47,7 +48,7 @@ const upload = multer({ storage });
 
 // Configure Nodemailer
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // You can use other services like SendGrid, Mailgun, etc.
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -267,11 +268,23 @@ connect()
 
     // 📌 Production Data: Create
     app.post("/api/production", async (req, res) => {
-      const { workOrderID, dateRequested, fulfilledBy, dateFulfilled, producedQty } = req.body;
+      const {
+        workOrderID,
+        dateRequested,
+        fulfilledBy,
+        dateFulfilled,
+        producedQty,
+      } = req.body;
 
       console.log("Received production data:", req.body); // Log the request body
 
-      if (!workOrderID || !dateRequested || !fulfilledBy || !dateFulfilled || !producedQty) {
+      if (
+        !workOrderID ||
+        !dateRequested ||
+        !fulfilledBy ||
+        !dateFulfilled ||
+        !producedQty
+      ) {
         return res.status(400).json({ error: "All fields are required" });
       }
 
@@ -312,9 +325,23 @@ connect()
 
     // 📌 Production Data: Update
     app.put("/api/production", async (req, res) => {
-      const { id, workOrderID, dateRequested, fulfilledBy, dateFulfilled, producedQty } = req.body;
+      const {
+        id,
+        workOrderID,
+        dateRequested,
+        fulfilledBy,
+        dateFulfilled,
+        producedQty,
+      } = req.body;
 
-      if (!id || !workOrderID || !dateRequested || !fulfilledBy || !dateFulfilled || !producedQty) {
+      if (
+        !id ||
+        !workOrderID ||
+        !dateRequested ||
+        !fulfilledBy ||
+        !dateFulfilled ||
+        !producedQty
+      ) {
         return res.status(400).json({ error: "All fields are required" });
       }
 
@@ -329,15 +356,17 @@ connect()
               fulfilledBy,
               dateFulfilled: new Date(dateFulfilled),
               producedQty,
-              orderFulfilled: producedQty >= 100, // Example logic for order fulfillment
-              orderOnTime: new Date(dateFulfilled) <= new Date(dateRequested), // Example logic for on-time fulfillment
+              orderFulfilled: producedQty >= 100,
+              orderOnTime: new Date(dateFulfilled) <= new Date(dateRequested),
             },
           }
         );
 
         await createNotification(`Production data updated: ${workOrderID}`);
 
-        res.status(200).json({ message: "Production data updated successfully" });
+        res
+          .status(200)
+          .json({ message: "Production data updated successfully" });
       } catch (err) {
         console.error("Error updating production data:", err);
         res.status(500).json({ error: "Failed to update production data" });
@@ -358,7 +387,9 @@ connect()
 
         await createNotification(`Production data deleted: ${id}`);
 
-        res.status(200).json({ message: "Production data deleted successfully" });
+        res
+          .status(200)
+          .json({ message: "Production data deleted successfully" });
       } catch (err) {
         console.error("Error deleting production data:", err);
         res.status(500).json({ error: "Failed to delete production data" });
@@ -407,8 +438,6 @@ connect()
       }
     });
 
-    // starting from here fri_14
-
     // 📌 Work Orders: Submit New Work Order (with Tracking)
     app.post("/api/workorder", async (req, res) => {
       const newWorkOrder = req.body;
@@ -418,20 +447,24 @@ connect()
           ...newWorkOrder,
           createdDate: new Date(newWorkOrder.createdDate).toISOString(),
           dueDate: new Date(newWorkOrder.dueDate).toISOString(),
-          status: newWorkOrder.status || "Pending", // Default status to "Pending" if not provided
+          status: newWorkOrder.status || "Pending",
         };
 
         const workOrdersCollection = req.app.locals.db.collection("workorder");
         const result = await workOrdersCollection.insertOne(formattedWorkOrder);
 
         if (result.acknowledged) {
-          res.status(201).json({ message: "Work order submitted successfully" });
+          res
+            .status(201)
+            .json({ message: "Work order submitted successfully" });
         } else {
           res.status(500).json({ error: "Failed to submit work order" });
         }
       } catch (err) {
         console.error("Error submitting work order:", err);
-        res.status(500).json({ error: "An error occurred while submitting work order" });
+        res
+          .status(500)
+          .json({ error: "An error occurred while submitting work order" });
       }
     });
 
@@ -449,61 +482,128 @@ connect()
     app.put("/api/workorder/:workOrderId", async (req, res) => {
       const { workOrderId } = req.params;
       const { status } = req.body;
-    
+
       if (!status) {
         return res.status(400).json({ error: "Status is required" });
       }
-    
+
       try {
         const workOrdersCollection = req.app.locals.db.collection("workorder");
         const result = await workOrdersCollection.updateOne(
           { _id: new ObjectId(workOrderId) },
           { $set: { status, updatedAt: new Date() } }
         );
-    
+
         if (result.modifiedCount > 0) {
-          res.status(200).json({ message: "Work order status updated successfully" });
+          res
+            .status(200)
+            .json({ message: "Work order status updated successfully" });
         } else {
           res.status(500).json({ error: "Failed to update work order status" });
         }
       } catch (err) {
         console.error("Error updating work order status:", err);
-        res.status(500).json({ error: "An error occurred while updating work order status" });
+        res
+          .status(500)
+          .json({
+            error: "An error occurred while updating work order status",
+          });
       }
     });
-
-    // ending from here fri_14
 
     // 📌 Reports: Generate PDF Report
     app.post("/api/reports", async (req, res) => {
       try {
         const { productionData, logisticsData, trackingData } = req.body;
 
-        // Ensure the data is valid
         if (!productionData || !logisticsData || !trackingData) {
           return res
             .status(400)
             .json({ error: "All data fields are required" });
         }
 
-        // Generate the PDF
         const pdfBuffer = await generatePDF(
           productionData,
           logisticsData,
           trackingData
         );
 
-        // Send the PDF as a response
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Disposition", "attachment; filename=report.pdf");
-        res.send(Buffer.from(pdfBuffer)); // Ensure the buffer is sent correctly
+        res.send(Buffer.from(pdfBuffer));
       } catch (err) {
         console.error("Error generating PDF report:", err);
         res.status(500).json({ error: "Failed to generate report" });
       }
     });
 
-        // Update the forgot password endpoint in your backend (index.js)
+    // 📌 Piechart logic. Logistics/ModuleReqs
+    app.get("/api/logistics-summary", async (req, res) => {
+      try {
+        const collection = db.collection("logistics");
+        const logisticsData = await collection.find().toArray();
+
+        const factoryCounts = logisticsData.reduce((acc, item) => {
+          acc[item.recipient] = (acc[item.recipient] || 0) + 1;
+          return acc;
+        }, {});
+
+        const pieChartData = Object.keys(factoryCounts).map((key) => ({
+          name: key,
+          value: factoryCounts[key],
+        }));
+
+        res.status(200).json(pieChartData);
+      } catch (err) {
+        console.error("Error fetching logistics summary:", err);
+        res.status(500).json({ error: "Failed to fetch logistics summary" });
+      }
+    });
+
+    // 📌 Barchart logic. Logistics/ModuleReqs
+    app.get("/api/module-chart", async (req, res) => {
+      try {
+        res.json(
+          await db
+            .collection("logistics")
+            .aggregate([
+              { $group: { _id: "$module", count: { $sum: 1 } } },
+              { $sort: { count: -1 } },
+            ])
+            .toArray()
+            .then((data) =>
+              data.map((item) => ({ name: item._id, value: item.count }))
+            )
+        );
+      } catch (err) {
+        console.error("Error fetching module chart data:", err);
+        res.status(500).json({ error: "Failed to fetch module chart data" });
+      }
+    });
+
+    // 📌 Gaugechart logic. Logistics/ModuleReqs
+    app.get("/api/fulfillment-rate", async (req, res) => {
+      try {
+        const data = await db
+          .collection("logistics")
+          .aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }])
+          .toArray();
+
+        const total = data.reduce((sum, item) => sum + item.count, 0);
+        const pending = data.find((item) => item._id === "Pending")?.count || 0;
+        const fulfilled = total - pending;
+
+        res.json([
+          { name: "Pending", value: pending },
+          { name: "Fulfilled", value: fulfilled },
+        ]);
+      } catch (err) {
+        console.error("Error fetching fulfillment data:", err);
+        res.status(500).json({ error: "Failed to fetch fulfillment data" });
+      }
+    });
+
+    // Password Reset
     app.post("/api/forgot-password", async (req, res) => {
       const { email } = req.body;
 
@@ -515,12 +615,10 @@ connect()
           return res.status(404).json({ error: "User not found" });
         }
 
-        // Generate a password reset token (you can use JWT or any other method)
         const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
           expiresIn: "1h",
         });
 
-        // Send the reset token to the user's email
         const mailOptions = {
           from: process.env.EMAIL_USER,
           to: email,
@@ -537,59 +635,19 @@ connect()
             return res.status(500).json({ error: "Failed to send email" });
           } else {
             console.log("Email sent:", info.response);
-            res.status(200).json({ message: "Password reset link sent to your email." });
+            res
+              .status(200)
+              .json({ message: "Password reset link sent to your email." });
           }
         });
       } catch (err) {
         console.error("Error during password reset request:", err);
-        res.status(500).json({ error: "Failed to process password reset request" });
+        res
+          .status(500)
+          .json({ error: "Failed to process password reset request" });
       }
     });
 
-    // Update the forgot password endpoint in your backend (index.js)
-    app.post("/api/forgot-password", async (req, res) => {
-      const { email } = req.body;
-
-      try {
-        const collection = db.collection("user");
-        const user = await collection.findOne({ email });
-
-        if (!user) {
-          return res.status(404).json({ error: "User not found" });
-        }
-
-        // Generate a password reset token (you can use JWT or any other method)
-        const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
-          expiresIn: "1h",
-        });
-
-        // Send the reset token to the user's email
-        const mailOptions = {
-          from: process.env.EMAIL_USER,
-          to: email,
-          subject: "Password Reset",
-          html: `
-            <p>You requested a password reset. Click the link below to reset your password:</p>
-            <a href="http://localhost:5173/reset-password?token=${resetToken}">Reset Password</a>
-          `,
-        };
-
-        transporter.sendMail(mailOptions, (error, info) => {
-          if (error) {
-            console.error("Error sending email:", error);
-            return res.status(500).json({ error: "Failed to send email" });
-          } else {
-            console.log("Email sent:", info.response);
-            res.status(200).json({ message: "Password reset link sent to your email." });
-          }
-        });
-      } catch (err) {
-        console.error("Error during password reset request:", err);
-        res.status(500).json({ error: "Failed to process password reset request" });
-      }
-    });
-
-        // Add this endpoint to your backend (index.js)
     app.post("/api/reset-password", async (req, res) => {
       const { token, password } = req.body;
 
@@ -618,7 +676,7 @@ connect()
       }
     });
 
-    // Add these endpoints to your backend (index.js)
+    // User Settings
     app.get("/api/settings", authenticateToken, async (req, res) => {
       try {
         const collection = db.collection("settings");
@@ -636,7 +694,8 @@ connect()
     });
 
     app.post("/api/settings", authenticateToken, async (req, res) => {
-      const { pushNotifications, darkMode, emailNotifications, autoLogout } = req.body;
+      const { pushNotifications, darkMode, emailNotifications, autoLogout } =
+        req.body;
 
       try {
         const collection = db.collection("settings");
