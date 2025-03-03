@@ -59,21 +59,11 @@ const ResetPassword: React.FC = () => {
         transition={{ type: "tween", duration: 0.5 }}
       >
         <div className="reset-password-left">
-          <img
-            className="reset-password-video"
-            style={{ width: 500 }}
-            src={String(alogo)}
-            alt="Reset Password Animation"
-          />
+          <img className="reset-password-video" style={{ width: 500 }} src={String(alogo)} alt="Reset Password Animation" />
         </div>
         <div className="reset-password-right">
           <div className="reset-password-header">
-            <img
-              className="logo"
-              alt="Logo"
-              style={{ width: 500 }}
-              src={String(logo)}
-            />
+            <img className="logo" alt="Logo" style={{ width: 500 }} src={String(logo)} />
             <h2>Reset Password</h2>
             <p>Enter your new password below.</p>
           </div>
