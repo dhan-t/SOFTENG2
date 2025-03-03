@@ -7,6 +7,12 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Ignore environment variables
+.env
+
+# Ignore specific config file
+/app-analog-softeng2/backend/src/db/config.js
+
 node_modules/
 dist
 dist-ssr

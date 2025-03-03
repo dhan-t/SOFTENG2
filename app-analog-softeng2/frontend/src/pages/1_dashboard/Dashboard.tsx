@@ -38,6 +38,8 @@ import {
   Chip,
 } from "@mui/material";
 import { useReports } from "../../hooks/useReports";
+import { SvgIconComponent } from "@mui/icons-material";
+import { Home as HomeIcon } from "@mui/icons-material";
 
 const GenerateReport = () => {
   const { productionData } = useProductionData();
@@ -596,11 +598,7 @@ const GaugeChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
         barSize={20}
         data={gaugeData}
       >
-        <RadialBar
-          background
-          dataKey="value"
-          fill="#FF4D4D"
-        />
+        <RadialBar background dataKey="value" fill="#FF4D4D" />
         <Tooltip />
         <Legend />
       </RadialBarChart>
@@ -682,7 +680,14 @@ const StackedBarChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
   return (
     <ResponsiveContainer width={700} height={400}>
       <BarChart data={chartData}>
-        <XAxis dataKey="workOrderId" label={{ value: "Work Order ID", position: "insideBottom", offset: -5 }} />
+        <XAxis
+          dataKey="workOrderId"
+          label={{
+            value: "Work Order ID",
+            position: "insideBottom",
+            offset: -5,
+          }}
+        />
         <YAxis />
         <Tooltip />
         <Legend />
@@ -750,21 +755,6 @@ const ModuleLine: React.FC = () => {
   );
 };
 
-interface SummaryItem {
-  icon: IconType;
-  value: number;
-  label: string;
-  iconBgColor: string;
-  iconColor: string;
-}
-
-interface SummaryCardProps {
-  title: string;
-  items: SummaryItem[];
-  linkText?: string;
-  onLinkClick?: () => void;
-}
-
 interface Reminder {
   date: string;
   title: string;
@@ -780,7 +770,9 @@ const Heatmap = () => {
 
   // Merge productionData with workOrders to include phoneModel
   const mergedData = productionData.map((item) => {
-    const workOrder = workOrders.find((order) => order._id === item.workOrderID);
+    const workOrder = workOrders.find(
+      (order) => order._id === item.workOrderID
+    );
     return {
       ...item,
       phoneModel: workOrder?.module || "Unknown Model",
@@ -819,27 +811,105 @@ const Heatmap = () => {
   );
 };
 
-const SummaryCard: React.FC<SummaryCardProps> = ({ title, items }) => (
-  <div className="small-card">
-    <div className="summary-header">
-      <h2>{title}</h2>
-    </div>
-    <div className="summary-content">
-      {items.map((item, index) => (
-        <div className="summary-item" key={index}>
-          <div
-            className="icon-container"
-            style={{ backgroundColor: item.iconBgColor }}
-          >
-            <item.icon className="icon" style={{ color: item.iconColor }} />
-          </div>
-          <p className="value">{item.value}</p>
-          <p className="label">{item.label}</p>
-        </div>
-      ))}
-    </div>
-  </div>
+const createSummaryItem = (
+  value: number,
+  label: string,
+  Icon: SvgIconComponent,
+  iconBgColor: string = "#f0f0f0",
+  iconColor: string = "#333"
+): SummaryItem => ({
+  icon: Icon,
+  value,
+  label,
+  iconBgColor,
+  iconColor,
+});
+
+const totalUnitsProducedItem = createSummaryItem(
+  1000, // Example value
+  "Total Units Produced",
+  HomeIcon // MUI icon
 );
+
+const anotherItem = createSummaryItem(
+  500, // Another value
+  "Another Metric",
+  HomeIcon, // Another MUI icon
+  "#e0e0e0", // Custom background color
+  "#555" // Custom icon color
+);
+
+// ✅ Production Barchart
+const fetchProdBarChartData = (
+  apiUri: string,
+  setState: React.Dispatch<React.SetStateAction<any[]>>
+) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    fetch(apiUri)
+      .then((res) => res.json())
+      .then((data) => setState(data))
+      .catch((err) => console.error("Error fetching bar chart data:", err));
+  }, [apiUri]);
+};
+
+// ✅ Production Barchart component
+const BarChartComponent: React.FC<{ apiUri: string }> = ({ apiUri }) => {
+  const [barData, setBarData] = useState<{ name: string; value: number }[]>([]);
+
+  fetchProdBarChartData(apiUri, setBarData);
+
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={barData}>
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="value" fill="#c10300" />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+};
+
+// ✅ Production Histogram
+const fetchHistogramData = (
+  apiUri: string,
+  setState: React.Dispatch<React.SetStateAction<any[]>>
+) => {
+  useEffect(() => {
+    fetch(apiUri)
+      .then((res) => res.json())
+      .then((data) => setState(data))
+      .catch((err) => console.error("Error fetching histogram data:", err));
+  }, [apiUri]);
+};
+
+// ✅ Production Histogram component
+const Histogram: React.FC<{ apiUri: string }> = ({ apiUri }) => {
+  const [histogramData, setHistogramData] = useState<
+    { range: string; count: number }[]
+  >([]);
+
+  fetchHistogramData(apiUri, setHistogramData);
+
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={histogramData}>
+        <XAxis dataKey="range" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar
+          dataKey="count"
+          fill="#d8847c
+
+"
+        />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+};
 
 const Dashboard: React.FC = () => {
   const {
@@ -911,56 +981,50 @@ const Dashboard: React.FC = () => {
     return reminderForDate ? reminderForDate.title : null;
   };
 
-  if (productionLoading || workOrdersLoading || logisticsLoading || trackingLoading)
+  if (
+    productionLoading ||
+    workOrdersLoading ||
+    logisticsLoading ||
+    trackingLoading
+  )
     return <div className="loading">Loading...</div>;
   if (productionError || workOrdersError || logisticsError || trackingError)
     return <div className="error">Error loading data.</div>;
 
   // Calculate dynamic values
   const totalActiveWorkOrders = workOrders.length;
-  const completedWorkOrders = workOrders.filter(order => order.status === "Completed").length;
-  const pendingModuleRequests = requests.filter(request => request.status === "Pending").length;
-  const shipmentsInTransit = trackingLogs.filter(log => log.status === "In Transit").length;
+  const completedWorkOrders = workOrders.filter(
+    (order) => order.status === "Completed"
+  ).length;
+  const pendingModuleRequests = requests.filter(
+    (request) => request.status === "Pending"
+  ).length;
+  const shipmentsInTransit = trackingLogs.filter(
+    (log) => log.status === "In Transit"
+  ).length;
+
+  {
+    /*db.production.updateMany(
+   {}, 
+   { $rename: { "quantityProduced": "producedQty" } }
+)*/
+  }
 
   // Calculate production view values
-  const productionRate = productionData.reduce((acc, item) => acc + item.producedQty, 0) / productionData.length || 0;
-  const lateFulfillments = productionData.filter(item => !item.orderOnTime).length;
-  const totalUnitsProduced = productionData.reduce((acc, item) => acc + item.producedQty, 0);
-  const fulfillmentEfficiency = (productionData.filter(item => item.orderFulfilled).length / productionData.length) * 100 || 0;
-
-  const inventoryItems: SummaryItem[] = [
-    {
-      icon: FaBox,
-      value: 868,
-      label: "Finished units",
-      iconBgColor: "#FFF4E5",
-      iconColor: "#FFA500",
-    },
-    {
-      icon: FaTruck,
-      value: 200,
-      label: "To be shipped",
-      iconBgColor: "#EEF3FF",
-      iconColor: "#5A78F0",
-    },
-  ];
-
-  const logisticsItems: SummaryItem[] = [
-    {
-      icon: FaUser,
-      value: 31,
-      label: "Number of Suppliers",
-      iconBgColor: "#E6F7FF",
-      iconColor: "#00A3FF",
-    },
-    {
-      icon: FaClipboardList,
-      value: 21,
-      label: "Number of Categories",
-      iconBgColor: "#F6F2FF",
-      iconColor: "#A461D8",
-    },
-  ];
+  const productionRate =
+    productionData.reduce((acc, item) => acc + item.producedQty, 0) /
+      productionData.length || 0;
+  const lateFulfillments = productionData.filter(
+    (item) => !item.orderOnTime
+  ).length;
+  const totalUnitsProduced = productionData.reduce(
+    (acc, item) => acc + item.producedQty,
+    0
+  );
+  const fulfillmentEfficiency =
+    (productionData.filter((item) => item.orderFulfilled).length /
+      productionData.length) *
+      100 || 0;
 
   const softCoolColors = [
     "#D64550", // Soft Crimson
@@ -1155,35 +1219,14 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
-
-              <div className="component-holder">
-                <h2>Shipping updates</h2>
-                <ul className="tracking-logs">
-                  {trackingLogs.map((log) => (
-                    <li key={log.logId}>
-                      <span className="module">{log.module}</span>: {log.status}{" "}
-                      (Updated by {log.updatedBy} on{" "}
-                      {new Date(log.updatedAt).toLocaleDateString()})
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </div>
             {/* End of left side components */}
 
             {/* Right side components */}
             <div className="smaller-components">
               <div className="component-holder">
-                <SummaryCard title="Inventory Summary" items={inventoryItems} />
-              </div>
-              <div className="component-holder">
-                <SummaryCard title="Logistics Summary" items={logisticsItems} />
-              </div>
-              <div className="component-holder">
-                <h2>Production Schedule</h2>
-
                 <div className="calendar-dashboard">
-                  <h2>Production Schedule</h2>
+                  <h2>Reminders</h2>
                   <Calendar
                     className={"calendar"}
                     onChange={(date) => setValue(date as Date)}
@@ -1222,6 +1265,18 @@ const Dashboard: React.FC = () => {
                     {handleDayHover(value) || "No reminder"}
                   </div>
                 </div>
+              </div>
+              <div className="component-holder">
+                <h2>Shipping updates</h2>
+                <ul className="tracking-logs">
+                  {trackingLogs.map((log) => (
+                    <li key={log.logId}>
+                      <span className="module">{log.module}</span>: {log.status}{" "}
+                      (Updated by {log.updatedBy} on{" "}
+                      {new Date(log.updatedAt).toLocaleDateString()})
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
@@ -1274,13 +1329,17 @@ const Dashboard: React.FC = () => {
                 <h2>Production Performance</h2>
                 <LineChartComponent />
               </div>
-            </div>
-
-            <div className="smaller-components">
               <div className="component-holder">
-                <SummaryCard title="Logistics Summary" items={logisticsItems} />
+                <h2>Order Fulfillment Status</h2>
+                <BarChartComponent apiUri="http://localhost:5001/api/order-fulfillment" />
+              </div>
+              <div className="component-holder">
+                <h2>Produced Quantity Distribution</h2>
+                <Histogram apiUri="http://localhost:5001/api/produced-quantity-distribution" />
               </div>
             </div>
+
+            <div className="smaller-components"></div>
           </div>
           <div className="component-holder">
             <h2>Production feed</h2>
