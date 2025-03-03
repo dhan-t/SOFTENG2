@@ -45,7 +45,6 @@ const CustomTabPanel: React.FC<{ index: number; value: number }> = ({
     </div>
   );
 };
-
 const LineChartComponent: React.FC = () => {
   const [tabIndex, setTabIndex] = useState(0); // Default to "Daily" tab
 
@@ -64,16 +63,16 @@ const LineChartComponent: React.FC = () => {
         value={tabIndex}
         onChange={(_, newIndex) => setTabIndex(newIndex)}
         variant="fullWidth"
-        sx={{ marginBottom: 2, fontFamily: "Poppins, sans-serif" }}
+        sx={{ marginBottom: 2 }}
       >
-        <Tab label="Daily" sx={{ fontFamily: "Poppins, sans-serif" }}/>
-        <Tab label="Weekly" sx={{ fontFamily: "Poppins, sans-serif" }}/>
-        <Tab label="Monthly" sx={{ fontFamily: "Poppins, sans-serif" }}/>
+        <Tab label="Daily" />
+        <Tab label="Weekly" />
+        <Tab label="Monthly" />
       </Tabs>
 
       {/* ✅ Daily Chart & Summary */}
       <CustomTabPanel value={tabIndex} index={0}>
-        <LineChart fontFamily={"Poppins, sans-serif"}
+        <LineChart
           xAxis={[
             { scaleType: "point", data: data.daily.map((entry) => entry.name) },
           ]}
@@ -81,38 +80,34 @@ const LineChartComponent: React.FC = () => {
             {
               data: data.daily.map((entry) => entry.produced),
               label: "Produced",
-              color: "#0952db",
+              color: "#4caf50",
               showMark: true,
-              curve: "smooth",
-              strokeWidth: 3,
             },
             {
               data: data.daily.map((entry) => entry.requirement),
               label: "Requirement",
-              color: "#e00d54",
+              color: "#ff9800",
               showMark: true,
-              curve: "smooth",
-              strokeWidth: 3,
             },
           ]}
           height={400}
         />
         <Box mt={2}>
-          <Typography variant="h6" fontFamily={"Poppins, sans-serif"}>Today's Summary</Typography>
-          <Typography fontFamily={"Poppins, sans-serif"}>
+          <Typography variant="h6">Today's Summary</Typography>
+          <Typography>
             Produced: {todayData.produced}, Requirement: {todayData.requirement}
           </Typography>
-          <Typography fontFamily={"Poppins, sans-serif"}>
+          <Typography>
             {todayData.produced >= todayData.requirement
-              ? "✅ Production meets or exceeds the requirement"
-              : "⚠️ Production is below the requirement"}
+              ? "✅ Production meets or exceeds the requirement."
+              : "⚠️ Production is below the requirement."}
           </Typography>
         </Box>
       </CustomTabPanel>
 
       {/* ✅ Weekly Chart & Summary */}
       <CustomTabPanel value={tabIndex} index={1}>
-        <LineChart fontFamily={"Poppins, sans-serif"}
+        <LineChart
           xAxis={[
             {
               scaleType: "point",
@@ -123,35 +118,35 @@ const LineChartComponent: React.FC = () => {
             {
               data: data.weekly.map((entry) => entry.produced),
               label: "Produced",
-              color: "#0952db",
+              color: "#4caf50",
               showMark: true,
             },
             {
               data: data.weekly.map((entry) => entry.requirement),
               label: "Requirement",
-              color: "#e00d54",
+              color: "#ff9800",
               showMark: true,
             },
           ]}
           height={400}
         />
-        <Box mt={2} sx={{ fontFamily: "Poppins, sans-serif" }}>
-          <Typography variant="h6" fontFamily={"Poppins, sans-serif"}>Weekly Summary</Typography>
-          <Typography fontFamily={"Poppins, sans-serif"}>
+        <Box mt={2}>
+          <Typography variant="h6">Weekly Summary</Typography>
+          <Typography>
             Produced: {lastWeekData.produced}, Requirement:{" "}
             {lastWeekData.requirement}
           </Typography>
-          <Typography fontFamily={"Poppins, sans-serif"}>
+          <Typography>
             {lastWeekData.produced >= lastWeekData.requirement
-              ? "✅ Weekly production meets or exceeds the requirement"
-              : "⚠️ Weekly production is below the requirement"}
+              ? "✅ Weekly production meets or exceeds the requirement."
+              : "⚠️ Weekly production is below the requirement."}
           </Typography>
         </Box>
       </CustomTabPanel>
 
       {/* ✅ Monthly Chart & Summary */}
-      <CustomTabPanel value={tabIndex} index={2} fontFamily={"Poppins, sans-serif"}>
-        <LineChart fontFamily={"Poppins, sans-serif"}
+      <CustomTabPanel value={tabIndex} index={2}>
+        <LineChart
           xAxis={[
             {
               scaleType: "point",
@@ -162,28 +157,28 @@ const LineChartComponent: React.FC = () => {
             {
               data: data.monthly.map((entry) => entry.produced),
               label: "Produced",
-              color: "#0952db",
+              color: "#4caf50",
               showMark: true,
             },
             {
               data: data.monthly.map((entry) => entry.requirement),
               label: "Requirement",
-              color: "#e00d54",
+              color: "#ff9800",
               showMark: true,
             },
           ]}
           height={400}
         />
-        <Box mt={2} sx={{ fontFamily: "Poppins, sans-serif" }}>
-          <Typography variant="h6" fontFamily={"Poppins, sans-serif"}>Monthly Summary</Typography>
-          <Typography fontFamily={"Poppins, sans-serif"}>
+        <Box mt={2}>
+          <Typography variant="h6">Monthly Summary</Typography>
+          <Typography>
             Produced: {lastMonthData.produced}, Requirement:{" "}
             {lastMonthData.requirement}
           </Typography>
-          <Typography fontFamily={"Poppins, sans-serif"}>
+          <Typography>
             {lastMonthData.produced >= lastMonthData.requirement
-              ? "✅ Monthly production meets or exceeds the requirement"
-              : "⚠️ Monthly production is below the requirement"}
+              ? "✅ Monthly production meets or exceeds the requirement."
+              : "⚠️ Monthly production is below the requirement."}
           </Typography>
         </Box>
       </CustomTabPanel>

@@ -1,0 +1,239 @@
+/* navigation bar */
+.navbar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    background-color: white;
+    transition: width 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .navbar.expanded {
+    width: 240px;
+  }
+  
+  .navbar.collapsed {
+    width: 60px;
+  }
+  
+  .navbar-top {
+    display: flex;
+    justify-content: center; /* Center the logo when retracted */
+    align-items: center;
+    padding: 16px;
+    transition: background-color 0.3s ease;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .navbar-top:hover {
+    background-color: #f3f4f6; /* Add hover effect to the entire container */
+  }
+  
+  .navbar-top .logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center the logo horizontally */
+    cursor: pointer; /* Make the logo clickable */
+    width: 50%;
+    height: 50%;
+    padding: 5px;
+    margin-bottom: 20px; /* Light gray border */
+  }
+  
+  .navbar-top .logo-container img {
+    transition: width 0.3s ease;
+    flex-grow: 1; /* Make the logo fill the container when expanded */
+    display: block;
+    margin: auto;
+  }
+  
+  /* Center the logo in collapsed mode */
+  .navbar.collapsed .logo-container {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .navbar.collapsed .logo-container img {
+    width: 40px; /* Adjust size for collapsed mode */
+    height: auto;
+  }
+  
+  .logo-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+  
+  .logo {
+    width: 50px;
+    height: auto;
+  }
+  
+  .logo-text {
+    font-size: 18px;
+    font-weight: bold;
+    margin-left: 10px;
+  }
+  
+  .toggle-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  
+  .nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+    margin-top: 20px;
+    align-items: center; /* Centers icons in collapsed mode */
+    justify-content: center; /* Ensures icons stay centered */
+  }
+  
+  .navbar.collapsed .nav-item {
+    justify-content: center; /* icons are centered in collapsed mode */
+  } 
+  
+  .navbar.collapsed .nav-text {
+    display: none; /* Hide text when collapsed */
+  } 
+  
+  .nav-item:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .nav-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    justify-content: center; /* Centers icon in collapsed mode */
+  }
+  
+  .nav-icon {
+    font-size: 18px;
+    width: 30px;
+    text-align: center;
+  }
+  
+  .nav-text {
+    margin-left: 2px;
+    font-size: 14px;
+  }
+  
+  
+  .navbar-bottom {
+    padding: 12px;
+  }
+  
+  .nav-item .nav-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #b2b6bf; /* Default inactive text color */
+    font-size: 16px;
+    font-weight: 500;
+  }
+  
+  .nav-item .nav-icon {
+    color: #b2b6bf; /* Default inactive icon color */
+    font-size: 20px;
+    margin-right: 10px;
+    margin-left: 20px;
+    margin-top: 8px;
+  }
+  
+  .nav-item.active .nav-text{
+    color: #000000; 
+    font-weight: bold;
+  }
+  
+  .nav-item.active .nav-icon {
+    color: #4F46E5; /* Blue icon */
+  }
+  
+  /* Items in nav */
+  .nav-item {
+    position: relative;
+    padding: 10px;
+    transition: background 0.3s ease;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Right border indicator */
+  .nav-item.active::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 10%;
+    height: 80%;
+    width: 4px;
+    background-color: #4F46E5; 
+    border-radius: 4px;
+  }
+  
+  /*lower portion*/
+  .user-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-left: 10px;
+  }
+  
+  .user-details {
+    margin-left: 13px;
+    font-size: 12px;
+    
+  }
+  
+  .navbar-bottom .separator {
+    width: 100%;
+    height: .5px;
+    background-color: #d1d5db; /* Light gray separator */
+    margin: 10px 0; /* Adjust spacing */
+  }
+  
+  .logout-btn {
+    width: 100%;
+    padding: 8px;
+    background-color: transparent; /* Transparent background */
+    color: #888b92; /* Red text */
+    border: none; /* No border */
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease;
+    display: flex;
+    align-items: left;
+    gap: 17px; /* Space between icon and text */
+    margin-bottom: 5px;
+    padding-left: 25px;
+    border-radius: 5px;
+  }
+  
+  .logout-btn:hover {
+    color: #ef4444; /* White text on hover */
+    background-color: #f0f0f0;;
+  }
+  
+  /* Center the logout button in collapsed mode */
+  .navbar.collapsed .logout-btn {
+    justify-content: center;
+  }
+  
+  .navbar.collapsed .logout-btn span {
+    display: none; /* Hide the "Logout" text in collapsed mode */
+  }
+  
+  
+  

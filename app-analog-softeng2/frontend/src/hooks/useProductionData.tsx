@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
 
 interface ProductionData {
-  productId: string;
-  productName: string;
-  quantityProduced: number;
-  dateProduced: string;
+  id?: string;
+  workOrderID: string;
+  dateRequested: string;
+  fulfilledBy: string;
+  dateFulfilled: string;
+  producedQty: number;
+  orderFulfilled: boolean;
+  orderOnTime: boolean;
 }
 
 export const useProductionData = () => {
@@ -34,7 +38,13 @@ export const useProductionData = () => {
         body: JSON.stringify(newData),
       });
       if (res.ok) await fetchProductionData();
+      else {
+        const errorText = await res.text();
+        console.error("Failed to add production data:", errorText);
+        setError("Failed to add production data.");
+      }
     } catch (err) {
+      console.error("Error adding production data:", err);
       setError("Failed to add production data.");
     }
   };
@@ -51,13 +61,13 @@ export const useProductionData = () => {
       setError("Failed to update production data.");
     }
   };
-
-  const deleteProductionData = async (productId: string) => {
+  
+  const deleteProductionData = async (id: string) => {
     try {
       const res = await fetch("http://localhost:5001/api/production", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId }),
+        body: JSON.stringify({ id }),
       });
       if (res.ok) await fetchProductionData();
     } catch (err) {

@@ -19,13 +19,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 import Button from "@mui/material/Button";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-} from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 
 import {
   Event as EventIcon,
@@ -77,10 +71,8 @@ const ReportProduction: React.FC = () => {
 
   const handleWorkOrderChange = (event: SelectChangeEvent<string>) => {
     const selectedValue = event.target.value as string;
-    const selectedOrder = workOrders.find(
-      (order) => order.id === selectedValue
-    );
-
+    const selectedOrder = workOrders.find((order) => order.id === selectedValue);
+  
     setFormData({
       ...formData,
       workOrderID: selectedOrder?.id || "",
@@ -98,10 +90,9 @@ const ReportProduction: React.FC = () => {
       dateFulfilled: formData.dateFulfilled,
       producedQty: formData.producedQty,
       orderFulfilled: formData.producedQty >= 100, // Example logic for order fulfillment
-      orderOnTime:
-        new Date(formData.dateFulfilled) <= new Date(formData.dateRequested), // Example logic for on-time fulfillment
+      orderOnTime: new Date(formData.dateFulfilled) <= new Date(formData.dateRequested), // Example logic for on-time fulfillment
     };
-
+  
     if (editMode) {
       await updateProductionData({ ...formattedData, id: editMode });
     } else {
@@ -140,38 +131,67 @@ const ReportProduction: React.FC = () => {
   }));
 
   const columns: GridColDef[] = [
-    { field: "index", headerName: "ID", width: 50 },
-    { field: "_id", headerName: "Request ID", flex: 1, sortable: true },
-    {
-      field: "workOrderID",
-      headerName: "Work Order ID",
-      flex: 1,
-      sortable: true,
-    },
+    { field: "index", headerName: "ID", width: 20, maxWidth: 20 },
+    { field: "workOrderID", headerName: "Work Order ID", width: 100, sortable: true },
     {
       field: "dateRequested",
       headerName: "Date Requested",
-      flex: 1,
+      width: 200,
+      sortable: true,
+    },
+    {
+      field: "producedQty",
+      headerName: "Produced Qty",
+      width: 150,
       sortable: true,
     },
     {
       field: "dateFulfilled",
       headerName: "Date Fulfilled",
-      flex: 1,
-      sortable: true,
-    },
-    {
-      field: "quantityProduced",
-      headerName: "Produced Qty",
-      flex: 1,
+      width: 200,
       sortable: true,
     },
     {
       field: "orderFulfilled",
       headerName: "Order Fulfilled?",
-      flex: 1,
+      width: 100,
       sortable: true,
-      renderCell: (params) => (params.row.orderFulfilled ? "✅" : "❌"),
+      renderCell: (params) =>
+        params.row.orderFulfilled ? "✅" : "❌",
+    },
+    {
+      field: "orderOnTime",
+      headerName: "Order On Time?",
+      width: 100,
+      sortable: true,
+      renderCell: (params) =>
+        params.row.orderOnTime ? "✅" : "❌",
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 150,
+      sortable: false,
+      renderCell: (params) => (
+        <>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<EditIcon />}
+            onClick={() => handleEdit(params.row)}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<DeleteIcon />}
+            onClick={() => handleDelete(params.row.id)}
+          >
+            Delete
+          </Button>
+        </>
+      ),
     },
   ];
 
@@ -202,8 +222,7 @@ const ReportProduction: React.FC = () => {
                   </MenuItem>
                   {workOrders.map((order) => (
                     <MenuItem key={order.id} value={order.id}>
-                      {order.id} - {order.module}{" "}
-                      {/* Display work order ID and phone model */}
+                      {order.id} - {order.module} {/* Display work order ID and phone model */}
                     </MenuItem>
                   ))}
                 </Select>
@@ -215,9 +234,7 @@ const ReportProduction: React.FC = () => {
                 <DatePicker
                   label="Date Requested"
                   value={
-                    formData.dateRequested
-                      ? dayjs(formData.dateRequested)
-                      : null
+                    formData.dateRequested ? dayjs(formData.dateRequested) : null
                   }
                   onChange={(newValue) =>
                     setFormData({
@@ -251,9 +268,7 @@ const ReportProduction: React.FC = () => {
                 <DatePicker
                   label="Date Fulfilled"
                   value={
-                    formData.dateFulfilled
-                      ? dayjs(formData.dateFulfilled)
-                      : null
+                    formData.dateFulfilled ? dayjs(formData.dateFulfilled) : null
                   }
                   onChange={(newValue) =>
                     setFormData({
@@ -321,8 +336,7 @@ const ReportProduction: React.FC = () => {
           <div className="preview-details">
             <div>
               <h2 id="report-module-code">
-                {formData.phoneModel || "Phone Model"}{" "}
-                {/* Display phone model */}
+                {formData.phoneModel || "Phone Model"} {/* Display phone model */}
               </h2>
               <h3 id="report-module-desc">
                 {formData.dateRequested || "Date Requested"}
