@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: row;
   gap: 1rem;
-  
 }
 
 .layout .content {
@@ -18,13 +17,13 @@
 
 .component-holder {
   width: fill;
-  background-color: rgb(255, 255, 255) ;
+  background-color: rgb(255, 255, 255);
   padding: 1rem;
   border-radius: 1rem;
 }
 
 .bigger-components {
-  flex-grow: 1; 
+  flex-grow: 1;
   flex: 5;
   display: flex;
   flex-direction: column;
@@ -39,13 +38,11 @@
   gap: 1rem;
 }
 
-
 .small-holder {
   display: flex;
   flex-direction: row;
   gap: 1rem;
   width: 100%; /* Ensure it takes the full width of the parent */
-  
 }
 
 .dashboard h1 {
@@ -99,8 +96,11 @@
 }
 
 .tracking-logs {
-  list-style: none;
+  max-height: 15rem; /* Adjust height as needed (~5 rows) */
+  overflow-y: auto;
   padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
 .tracking-logs li {
@@ -235,18 +235,6 @@
 }
 
 /*  CARD STYLING */
-.small-dashboard-card {
-  background-color: rgb(255, 255, 255);
-  border-radius: 1rem;
-  flex: 1; /* Allow cards to grow and fill the available space */
-  display: flex;
-  flex-direction: column;
-}
-
-.rate-card {
-  background-color: white;
-  border-radius: 2rem;
-}
 
 .small-card {
   background-color: white;
@@ -270,35 +258,72 @@
   color: #666;
 }
 
-/*Heatmap stuff*/
+/* Heatmap container */
 .heatmap {
-  width: fill;
   display: flex;
   flex-wrap: nowrap;
-  gap: 8px;
+  gap: 12px; /* More spacing for better readability */
   overflow-x: auto; /* Enables horizontal scrolling */
-  max-width: calc(
-    7.5 * 100px + 5 * 8px
-  ); /* Fits 6 columns, adjusting for spacing */
+  max-width: calc(6 * 120px + 20 * 11px); /* Fits 6 columns */
+  padding: 10px;
   white-space: nowrap; /* Prevents wrapping */
-}
-#full-width-heatmap {
-  width: fill;
-  overflow-x: auto; /* Enables horizontal scrolling */
-  width: 100%;
+  scrollbar-width: thin; /* Thinner scrollbar for aesthetics */
+  width: 100%
 }
 
+/* Full-width heatmap container */
+#full-width-heatmap {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+/* Heatmap cell styling */
 .heatmap-cell {
   height: 10rem;
+  width: 100%; /* Ensures consistent size */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 15px;
-  border-radius: 5px;
-  color: #000;
+  border-radius: 15px;
   font-weight: bold;
   text-align: center;
+  color: #000000; /* White text for better contrast */
+  box-shadow: 2px 4px 8px rgba(43, 43, 43, 0.15); /* Subtle shadow for depth */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+/* Heatmap color gradient */
+.heatmap-cell[data-value="low"] {
+  background: #1e90ff; /* Cool Blue */
+}
+
+.heatmap-cell[data-value="medium"] {
+  background: #ffa500; /* Warm Orange */
+}
+
+.heatmap-cell[data-value="high"] {
+  background: #ff4500; /* Strong Red */
+}
+
+/* Hover Effect */
+.heatmap-cell:hover {
+  transform: scale(1.05);
+  box-shadow: 3px 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .heatmap {
+    max-width: calc(4 * 100px + 3 * 10px); /* Adjusted for smaller screens */
+  }
+
+  .heatmap-cell {
+    width: 100px;
+    height: 8rem;
+  }
 }
 
 .product-name {
@@ -317,7 +342,7 @@
   border: none;
   border-radius: 20px;
   cursor: pointer;
-  margin-left: 530px;
+
   font-family: "Poppins";
 }
 

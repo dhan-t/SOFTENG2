@@ -50,11 +50,21 @@ const ForgotPassword: React.FC = () => {
         transition={{ type: "tween", duration: 0.5 }}
       >
         <div className="forgot-password-left">
-          <img className="forgot-password-video" style={{ width: 500 }} src={String(alogo)} alt="Forgot Password Animation" />
+          <img
+            className="forgot-password-video"
+            style={{ width: 500 }}
+            src={String(alogo)}
+            alt="Forgot Password Animation"
+          />
         </div>
         <div className="forgot-password-right">
           <div className="forgot-password-header">
-            <img className="logo" alt="Logo" style={{ width: 500 }} src={String(logo)} />
+            <img
+              className="logo"
+              alt="Logo"
+              style={{ width: 500 }}
+              src={String(logo)}
+            />
             <h2>Forgot Password</h2>
             <p>Enter your email to receive a password reset link.</p>
           </div>
