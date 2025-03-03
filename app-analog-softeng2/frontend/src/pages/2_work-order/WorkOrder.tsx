@@ -103,6 +103,7 @@ const WorkOrder: React.FC = () => {
       dueDate: formData.dueDate,
       priority: formData.priority as "Low" | "Medium" | "High",
       quantity: formData.quantity,
+      status: "Pending", // Default status
     };
 
     console.log("Submitting:", formattedData);
@@ -119,7 +120,7 @@ const WorkOrder: React.FC = () => {
           requestDate: dayjs().format("YYYY-MM-DD"),
           dueDate: "",
           quantity: 0,
-          priority: "", // Reset priority to default
+          priority: "",
         });
       } else {
         console.error("Failed to submit work order.");
@@ -147,7 +148,7 @@ const WorkOrder: React.FC = () => {
       headerName: "Days Until Due",
       sortable: true,
       flex: 1,
-    }, // New column
+    },
   ];
 
   const rows = workOrders.map((order: any, index: number) => {
@@ -166,7 +167,7 @@ const WorkOrder: React.FC = () => {
       recipient: order.assignedTo,
       quantity: order.quantity,
       status: order.status,
-      daysDifference, // Add the calculated value here
+      daysDifference,
     };
   });
 
@@ -253,7 +254,7 @@ const WorkOrder: React.FC = () => {
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   label="Due date"
-                  value={formData.dueDate ? dayjs(formData.dueDate) : null} // Set to `null` if empty
+                  value={formData.dueDate ? dayjs(formData.dueDate) : null}
                   onChange={(newValue) =>
                     setFormData((prev) => ({
                       ...prev,
@@ -265,7 +266,6 @@ const WorkOrder: React.FC = () => {
               </LocalizationProvider>
             </div>
 
-            {/* Priority Dropdown */}
             <div className="form-group">
               <FormControl fullWidth required>
                 <InputLabel>Priority</InputLabel>
@@ -309,12 +309,10 @@ const WorkOrder: React.FC = () => {
         </div>
 
         <div id="workorder-preview" className="preview-card">
-          {/* Preview Card */}
           <h2 className="preview-title" id="workorder-title">
             Work Order Preview
           </h2>
 
-          {/* Always show a smartphone icon */}
           <div className="preview-icon">
             <SmartphoneRoundedIcon sx={{ fontSize: 300, color: "#1565C0" }} />
           </div>
@@ -330,7 +328,6 @@ const WorkOrder: React.FC = () => {
             </div>
 
             <div className="chip-holder">
-              {/* Quantity */}
               <Chip
                 label={
                   formData.quantity ? `${formData.quantity} pc` : "Order Pc"
@@ -342,7 +339,6 @@ const WorkOrder: React.FC = () => {
                 }}
               />
 
-              {/* Phone Model */}
               <Chip
                 icon={
                   <SmartphoneRoundedIcon
@@ -414,11 +410,10 @@ const WorkOrder: React.FC = () => {
         checkboxSelection
         disableRowSelectionOnClick
         sx={{
-          backgroundColor: "white", // Set background to white
-          border: "none", // Remove border if needed
-
+          backgroundColor: "white",
+          border: "none",
           "& .MuiDataGrid-columnHeaders": {
-            backgroundColor: "#f5f5f5", // Optional: header background color
+            backgroundColor: "#f5f5f5",
           },
         }}
       />
