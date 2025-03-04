@@ -324,6 +324,7 @@ const trackingData = [
     quantity: 210,
   },
 ];
+
 const TrackingTest: React.FC = () => {
   const statusCounts = trackingData.reduce((acc, item) => {
     acc[item.status] = (acc[item.status] || 0) + 1;
@@ -758,6 +759,14 @@ const ModuleLine: React.FC = () => {
 interface Reminder {
   date: string;
   title: string;
+}
+
+interface SummaryItem {
+  icon: SvgIconComponent;
+  value: number;
+  label: string;
+  iconBgColor?: string;
+  iconColor?: string;
 }
 
 const Heatmap = () => {
@@ -1270,10 +1279,10 @@ const Dashboard: React.FC = () => {
                 <h2>Shipping updates</h2>
                 <ul className="tracking-logs">
                   {trackingLogs.map((log) => (
-                    <li key={log.logId}>
-                      <span className="module">{log.module}</span>: {log.status}{" "}
-                      (Updated by {log.updatedBy} on{" "}
-                      {new Date(log.updatedAt).toLocaleDateString()})
+                    <li key={log.requestID}>
+                      <span className="module">{log.moduleCode}</span>: {log.status}{" "}
+                      (Updated by {log.dispatchedBy} on{" "}
+                      {log.deliveredDate ? new Date(log.deliveredDate).toLocaleDateString() : "N/A"})
                     </li>
                   ))}
                 </ul>
