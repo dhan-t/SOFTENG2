@@ -206,233 +206,164 @@ const ReportProduction: React.FC = () => {
       <Header />
 
       <div className="form-and-card">
-        <div className="form-holder">
-          <form onSubmit={handleSubmit} className="form">
-            <h2>{editMode ? "Edit report" : "Report production"}</h2>
+  <div className="form-holder">
+    <form onSubmit={handleSubmit} className="form">
+      <h2>{editMode ? "Edit report" : "Report production"}</h2>
 
-            {/*ALLCHANGE connect to database. should reference workorder IDs.*/}
-            <div className="form-group">
-              <FormControl fullWidth variant="outlined">
-                <InputLabel>Select Work Order</InputLabel>
-                <Select
-                  value={formData.moduleCode}
-                  onChange={handleModuleChange}
-                  label="Module Code"
-                  required
-                >
-                  <MenuItem value="">
-                    <em>Select Workorder</em>
-                  </MenuItem>
-                  {moduleOptions.map((option) => (
-                    <MenuItem key={option.code} value={option.code}>
-                      {option.code} - {option.description}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-
-            {/*ALLCHANGE connect to database. autofill phone model based on work order ID.*/}
-            <div className="form-group">
-              <TextField
-                label="Phone model AUTOFILL"
-                variant="outlined"
-                type="text"
-                value={formData.productId}
-                onChange={(e) =>
-                  setFormData({ ...formData, productId: e.target.value })
-                }
-                required
-                fullWidth
-              />
-            </div>
-
-            {/*ALLCHANGE connect to database.
-            - fucntion should autofill to work order request date*/}
-            <div className="form-group">
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                  label="Date requested"
-                  value={
-                    formData.requestDate ? dayjs(formData.requestDate) : null
-                  }
-                  onChange={(newValue) =>
-                    setFormData({
-                      ...formData,
-                      requestDate: newValue
-                        ? newValue.format("YYYY-MM-DD")
-                        : "",
-                    })
-                  }
-                  slotProps={{ textField: { fullWidth: true } }}
-                />
-              </LocalizationProvider>
-            </div>
-
-            {/*ALLCHANGE name of employee.*/}
-            <div className="form-group">
-              <TextField
-                label="Reporter"
-                variant="outlined"
-                type="text"
-                value={formData.productName}
-                onChange={(e) =>
-                  setFormData({ ...formData, productName: e.target.value })
-                }
-                required
-                fullWidth
-              />
-            </div>
-
-            <div className="form-group">
-              <TextField
-                label="Quantity Produced"
-                variant="outlined"
-                type="number"
-                value={formData.quantityProduced}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    quantityProduced: parseInt(e.target.value),
-                  })
-                }
-                required
-                fullWidth
-              />
-            </div>
-
-            {/*ALLCHANGE connect to database. fulfillment date.
-            - fucntion should autofill to current date*/}
-            <div className="form-group">
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                  label="Date fulfilled"
-                  value={
-                    formData.requestDate ? dayjs(formData.requestDate) : null
-                  }
-                  onChange={(newValue) =>
-                    setFormData({
-                      ...formData,
-                      requestDate: newValue
-                        ? newValue.format("YYYY-MM-DD")
-                        : "",
-                    })
-                  }
-                  slotProps={{ textField: { fullWidth: true } }}
-                />
-              </LocalizationProvider>
-            </div>
-
-            <Button
-              type="submit"
-              variant="contained"
-              disableElevation
-              color={editMode ? "primary" : "success"}
-              startIcon={editMode ? <EditIcon /> : <SaveIcon />}
-            >
-              {editMode ? "Update" : "Add"}
-            </Button>
-            {editMode && (
-              <Button
-                type="button"
-                variant="contained"
-                color="error"
-                disableElevation
-                startIcon={<CancelIcon />}
-                onClick={() => setEditMode(null)}
-              >
-                Cancel
-              </Button>
-            )}
-          </form>
-        </div>
-
-        <div id="report-preview" className="preview-card">
-          {/* Preview Card */}
-          <h2 className="preview-title" id="report-title">
-            Report Preview
-          </h2>
-
-          {/* Always show a smartphone icon */}
-          <div className="preview-icon">
-            <SmartphoneRoundedIcon sx={{ fontSize: 300, color: "#E65100" }} />
-          </div>
-
-          <div className="preview-details">
-            <div>
-              <h2 id="report-module-code">
-                {formData.moduleCode || "Module Code"}
-              </h2>
-              <h3 id="report-module-desc">
-                {formData.description || "Module Description"}
-              </h3>
-            </div>
-
-            <div className="chip-holder">
-              {/* Quantity Produced */}
-              <Chip
-                label={
-                  formData.quantityProduced
-                    ? `${formData.quantityProduced} pc`
-                    : "Qtyss"
-                }
-                sx={{
-                  fontWeight: "medium",
-                  backgroundColor: "#FFCCBC",
-                  color: "#BF360C",
-                }}
-              />
-
-              {/* Phone Model */}
-              <Chip
-                icon={
-                  <SmartphoneRoundedIcon
-                    sx={{ color: "#e65100", fontSize: 25, paddingLeft: 1 }}
-                  />
-                }
-                label={formData.productId || "Phone Model"}
-                sx={{
-                  fontWeight: "medium",
-                  backgroundColor: "#FFF3E0",
-                  color: "#E65100",
-                }}
-              />
-
-              {/* Date Fulfilled */}
-              <Chip
-                icon={
-                  <EventIcon
-                    sx={{ color: "#E65100", fontSize: 25, paddingLeft: 1 }}
-                  />
-                }
-                label={formData.dateProduced || "Fulfilled"}
-                sx={{
-                  fontWeight: "medium",
-                  backgroundColor: "#FFF3E0",
-                  color: "#E65100",
-                }}
-              />
-            </div>
-
-            <div className="chip-holder">
-              {/* Reporter (Employee) */}
-              <Chip
-                icon={
-                  <PersonIcon
-                    sx={{ color: "#e65100", fontSize: 25, paddingLeft: 1 }}
-                  />
-                }
-                label={formData.reportedBy || "Reporter"}
-                sx={{
-                  fontWeight: "medium",
-                  backgroundColor: "#FFF3E0",
-                  color: "#E65100",
-                }}
-              />
-            </div>
-          </div>
-        </div>
+      <div className="form-grid">
+        <FormControl fullWidth variant="outlined" sx={{ marginBottom: 2 }}>
+          <InputLabel>Select Work Order</InputLabel>
+          <Select
+            value={formData.moduleCode}
+            onChange={handleModuleChange}
+            label="Module Code"
+            required
+            sx={{ fontFamily: "Poppins" }}
+          >
+            <MenuItem value="">
+              <em>Select Workorder</em>
+            </MenuItem>
+            {moduleOptions.map((option) => (
+              <MenuItem key={option.code} value={option.code}>
+                {option.code} - {option.description}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </div>
+
+      <TextField
+        label="Phone model AUTOFILL"
+        variant="outlined"
+        type="text"
+        value={formData.productId}
+        onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
+        required
+        fullWidth
+        sx={{ marginBottom: 2, fontFamily: "Poppins" }}
+      />
+
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DatePicker
+          label="Date requested"
+          value={formData.requestDate ? dayjs(formData.requestDate) : null}
+          onChange={(newValue) =>
+            setFormData({
+              ...formData,
+              requestDate: newValue ? newValue.format("YYYY-MM-DD") : "",
+            })
+          }
+          slotProps={{ textField: { fullWidth: true, sx: { fontFamily: "Poppins" } } }}
+        />
+      </LocalizationProvider>
+
+      <TextField
+        label="Reporter"
+        variant="outlined"
+        type="text"
+        value={formData.reportedBy}
+        onChange={(e) => setFormData({ ...formData, reportedBy: e.target.value })}
+        required
+        fullWidth
+        sx={{ marginBottom: 2, fontFamily: "Poppins" }}
+      />
+
+      <TextField
+        label="Quantity Produced"
+        variant="outlined"
+        type="number"
+        value={formData.quantityProduced}
+        onChange={(e) =>
+          setFormData({ ...formData, quantityProduced: parseInt(e.target.value) })
+        }
+        required
+        fullWidth
+        sx={{ marginBottom: 2, fontFamily: "Poppins" }}
+      />
+
+      <Button
+        type="submit"
+        variant="contained"
+        disableElevation
+        color={editMode ? "primary" : "success"}
+        startIcon={editMode ? <EditIcon /> : <SaveIcon />}
+        sx={{
+          fontFamily: "Poppins",
+          padding: "10px 20px",
+          fontSize: "16px",
+          fontWeight: "bold",
+          borderRadius: "8px",
+          textTransform: "none",
+          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+          transition: "all 0.3s linear",
+          "&:hover": {
+            backgroundColor: "#1b5e20",
+            transform: "translateY(-2px)",
+          },
+        }}
+      >
+        {editMode ? "Update" : "Add"}
+      </Button>
+
+      {editMode && (
+        <Button
+          type="button"
+          variant="contained"
+          color="error"
+          disableElevation
+          startIcon={<CancelIcon />}
+          onClick={() => setEditMode(null)}
+          sx={{
+            fontFamily: "Poppins",
+            padding: "10px 20px",
+            fontSize: "16px",
+            fontWeight: "bold",
+            borderRadius: "8px",
+            textTransform: "none",
+            marginLeft: 2,
+          }}
+        >
+          Cancel
+        </Button>
+      )}
+    </form>
+  </div>
+
+{/* Report Preview Section */}
+<div id="report-preview" className="preview-card">
+  <h2 className="preview-title" id="report-title">
+    Report Preview
+  </h2>
+
+  <div className="preview-icon">
+    <SmartphoneRoundedIcon sx={{ fontSize: 270, color: "#E65100" }} />
+  </div>
+
+  <div className="preview-details">
+    <h2 id="report-module-code">{formData.moduleCode || "Module Code"}</h2>
+    <h3 id="report-module-desc">{formData.description || "Module Description"}</h3>
+  </div>
+
+  <div className="chip-container">
+    <Chip label={formData.quantityProduced ? `${formData.quantityProduced} pc` : "Qty"} />
+    <Chip
+      icon={<SmartphoneRoundedIcon sx={{ color: "#E65100", fontSize: 25 }} />}
+      label={formData.productId || "Phone Model"}
+      sx={{ backgroundColor: "#FFF3E0", color: "#BF360C" }}
+    />
+    <Chip
+      icon={<EventIcon sx={{ color: "#E65100", fontSize: 25 }} />}
+      label={formData.dateProduced || "Fulfilled"}
+      sx={{ backgroundColor: "#FFF3E0", color: "#E65100" }}
+    />
+    <Chip
+      icon={<PersonIcon sx={{ color: "#E65100", fontSize: 25 }} />}
+      label={formData.reportedBy || "Reporter"}
+      sx={{ backgroundColor: "#FFF3E0", color: "#E65100" }}
+    />
+  </div>
+  </div>
+</div>
 
       <div className="styled-table">
         <h2>Production Reports</h2>
