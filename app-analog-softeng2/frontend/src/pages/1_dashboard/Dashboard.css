@@ -13,6 +13,7 @@
   display: flex;
   flex-direction: row;
   gap: 1rem;
+  width: 100%;
 }
 
 .component-holder {
@@ -20,12 +21,12 @@
   background-color: rgb(255, 255, 255);
   padding: 1rem;
   border-radius: 1rem;
-  width: 100%; /* Ensure the component holder takes full width */
+  width: 100%;
 }
 
 .bigger-components {
   flex-grow: 1;
-  flex: 7;
+  flex: 6;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -57,7 +58,7 @@
 
 .chart {
   background-color: transparent;
-  width: fit-container;
+  width: 100%;
 }
 
 .bar-chart {
@@ -86,6 +87,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  width: 100%;
 }
 
 .slice {
@@ -261,13 +263,17 @@
   color: #666;
 }
 
+#production-heatmap {
+  max-width: 30vw;
+  min-width: 100%;
+}
+
 /* Heatmap container */
 .heatmap {
   display: flex;
   flex-wrap: nowrap;
   gap: 12px; /* More spacing for better readability */
   overflow-x: auto; /* Enables horizontal scrolling */
-  max-width: calc(6 * 120px + 20 * 11px); /* Fits 6 columns */
   padding: 10px;
   white-space: nowrap; /* Prevents wrapping */
   scrollbar-width: thin; /* Thinner scrollbar for aesthetics */
@@ -284,7 +290,6 @@
 /* Heatmap cell styling */
 .heatmap-cell {
   height: 10rem;
-  width: 100%; /* Ensures consistent size */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -298,19 +303,6 @@
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
-/* Heatmap color gradient */
-.heatmap-cell[data-value="low"] {
-  background: #1e90ff; /* Cool Blue */
-}
-
-.heatmap-cell[data-value="medium"] {
-  background: #ffa500; /* Warm Orange */
-}
-
-.heatmap-cell[data-value="high"] {
-  background: #ff4500; /* Strong Red */
-}
-
 /* Hover Effect */
 .heatmap-cell:hover {
   transform: scale(1.05);
@@ -318,13 +310,13 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 90vw) {
   .heatmap {
     max-width: calc(4 * 100px + 3 * 10px); /* Adjusted for smaller screens */
   }
 
   .heatmap-cell {
-    width: 100px;
+    width: 50px;
     height: 8rem;
   }
 }

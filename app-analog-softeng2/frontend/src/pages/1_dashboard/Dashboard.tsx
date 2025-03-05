@@ -794,26 +794,23 @@ const Heatmap = () => {
 
   return (
     <div className="heatmap">
-      {[...mergedData] // Create a copy to avoid modifying the original array
-        .reverse() // Reverse the order so the latest push is first
-        .map((item) => {
-          const intensity = (item.producedQty / maxProduced) * 500; // Keeps colors soft and balanced
-          return (
-            <div
-              key={item.workOrderID}
-              className="heatmap-cell"
-              style={{
-                backgroundColor: `rgb(${280 - intensity / 5}, ${
-                  90 - intensity / 5
-                }, ${130 - intensity / 3})`,
-                // Soft Red → Coral → Light Pink
-              }}
-            >
-              <span className="product-name">{item.phoneModel}</span>
-              <span className="product-quantity">{item.producedQty}</span>
-            </div>
-          );
-        })}
+      {mergedData.reverse().map((item) => {
+        const intensity = (item.producedQty / maxProduced) * 500;
+        return (
+          <div
+            key={item.workOrderID}
+            className="heatmap-cell"
+            style={{
+              backgroundColor: `rgb(${280 - intensity / 5}, ${
+                90 - intensity / 5
+              }, ${130 - intensity / 3})`,
+            }}
+          >
+            <span className="product-name">{item.phoneModel}</span>
+            <span className="product-quantity">{item.producedQty}</span>
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -907,12 +904,7 @@ const Histogram: React.FC<{ apiUri: string }> = ({ apiUri }) => {
         <YAxis />
         <Tooltip />
         <Legend />
-        <Bar
-          dataKey="count"
-          fill="#d8847c
-
-"
-        />
+        <Bar dataKey="count" fill="#d8847c" />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -1192,7 +1184,7 @@ const Dashboard: React.FC = () => {
           <div className="dashboard-contents">
             {/* Left side components */}
             <div className="bigger-components">
-              <div className="component-holder">
+              <div id="production-heatmap" className="component-holder">
                 <h2>Production feed</h2>
                 <div className="chart">
                   <Heatmap />

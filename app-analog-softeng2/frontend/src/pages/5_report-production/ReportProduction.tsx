@@ -19,7 +19,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 import Button from "@mui/material/Button";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+} from "@mui/material";
 
 import {
   Event as EventIcon,
@@ -60,7 +66,7 @@ const ReportProduction: React.FC = () => {
     dateFulfilled: "",
     producedQty: 0,
     orderFulfilled: false,
-    orderOnTime: false
+    orderOnTime: false,
   });
   const [editMode, setEditMode] = useState<string | null>(null);
 
@@ -70,8 +76,10 @@ const ReportProduction: React.FC = () => {
 
   const handleWorkOrderChange = (event: SelectChangeEvent<string>) => {
     const selectedValue = event.target.value as string;
-    const selectedOrder = workOrders.find((order) => order.id === selectedValue);
-  
+    const selectedOrder = workOrders.find(
+      (order) => order.id === selectedValue
+    );
+
     setFormData({
       ...formData,
       workOrderID: selectedOrder?.id || "",
@@ -89,9 +97,10 @@ const ReportProduction: React.FC = () => {
       dateFulfilled: formData.dateFulfilled,
       producedQty: formData.producedQty,
       orderFulfilled: formData.producedQty >= 100, // Example logic for order fulfillment
-      orderOnTime: new Date(formData.dateFulfilled) <= new Date(formData.dateRequested), // Example logic for on-time fulfillment
+      orderOnTime:
+        new Date(formData.dateFulfilled) <= new Date(formData.dateRequested), // Example logic for on-time fulfillment
     };
-  
+
     if (editMode) {
       await updateProductionData({ ...formattedData, id: editMode });
     } else {
@@ -105,7 +114,7 @@ const ReportProduction: React.FC = () => {
       dateFulfilled: "",
       producedQty: 0,
       orderFulfilled: false,
-      orderOnTime: false
+      orderOnTime: false,
     });
     setEditMode(null);
   };
@@ -140,12 +149,17 @@ const ReportProduction: React.FC = () => {
 
   const columns: GridColDef[] = [
     { field: "index", headerName: "ID", width: 20, maxWidth: 20 },
-    { field: "workOrderID", headerName: "Work Order ID", width: 100, sortable: true },
     {
-    field: "phoneModel",
-    headerName: "Phone Model",
-    width: 150,
-    sortable: true,
+      field: "workOrderID",
+      headerName: "Work Order ID",
+      width: 100,
+      sortable: true,
+    },
+    {
+      field: "phoneModel",
+      headerName: "Phone Model",
+      width: 150,
+      sortable: true,
     },
     {
       field: "dateRequested",
@@ -170,16 +184,14 @@ const ReportProduction: React.FC = () => {
       headerName: "Order Fulfilled?",
       width: 100,
       sortable: true,
-      renderCell: (params) =>
-        params.row.orderFulfilled ? "✅" : "❌",
+      renderCell: (params) => (params.row.orderFulfilled ? "✅" : "❌"),
     },
     {
       field: "orderOnTime",
       headerName: "Order On Time?",
       width: 100,
       sortable: true,
-      renderCell: (params) =>
-        params.row.orderOnTime ? "✅" : "❌",
+      renderCell: (params) => (params.row.orderOnTime ? "✅" : "❌"),
     },
     {
       field: "actions",
@@ -236,7 +248,8 @@ const ReportProduction: React.FC = () => {
                   </MenuItem>
                   {workOrders.map((order) => (
                     <MenuItem key={order.id} value={order.id}>
-                      {order.id} - {order.module} {/* Display work order ID and phone model */}
+                      {order.id} - {order.module}{" "}
+                      {/* Display work order ID and phone model */}
                     </MenuItem>
                   ))}
                 </Select>
@@ -248,7 +261,9 @@ const ReportProduction: React.FC = () => {
                 <DatePicker
                   label="Date Requested"
                   value={
-                    formData.dateRequested ? dayjs(formData.dateRequested) : null
+                    formData.dateRequested
+                      ? dayjs(formData.dateRequested)
+                      : null
                   }
                   onChange={(newValue) =>
                     setFormData({
@@ -282,7 +297,9 @@ const ReportProduction: React.FC = () => {
                 <DatePicker
                   label="Date Fulfilled"
                   value={
-                    formData.dateFulfilled ? dayjs(formData.dateFulfilled) : null
+                    formData.dateFulfilled
+                      ? dayjs(formData.dateFulfilled)
+                      : null
                   }
                   onChange={(newValue) =>
                     setFormData({
@@ -350,7 +367,8 @@ const ReportProduction: React.FC = () => {
           <div className="preview-details">
             <div>
               <h2 id="report-module-code">
-                {formData.phoneModel || "Phone Model"} {/* Display phone model */}
+                {formData.phoneModel || "Phone Model"}{" "}
+                {/* Display phone model */}
               </h2>
               <h3 id="report-module-desc">
                 {formData.dateRequested || "Date Requested"}
