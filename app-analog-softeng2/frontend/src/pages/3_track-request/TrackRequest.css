@@ -59,7 +59,6 @@
 .map-side {
   width: 65%; /* Takes about 2/3 of the screen */
   height: 100%;
-  background: white;
   position: relative;
 }
 .map-side .leaflet-container {
@@ -74,7 +73,6 @@
   justify-content: center;
   margin-right: 5px;
 }
-
 
 .MuiAvatar-img {
   width: 100%;

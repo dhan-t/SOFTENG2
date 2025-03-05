@@ -11,7 +11,10 @@ import {
   ToggleButtonGroup,
   MenuItem,
   Select,
+  Tooltip,
 } from "@mui/material";
+
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LocalShippingOutlined from "@mui/icons-material/LocalShippingOutlined";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CircleIcon from "@mui/icons-material/Circle";
@@ -29,16 +32,22 @@ const factoryLocations: { [key: string]: LatLngExpression } = {
   "Factory B": [10.3157, 123.8854], // Cebu
   "Factory C": [7.1907, 125.4553], // Davao
   "Factory D": [15.4826, 120.5976], // Tarlac
-  "Factory E": [16.4023, 120.5960], // Baguio
+  "Factory E": [16.4023, 120.596], // Baguio
   "Factory F": [13.6218, 123.1948], // Naga
-  "Factory G": [8.2280, 124.2452], // Cagayan de Oro
-  "Factory H": [6.9214, 122.0790], // Zamboanga
-  "Factory I": [12.8797, 121.7740], // Lucena
-  "Factory J": [14.6760, 121.0437], // Quezon City
+  "Factory G": [8.228, 124.2452], // Cagayan de Oro
+  "Factory H": [6.9214, 122.079], // Zamboanga
+  "Factory I": [12.8797, 121.774], // Lucena
+  "Factory J": [14.676, 121.0437], // Quezon City
 };
 
 const TrackRequest = () => {
-  const { trackingLogs, fetchTrackingLogs, updateTrackingStatus, loading, error } = useTracking();
+  const {
+    trackingLogs,
+    fetchTrackingLogs,
+    updateTrackingStatus,
+    loading,
+    error,
+  } = useTracking();
   const { requests } = useLogistics();
   const { user } = useAuth(); // Get the logged-in user's information
   const [status, setStatus] = useState("Pending");
@@ -51,7 +60,7 @@ const TrackRequest = () => {
   useEffect(() => {
     fetchTrackingLogs();
   }, []);
-  
+
   useEffect(() => {
     console.log(trackingLogs); // Log the tracking logs to verify the data
     console.log(requests); // Log the logistics requests to verify the data
@@ -62,7 +71,9 @@ const TrackRequest = () => {
     const fetchProfile = async () => {
       if (user) {
         try {
-          const response = await fetch(`http://localhost:5001/api/user/${user}`);
+          const response = await fetch(
+            `http://localhost:5001/api/user/${user}`
+          );
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
@@ -81,7 +92,9 @@ const TrackRequest = () => {
     event: React.MouseEvent<HTMLElement>,
     newStatus: string | null
   ) => {
-    if (newStatus !== null) setStatus(newStatus);
+    if (newStatus !== null) {
+      setStatus(newStatus);
+    }
   };
 
   const updateShipmentStatus = async (id: string, currentStatus: string) => {
@@ -108,10 +121,12 @@ const TrackRequest = () => {
     };
   });
 
-  // Filter combinedLogs based on selectedFactory
+  // Filter combinedLogs based on selected status and factory
   const filteredLogs = combinedLogs.filter(
     (shipment) =>
-      shipment.status === status &&
+      (status === "Completed"
+        ? shipment.status === "Completed" // Show only "Completed" shipments
+        : shipment.status === status) && // Show shipments matching the selected status
       (selectedFactory === "" || shipment.recipient === selectedFactory)
   );
 
@@ -167,8 +182,9 @@ const TrackRequest = () => {
             >
               Pending
             </ToggleButton>
+
             <ToggleButton
-              value="In-Transit"
+              value="Completed"
               sx={{
                 color: "#444",
                 fontWeight: 600,
@@ -189,31 +205,7 @@ const TrackRequest = () => {
                 },
               }}
             >
-              In-Transit
-            </ToggleButton>
-            <ToggleButton
-              value="Out-for-Delivery"
-              sx={{
-                color: "#444",
-                fontWeight: 600,
-                fontFamily: "'Poppins', sans-serif",
-                borderRadius: "17px!important",
-                backgroundColor: "#f8f9fa",
-                fontSize: "0.7rem",
-                padding: "1rem",
-                height: "2rem",
-                overflow: "hidden",
-                transition: "all 0.2s ease-in-out",
-                "&:hover": {
-                  backgroundColor: "#e2e6ea",
-                },
-                "&.Mui-selected, &.Mui-focusVisible": {
-                  backgroundColor: "#ad0232",
-                  color: "white",
-                },
-              }}
-            >
-              Out-For-Delivery
+              Completed
             </ToggleButton>
           </ToggleButtonGroup>
 
@@ -238,7 +230,11 @@ const TrackRequest = () => {
               Select Factory
             </MenuItem>
             {Object.keys(factoryLocations).map((factory) => (
-              <MenuItem key={factory} value={factory} sx={{ fontFamily: "Poppins, sans-serif" }}>
+              <MenuItem
+                key={factory}
+                value={factory}
+                sx={{ fontFamily: "Poppins, sans-serif" }}
+              >
                 {factory}
               </MenuItem>
             ))}
@@ -308,7 +304,13 @@ const TrackRequest = () => {
 
                     {/* Module Origin */}
                     <Box display="flex" alignItems="center" gap={1}>
-                      <CircleIcon sx={{ color: "#2ECC71", fontSize: 14, marginBottom: 2.5 }} />
+                      <CircleIcon
+                        sx={{
+                          color: "#2ECC71",
+                          fontSize: 14,
+                          marginBottom: 2.5,
+                        }}
+                      />
                       <Box>
                         <Typography
                           variant="subtitle1"
@@ -329,7 +331,13 @@ const TrackRequest = () => {
 
                     {/* Recipient */}
                     <Box display="flex" alignItems="center" gap={1} mt={1}>
-                      <LocationOnIcon sx={{ color: "#cf4a6f", fontSize: 18, marginBottom: 2.5 }} />
+                      <LocationOnIcon
+                        sx={{
+                          color: "#cf4a6f",
+                          fontSize: 18,
+                          marginBottom: 2.5,
+                        }}
+                      />
                       <Box>
                         <Typography
                           variant="subtitle1"
@@ -357,10 +365,10 @@ const TrackRequest = () => {
                       alignItems="center"
                     >
                       <Box display="flex" alignItems="center" gap={1} mt={2}>
-                        <Avatar
-                          src={profile.profilePicture || ""}
-                        >
-                          {profile.firstName ? profile.firstName.charAt(0) : "?"}
+                        <Avatar src={profile.profilePicture || ""}>
+                          {profile.firstName
+                            ? profile.firstName.charAt(0)
+                            : "?"}
                         </Avatar>
                         <Box>
                           <Typography
@@ -381,37 +389,65 @@ const TrackRequest = () => {
                             variant="body2"
                             color="textSecondary"
                             fontFamily="Poppins, sans-serif"
-                          >
-                          </Typography>
+                          ></Typography>
                         </Box>
                       </Box>
-                      {shipment.status !== "Delivered" && (
-                        <Button
-                          variant="contained"
-                          sx={{
-                            bgcolor: "#ad0232",
-                            color: "white",
-                            borderRadius: 2,
-                            fontFamily: "Poppins, sans-serif",
-                            textTransform: "none",
-                            paddingX: 3,
-                            paddingY: 1,
-                          }}
-                          onClick={() => updateShipmentStatus(shipment.id || "", shipment.status)}
-                        >
-                          {shipment.status === "Pending"
-                            ? "Transit"
-                            : shipment.status === "In-Transit"
-                            ? "Deliver"
-                            : "Complete"}
-                        </Button>
-                      )}
+                      {/* Show in Map Button */}
+                      <Tooltip title="View shipment location on map">
+                        <span>
+                          <Button
+                            variant="contained"
+                            sx={{
+                              bgcolor: "#ad0232",
+                              color: "white",
+                              borderRadius: 2,
+                              fontFamily: "Poppins, sans-serif",
+                              textTransform: "none",
+
+                              "&:disabled": {
+                                bgcolor: "#ccc",
+                                color: "#666",
+                              },
+                            }}
+                            disabled={shipment.status === "Completed"} // Disable if status is "Completed"
+                          >
+                            <LocationOnIcon />
+                          </Button>
+                        </span>
+                      </Tooltip>
+
+                      {/* Mark as Completed Button (changes the value of "status" in database) */}
+                      <Tooltip title="Mark order as completed">
+                        <span>
+                          <Button
+                            variant="contained"
+                            sx={{
+                              bgcolor: "#ad0232",
+                              color: "white",
+                              borderRadius: 2,
+                              fontFamily: "Poppins, sans-serif",
+                              textTransform: "none",
+                              "&:disabled": {
+                                bgcolor: "#ccc",
+                                color: "#666",
+                              },
+                            }}
+                            disabled={shipment.status === "Completed"} // Disable if status is "Completed"
+                          >
+                            <CheckCircleIcon />
+                          </Button>
+                        </span>
+                      </Tooltip>
                     </Box>
                   </CardContent>
                 </Card>
               ))
             ) : (
-              <Typography variant="body2" color="textSecondary" fontFamily="Poppins, sans-serif">
+              <Typography
+                variant="body2"
+                color="textSecondary"
+                fontFamily="Poppins, sans-serif"
+              >
                 No shipments available.
               </Typography>
             )}
@@ -421,7 +457,7 @@ const TrackRequest = () => {
         {/* Right Panel - Map */}
         <div className="map-side">
           <MapContainer
-            center={[12.8797, 121.7740]} // Center of the Philippines
+            center={[12.8797, 121.774]} // Center of the Philippines
             zoom={6}
             style={{
               height: "100%",

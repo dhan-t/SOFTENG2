@@ -79,5 +79,11 @@ export const useTracking = () => {
     fetchTrackingLogs();
   }, []);
 
-  return { trackingLogs, fetchTrackingLogs, updateTrackingStatus, loading, error };
+  return {
+    trackingLogs,
+    fetchTrackingLogs,
+    updateTrackingStatus,
+    loading,
+    error,
+  };
 };

@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import { IconType } from "react-icons/lib";
 import { useProductionData } from "../../hooks/useProductionData";
 import { useLogistics } from "../../hooks/useLogistics";
 import { useTracking } from "../../hooks/useTracking";
 import { useWorkOrders } from "../../hooks/useWorkOrder";
 import "./Dashboard.css";
 import Header from "../components/Header";
-import { FaBox, FaTruck, FaUser, FaClipboardList } from "react-icons/fa";
 import LineChartComponent from "../test page/test";
 import { ToggleButton, ToggleButtonGroup, Box } from "@mui/material";
 import { TrendingUp, TrendingDown } from "@mui/icons-material";
@@ -1280,9 +1278,12 @@ const Dashboard: React.FC = () => {
                 <ul className="tracking-logs">
                   {trackingLogs.map((log) => (
                     <li key={log.requestID}>
-                      <span className="module">{log.moduleCode}</span>: {log.status}{" "}
-                      (Updated by {log.dispatchedBy} on{" "}
-                      {log.deliveredDate ? new Date(log.deliveredDate).toLocaleDateString() : "N/A"})
+                      <span className="module">{log.moduleCode}</span>:{" "}
+                      {log.status} (Updated by {log.dispatchedBy} on{" "}
+                      {log.deliveredDate
+                        ? new Date(log.deliveredDate).toLocaleDateString()
+                        : "N/A"}
+                      )
                     </li>
                   ))}
                 </ul>

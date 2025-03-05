@@ -202,6 +202,7 @@ connect()
         recipient,
         requestDate,
         quantity,
+        status,
       } = req.body;
 
       if (
@@ -210,7 +211,8 @@ connect()
         !description ||
         !recipient ||
         !requestDate ||
-        !quantity
+        !quantity ||
+        !status
       ) {
         return res.status(400).json({ error: "All fields are required" });
       }
@@ -218,6 +220,9 @@ connect()
       try {
         const logisticsCollection = db.collection("logistics");
         const trackingCollection = db.collection("tracking");
+        const query = status ? { status } : {}; // Filter by status if provided
+        const requests = await collection.find(query).toArray();
+        res.status(200).json(requests);
 
         const newRequest = {
           module,
