@@ -11,6 +11,7 @@ import LineChartComponent from "../test page/test";
 import { ToggleButton, ToggleButtonGroup, Box } from "@mui/material";
 import { TrendingUp, TrendingDown } from "@mui/icons-material";
 import { AssignmentTurnedIn } from "@mui/icons-material";
+import "../components/global.css";
 import {
   BarChart,
   Bar,
@@ -38,6 +39,8 @@ import {
 import { useReports } from "../../hooks/useReports";
 import { SvgIconComponent } from "@mui/icons-material";
 import { Home as HomeIcon } from "@mui/icons-material";
+import ProductionTable from "../tables/ProductionTable";
+import ModulesTable from "../tables/ModulesTable";
 
 const GenerateReport = () => {
   const { productionData } = useProductionData();
@@ -419,74 +422,7 @@ const TrackingTest: React.FC = () => {
   );
 };
 
-// ✅ Logistics stuff
-const dataLogistics = [
-  {
-    moduleCode: "CAM-001",
-    variety: "Camera Module",
-    requestedBy: "Alice",
-    recipient: "Factory A",
-    dateProduced: "2023-10-01",
-    quantity: 100,
-    status: "Pending",
-  },
-  {
-    moduleCode: "SPK-001",
-    variety: "Speaker Module",
-    requestedBy: "Bob",
-    recipient: "Factory B",
-    dateProduced: "2023-10-02",
-    quantity: 50,
-    status: "Completed",
-  },
-  {
-    moduleCode: "HOS-001",
-    variety: "Housing Module",
-    requestedBy: "Charlie",
-    recipient: "Factory C",
-    dateProduced: "2023-10-03",
-    quantity: 200,
-    status: "In Transit",
-  },
-  {
-    moduleCode: "SCR-1",
-    variety: "Screen Module",
-    requestedBy: "David",
-    recipient: "Factory D",
-    dateProduced: "2023-10-04",
-    quantity: 150,
-    status: "Pending",
-  },
-  {
-    moduleCode: "BTN-001",
-    variety: "Button Module",
-    requestedBy: "Eve",
-    recipient: "Factory E",
-    dateProduced: "2023-10-05",
-    quantity: 75,
-    status: "Completed",
-  },
-  {
-    moduleCode: "CHP-001",
-    variety: "Chip Module",
-    requestedBy: "Frank",
-    recipient: "Factory F",
-    dateProduced: "2023-10-06",
-    quantity: 120,
-    status: "Pending",
-  },
-  {
-    moduleCode: "STG-001",
-    variety: "Storage Module",
-    requestedBy: "Grace",
-    recipient: "Factory G",
-    dateProduced: "2023-10-07",
-    quantity: 90,
-    status: "In Transit",
-  },
-];
-
-// ✅ Barchart
+// ✅ Module Barchart
 const fetchBarChartData = (
   apiUri: string,
   setState: React.Dispatch<React.SetStateAction<any[]>>
@@ -499,7 +435,7 @@ const fetchBarChartData = (
   }, [apiUri]);
 };
 
-// ✅ Barchart
+// ✅ Module Barchart component
 const CustomBarChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
   const [barChartData, setBarChartData] = useState<
     { name: string; value: number }[]
@@ -507,19 +443,67 @@ const CustomBarChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
 
   fetchBarChartData(apiUri, setBarChartData);
 
+  // Function to calculate bar chart summary
+  const getBarChartSummary = (data: { name: string; value: number }[]) => {
+    if (data.length === 0) return "No data available.";
+
+    // Find the category with the highest value
+    const highestValue = data.reduce((prev, current) =>
+      prev.value > current.value ? prev : current
+    );
+
+    // Find the category with the lowest value
+    const lowestValue = data.reduce((prev, current) =>
+      prev.value < current.value ? prev : current
+    );
+
+    // Calculate total value
+    const totalValue = data.reduce((sum, item) => sum + item.value, 0);
+
+    // Calculate average value
+    const averageValue = totalValue / data.length;
+
+    // Generate a summary message
+    const summaryMessage = `
+      The category with the highest value is "${highestValue.name}" with ${
+      highestValue.value
+    } items.
+      The category with the lowest value is "${lowestValue.name}" with ${
+      lowestValue.value
+    } items.
+      On average, each category has ${averageValue.toFixed(2)} items.
+      Total value across all categories: ${totalValue}.
+    `;
+
+    return summaryMessage;
+  };
+
+  // Get the bar chart summary
+  const summaryMessage = getBarChartSummary(barChartData);
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={barChartData}>
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Bar dataKey="value" fill="#a10a2f" />
-      </BarChart>
-    </ResponsiveContainer>
+    <div>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={barChartData}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Bar dataKey="value" fill="#a10a2f" />
+        </BarChart>
+      </ResponsiveContainer>
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "10px",
+          fontFamily: "Poppins, sans-serif",
+        }}
+      >
+        <strong>Summary:</strong> {summaryMessage}
+      </div>
+    </div>
   );
 };
-
-// ✅ Piechart
+// ✅ Piechart colors
 const piechartCOLORS = [
   "#FFB3B3",
   "#FF9999",
@@ -529,9 +513,12 @@ const piechartCOLORS = [
   "#E67373",
   "#D65C5C",
 ];
-// ✅ Piechart
+
+// ✅ Piechart component
 const PieChartComponent: React.FC<{ apiUrl: string }> = ({ apiUrl }) => {
-  const [chartData, setChartData] = useState([]);
+  const [chartData, setChartData] = useState<{ name: string; value: number }[]>(
+    []
+  );
 
   useEffect(() => {
     fetch(apiUrl)
@@ -540,216 +527,143 @@ const PieChartComponent: React.FC<{ apiUrl: string }> = ({ apiUrl }) => {
       .catch((err) => console.error("Error fetching pie chart data:", err));
   }, [apiUrl]);
 
+  // Function to calculate pie chart summary
+  const getPieChartSummary = (data: { name: string; value: number }[]) => {
+    if (data.length === 0) return "No data available.";
+
+    // Find the largest segment
+    const largestSegment = data.reduce((prev, current) =>
+      prev.value > current.value ? prev : current
+    );
+
+    // Find the smallest segment
+    const smallestSegment = data.reduce((prev, current) =>
+      prev.value < current.value ? prev : current
+    );
+
+    // Calculate total value
+    const totalValue = data.reduce((sum, item) => sum + item.value, 0);
+
+    // Calculate percentage distribution
+    const percentageDistribution = data
+      .map((item) => ({
+        name: item.name,
+        percentage: ((item.value / totalValue) * 100).toFixed(2),
+      }))
+      .map((item) => `${item.name}: ${item.percentage}%`)
+      .join(", ");
+
+    // Generate a summary message
+    const summaryMessage = `
+      The largest segment is "${largestSegment.name}" with ${largestSegment.value} items.
+      The smallest segment is "${smallestSegment.name}" with ${smallestSegment.value} items.
+      Total value across all segments: ${totalValue}.
+      Percentage distribution: ${percentageDistribution}.
+    `;
+
+    return summaryMessage;
+  };
+
+  // Get the pie chart summary
+  const summaryMessage = getPieChartSummary(chartData);
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <PieChart>
-        <Pie
-          data={chartData}
-          dataKey="value"
-          nameKey="name"
-          cx="50%"
-          cy="50%"
-          outerRadius={100}
-          label
-        >
-          {chartData.map((entry, index) => (
-            <Cell
-              key={`cell-${index}`}
-              fill={piechartCOLORS[index % piechartCOLORS.length]}
-            />
-          ))}
-        </Pie>
-        <Tooltip />
-        <Legend />
-      </PieChart>
-    </ResponsiveContainer>
+    <div>
+      <ResponsiveContainer width="100%" height={300}>
+        <PieChart>
+          <Pie
+            data={chartData}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={100}
+            label
+          >
+            {chartData.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={piechartCOLORS[index % piechartCOLORS.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "10px",
+          fontFamily: "Poppins, sans-serif",
+        }}
+      >
+        <strong>Summary:</strong> {summaryMessage}
+      </div>
+    </div>
   );
 };
 
-// ✅ Gaugechart
-const fetchGaugeChartData = (
-  apiUri: string,
-  setState: React.Dispatch<React.SetStateAction<any[]>>
-) => {
-  useEffect(() => {
-    fetch(apiUri)
-      .then((res) => res.json())
-      .then((data) => setState(data))
-      .catch((err) => console.error("Error fetching gauge chart data:", err));
-  }, [apiUri]);
-};
-
-// ✅ Gaugechart
 const GaugeChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
   const [gaugeData, setGaugeData] = useState<{ name: string; value: number }[]>(
     []
   );
 
-  fetchGaugeChartData(apiUri, setGaugeData);
-
-  return (
-    <ResponsiveContainer width="100%" height={250}>
-      <RadialBarChart
-        cx="50%"
-        cy="50%"
-        innerRadius="60%"
-        outerRadius="100%"
-        barSize={20}
-        data={gaugeData}
-      >
-        <RadialBar background dataKey="value" fill="#FF4D4D" />
-        <Tooltip />
-        <Legend />
-      </RadialBarChart>
-    </ResponsiveContainer>
-  );
-};
-
-// ✅ Module linechart
-const ModuleLineChart = ({ apiUri }: { apiUri: string }) => {
-  const [data, setData] = useState([]);
-  const [view, setView] = useState("daily");
-
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchGaugeChartData = async () => {
       try {
-        const response = await fetch(`${apiUri}?view=${view}`);
-        const result = await response.json();
-        setData(result);
-      } catch (error) {
-        console.error("Error fetching line chart data:", error);
+        const res = await fetch(apiUri);
+        const data = await res.json();
+        setGaugeData(data);
+      } catch (err) {
+        console.error("Error fetching gauge chart data:", err);
       }
     };
 
-    fetchData();
-  }, [apiUri, view]); // Fetch data when URI or view changes
+    fetchGaugeChartData();
+  }, [apiUri]);
+
+  // ✅ Function to summarize gauge data
+  const getSummary = () => {
+    if (gaugeData.length === 0)
+      return { total: 0, average: 0, max: null, min: null };
+
+    const total = gaugeData.reduce((sum, item) => sum + item.value, 0);
+    const average = total / gaugeData.length;
+    const max = Math.max(...gaugeData.map((item) => item.value));
+    const min = Math.min(...gaugeData.map((item) => item.value));
+
+    return { total, average, max, min };
+  };
+
+  const summary = getSummary();
 
   return (
     <div>
-      {/* Toggle View Buttons */}
-      <ToggleButtonGroup
-        value={view}
-        exclusive
-        onChange={(event, newView) => newView && setView(newView)}
-        aria-label="view toggle"
-      >
-        <ToggleButton value="daily">Daily</ToggleButton>
-        <ToggleButton value="weekly">Weekly</ToggleButton>
-        <ToggleButton value="monthly">Monthly</ToggleButton>
-      </ToggleButtonGroup>
-
-      {/* Line Chart */}
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data}>
-          <XAxis dataKey="name" />
-          <YAxis />
-          <CartesianGrid stroke="#ccc" />
-          <Tooltip />
-          <Line
-            type="monotone"
-            dataKey="value"
-            stroke="#FF4D4D"
-            strokeWidth={2}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
-
-// ✅ Production Stackedbarchart
-const StackedBarChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
-  const [chartData, setChartData] = useState<
-    { workOrderId: string; producedQty: number; orderedQty: number }[]
-  >([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(apiUri);
-        const data = await response.json();
-        setChartData(data);
-      } catch (error) {
-        console.error("Error fetching stacked bar chart data:", error);
-      }
-    };
-    fetchData();
-  }, [apiUri]);
-
-  return (
-    <ResponsiveContainer width={700} height={400}>
-      <BarChart data={chartData}>
-        <XAxis
-          dataKey="workOrderId"
-          label={{
-            value: "Work Order ID",
-            position: "insideBottom",
-            offset: -5,
-          }}
-        />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="orderedQty" stackId="a" fill="#42a5f5" />
-        <Bar dataKey="producedQty" stackId="a" fill="#66bb6a" />
-      </BarChart>
-    </ResponsiveContainer>
-  );
-};
-
-// ✅ Production Barchart late fulfillment
-const LateWorkOrdersChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
-  const [lateWorkOrders, setLateWorkOrders] = useState<number>(0);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(apiUri);
-        const data = await response.json();
-        setLateWorkOrders(data.lateWorkOrders);
-      } catch (error) {
-        console.error("Error fetching late work orders data:", error);
-      }
-    };
-    fetchData();
-  }, [apiUri]);
-
-  const chartData = [{ name: "Late Work Orders", count: lateWorkOrders }];
-
-  return (
-    <BarChart width={500} height={300} data={chartData}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="name" />
-      <YAxis />
-      <Tooltip />
-      <Bar dataKey="count" fill="#ff7300" />
-    </BarChart>
-  );
-};
-
-// Line Chart
-const requestTrendsData = dataLogistics.reduce((acc, item) => {
-  acc[item.dateProduced] = (acc[item.dateProduced] || 0) + 1;
-  return acc;
-}, {} as Record<string, number>);
-const lineChartData = Object.keys(requestTrendsData).map((key) => ({
-  date: key,
-  requests: requestTrendsData[key],
-}));
-
-const ModuleLine: React.FC = () => {
-  return (
-    <div>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={lineChartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis />
+      {/* ✅ Gauge Chart */}
+      <ResponsiveContainer width="100%" height={250}>
+        <RadialBarChart
+          cx="50%"
+          cy="50%"
+          innerRadius="60%"
+          outerRadius="100%"
+          barSize={20}
+          data={gaugeData}
+        >
+          <RadialBar background dataKey="value" fill="#FF4D4D" />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="requests" stroke="#ff9800" />
-        </LineChart>
+        </RadialBarChart>
       </ResponsiveContainer>
+
+      {/* ✅ Summary Display */}
+      <div style={{ marginBottom: "10px", textAlign: "center" }}>
+        <h3>Summary</h3>
+        <p>Total: {summary.total}</p>
+        <p>Average: {summary.average.toFixed(2)}</p>
+        <p>Max: {summary.max}</p>
+        <p>Min: {summary.min}</p>
+      </div>
     </div>
   );
 };
@@ -843,36 +757,82 @@ const anotherItem = createSummaryItem(
   "#555" // Custom icon color
 );
 
-// ✅ Production Barchart
-const fetchProdBarChartData = (
-  apiUri: string,
-  setState: React.Dispatch<React.SetStateAction<any[]>>
-) => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    fetch(apiUri)
-      .then((res) => res.json())
-      .then((data) => setState(data))
-      .catch((err) => console.error("Error fetching bar chart data:", err));
-  }, [apiUri]);
-};
-
 // ✅ Production Barchart component
 const BarChartComponent: React.FC<{ apiUri: string }> = ({ apiUri }) => {
   const [barData, setBarData] = useState<{ name: string; value: number }[]>([]);
 
-  fetchProdBarChartData(apiUri, setBarData);
+  // Fetch data from the API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(apiUri);
+        if (!response.ok) throw new Error("Failed to fetch data");
+        const data = await response.json();
+        setBarData(data);
+      } catch (error) {
+        console.error("Error fetching bar chart data:", error);
+      }
+    };
+
+    fetchData();
+  }, [apiUri]);
+
+  // Function to calculate fulfillment summary
+  const getFulfillmentSummary = (data: { name: string; value: number }[]) => {
+    // Find the number of fulfilled and unfulfilled orders
+    const fulfilled =
+      data.find((item) => item.name === "Fulfilled")?.value || 0;
+    const unfulfilled =
+      data.find((item) => item.name === "Unfulfilled")?.value || 0;
+
+    // Calculate the total number of orders
+    const totalOrders = fulfilled + unfulfilled;
+
+    // Calculate the fulfillment rate
+    const fulfillmentRate =
+      totalOrders > 0 ? (fulfilled / totalOrders) * 100 : 0;
+
+    // Generate a summary message
+    let summaryMessage = "";
+    if (fulfillmentRate > 50) {
+      summaryMessage = `📈 The fulfillment rate is high (${fulfillmentRate.toFixed(
+        2
+      )}%). Great job!`;
+    } else if (fulfillmentRate > 0) {
+      summaryMessage = `📉 The fulfillment rate is moderate (${fulfillmentRate.toFixed(
+        2
+      )}%). Keep improving!`;
+    } else {
+      summaryMessage = "⭕ No orders have been fulfilled yet.";
+    }
+
+    return summaryMessage;
+  };
+
+  // Get the fulfillment summary
+  const summaryMessage = getFulfillmentSummary(barData);
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={barData}>
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="value" fill="#c10300" />
-      </BarChart>
-    </ResponsiveContainer>
+    <div>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={barData}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="value" fill="#c10300" />
+        </BarChart>
+      </ResponsiveContainer>
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "10px",
+          fontFamily: "Poppins, sans-serif",
+        }}
+      >
+        <strong>Summary:</strong> {summaryMessage}
+      </div>
+    </div>
   );
 };
 
@@ -897,18 +857,69 @@ const Histogram: React.FC<{ apiUri: string }> = ({ apiUri }) => {
 
   fetchHistogramData(apiUri, setHistogramData);
 
+  // Function to calculate histogram summary
+  const getHistogramSummary = (data: { range: string; count: number }[]) => {
+    if (data.length === 0) return "No data available.";
+
+    // Find the most common range
+    const mostCommon = data.reduce((prev, current) =>
+      prev.count > current.count ? prev : current
+    );
+
+    // Find the least common range
+    const leastCommon = data.reduce((prev, current) =>
+      prev.count < current.count ? prev : current
+    );
+
+    // Calculate total items
+    const totalItems = data.reduce((sum, item) => sum + item.count, 0);
+
+    // Calculate average count
+    const averageCount = totalItems / data.length;
+
+    // Generate a summary message
+    const summaryMessage = `
+      The most common range is "${mostCommon.range}" with ${
+      mostCommon.count
+    } items.
+      The least common range is "${leastCommon.range}" with ${
+      leastCommon.count
+    } items.
+      On average, each range has ${averageCount.toFixed(2)} items.
+      Total items across all ranges: ${totalItems}.
+    `;
+
+    return summaryMessage;
+  };
+
+  // Get the histogram summary
+  const summaryMessage = getHistogramSummary(histogramData);
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={histogramData}>
-        <XAxis dataKey="range" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="count" fill="#d8847c" />
-      </BarChart>
-    </ResponsiveContainer>
+    <div>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={histogramData}>
+          <XAxis dataKey="range" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="count" fill="#d8847c" />
+        </BarChart>
+      </ResponsiveContainer>
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "10px",
+          fontFamily: "Poppins, sans-serif",
+        }}
+      >
+        <strong>Summary:</strong> {summaryMessage}
+      </div>
+    </div>
   );
 };
+
+//
 
 const Dashboard: React.FC = () => {
   const {
@@ -1284,6 +1295,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
+
       {/*jump2prod*/}
       {view === "production" && (
         <div className="main-div">
@@ -1331,6 +1343,13 @@ const Dashboard: React.FC = () => {
                 <h2>Production Performance</h2>
                 <LineChartComponent />
               </div>
+
+              <div className="component-holder">
+                <ProductionTable />
+              </div>
+            </div>
+
+            <div className="smaller-components">
               <div className="component-holder">
                 <h2>Order Fulfillment Status</h2>
                 <BarChartComponent apiUri="http://localhost:5001/api/order-fulfillment" />
@@ -1340,9 +1359,8 @@ const Dashboard: React.FC = () => {
                 <Histogram apiUri="http://localhost:5001/api/produced-quantity-distribution" />
               </div>
             </div>
-
-            <div className="smaller-components"></div>
           </div>
+
           <div className="component-holder">
             <h2>Production feed</h2>
             <div id="full-width-heatmap" className="chart">
@@ -1399,6 +1417,10 @@ const Dashboard: React.FC = () => {
                 <h2>Most Requested Items</h2>
                 <CustomBarChart apiUri="http://localhost:5001/api/module-chart" />
               </div>
+
+              <div className="component-holder">
+                <ModulesTable />
+              </div>
             </div>
             <div className="smaller-components">
               <div className="component-holder">
@@ -1408,6 +1430,32 @@ const Dashboard: React.FC = () => {
               <div className="component-holder">
                 <h2>Module Request Fulfillment Rate</h2>
                 <GaugeChart apiUri="http://localhost:5001/api/fulfillment-rate" />
+              </div>
+            </div>
+          </div>
+          <div className="component-holder">
+            <h2>Recent requests</h2>
+            <div className="chart">
+              <div className="pie-chart">
+                {requests.map((item, index) => {
+                  const bgColor = softCoolColors[index % softCoolColors.length];
+                  const textColor = index < 3 ? "#000" : "#000"; // Darker colors get white text, lighter get dark text
+
+                  return (
+                    <div
+                      key={item._id}
+                      className="slice"
+                      style={{
+                        backgroundColor: bgColor,
+                        color: textColor, // Dynamic font color
+                        borderRadius: "12px",
+                        padding: "8px 17px 10px",
+                      }}
+                    >
+                      <span>{item.module}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
