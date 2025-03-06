@@ -1,0 +1,48 @@
+[33m4fe9cfe[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Update auth.js
+[33mb063006[m merged robbie files
+[33mb71cc27[m[33m ([m[1;32mitsmeyessir-main[m[33m)[m module dashboard connection stuff
+[33mc490429[m redddd
+[33me99ad5f[m Merge pull request #4 from cinnari/final-frontend-change
+[33m4623d77[m[33m ([m[1;31mSOFTENG2/final-frontend-change[m[33m)[m Merge branch 'main' into final-frontend-change
+[33mf6414a0[m updated charts and 5 rows
+[33m3b25998[m back to report production
+[33me920072[m red tracking
+[33mf3c1572[m Merge pull request #3 from cinnari/final-frontend-change
+[33me0d47bf[m experimenting with reportproduction
+[33mcd1835d[m red everywhere
+[33mde56faf[m all color changes
+[33md8793f0[m NOW UTILIZING WORKORDER DATABASE, NO S
+[33mecfbe6d[m updated small dashboard items
+[33m23d65dc[m[33m ([m[1;31mSOFTENG2/main[m[33m)[m trackpage
+[33m80cb590[m work order fix
+[33m6adff26[m clean up drive bago mag backend
+[33m0c62a0e[m proper tati merge
+[33m7f172a0[m Merge pull request #2 from cinnari/front-end
+[33mfabf667[m[33m ([m[1;31mSOFTENG2/front-end[m[33m)[m Merge branch 'main' into front-end
+[33me72e5cb[m final most updated
+[33m465d976[m Update Dashboard.tsx
+[33m940afaa[m small cards edit
+[33mc24f412[m Update config.env
+[33m6b0e4ed[m Merge branch 'main' of https://github.com/dhan-t/SOFTENG2
+[33mb70b928[m test
+[33m2935365[m Merge pull request #1 from cinnari/front-end
+[33m16dd96a[m New changes
+[33m99130e2[m Labeling and stuff
+[33mc58ae5f[m comment
+[33m2400ffd[m create work order page created
+[33m3486737[m STANDARDIZATION
+[33mc569f93[m NOT FINALIZED DASHBOARD PAGE, BUT DOABLE
+[33m68dd51a[m Merge remote-tracking branch 'robbie-copy/main'
+[33mb264d31[m puro test cards lanmg
+[33m0ef5d4b[m Add files via upload
+[33m7412ee3[m Add files via upload
+[33mab3a833[m Add files via upload
+[33ma458360[m Add files via upload
+[33m2f2cd9b[m SMALLER DASHBOARD COMPONENTS
+[33m0ea58f6[m numbered folder for easier development
+[33m04826f0[m CSS Cleanup
+[33m6cf1209[m MUI convertion
+[33m444e8b6[m report production using mui components.
+[33mef513f0[m production reports modifcation
+[33m8af8265[m test push
+[33m9921093[m Initial commit

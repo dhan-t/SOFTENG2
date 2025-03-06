@@ -36,7 +36,6 @@ export const useLogistics = () => {
   const submitRequest = async (newRequest: LogisticsRequest) => {
     setLoading(true);
     try {
-      console.log("Submitting request:", newRequest); // Add this line
       const res = await fetch("http://localhost:5001/api/logistics", {
         method: "POST",
         headers: {
@@ -46,12 +45,10 @@ export const useLogistics = () => {
       });
 
       if (res.ok) {
-        console.log("Request submitted successfully"); // Add this line
         await fetchRequests(); // Refresh list after successful submission
         return true;
       } else {
         const errorText = await res.text();
-        console.error("Failed to submit request:", errorText); // Add this line
         setError("Failed to submit request.");
         return false;
       }

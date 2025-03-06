@@ -103,6 +103,7 @@ const WorkOrder: React.FC = () => {
       dueDate: formData.dueDate,
       priority: formData.priority as "Low" | "Medium" | "High",
       quantity: formData.quantity,
+      status: "Pending", // Default status
     };
 
     console.log("Submitting:", formattedData);
@@ -119,7 +120,7 @@ const WorkOrder: React.FC = () => {
           requestDate: dayjs().format("YYYY-MM-DD"),
           dueDate: "",
           quantity: 0,
-          priority: "", // Reset priority to default
+          priority: "",
         });
       } else {
         console.error("Failed to submit work order.");
@@ -147,7 +148,7 @@ const WorkOrder: React.FC = () => {
       headerName: "Days Until Due",
       sortable: true,
       flex: 1,
-    }, // New column
+    },
   ];
 
   const rows = workOrders.map((order: any, index: number) => {
@@ -166,7 +167,7 @@ const WorkOrder: React.FC = () => {
       recipient: order.assignedTo,
       quantity: order.quantity,
       status: order.status,
-      daysDifference, // Add the calculated value here
+      daysDifference,
     };
   });
 
@@ -270,7 +271,8 @@ const WorkOrder: React.FC = () => {
                 />
               </LocalizationProvider>
 
-              <FormControl fullWidth required className="form-group">
+            <div className="form-group">
+              <FormControl fullWidth required>
                 <InputLabel>Priority</InputLabel>
                 <Select value={formData.priority} onChange={handlePriorityChange}>
                   {priorityOptions.map((priority) => (
@@ -303,6 +305,37 @@ const WorkOrder: React.FC = () => {
                 variant="contained"
                 color="success"
                 startIcon={<SendIcon />}
+
+           
+              Submit
+            </Button>
+          </form>
+        </div>
+
+        <div id="workorder-preview" className="preview-card">
+          <h2 className="preview-title" id="workorder-title">
+            Work Order Preview
+          </h2>
+
+          <div className="preview-icon">
+            <SmartphoneRoundedIcon sx={{ fontSize: 300, color: "#1565C0" }} />
+          </div>
+
+          <div className="preview-details">
+            <div>
+              <h2 id="workorder-module-code">
+                {formData.module || "Module Code"}
+              </h2>
+              <h3 id="workorder-module-desc">
+                {formData.description || "Module Description"}
+              </h3>
+            </div>
+
+            <div className="chip-holder">
+              <Chip
+                label={
+                  formData.quantity ? `${formData.quantity} pc` : "Order Pc"
+                }
                 sx={{
                   fontFamily: "Poppins",
                   padding: "10px 20px",
@@ -323,12 +356,28 @@ const WorkOrder: React.FC = () => {
           </form>
         </div>
 
+
         <div id="workorder-preview" 
               className="preview-card"> 
         {/* Preview Card */}
         <h2 className="preview-title" id="workorder-title">
           Work Order Preview
         </h2>
+
+              <Chip
+                icon={
+                  <SmartphoneRoundedIcon
+                    sx={{ color: "#0D47A1", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={formData.module || "Phone Model"}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#90caf9",
+                  color: "#0d47a1",
+                }}
+              />
+
 
         {/* Always show a smartphone icon */}
         <div className="preview-icon">
@@ -405,11 +454,10 @@ const WorkOrder: React.FC = () => {
         checkboxSelection
         disableRowSelectionOnClick
         sx={{
-          backgroundColor: "white", // Set background to white
-          border: "none", // Remove border if needed
-
+          backgroundColor: "white",
+          border: "none",
           "& .MuiDataGrid-columnHeaders": {
-            backgroundColor: "#f5f5f5", // Optional: header background color
+            backgroundColor: "#f5f5f5",
           },
         }}
       />

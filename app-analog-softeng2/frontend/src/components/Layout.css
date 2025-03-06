@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap");
 
 .layout {
   display: flex;
@@ -7,20 +7,27 @@
   overflow: hidden;
   transition: all 0.3s ease-in-out;
   background-color: #f3f6fd;
-  font-family: 'Poppins', sans-serif;
-
+  font-family: "Poppins", sans-serif;
 }
 
 .layout .content {
   flex-grow: 1;
   overflow-y: auto;
   transition: margin-left 0.3s ease-in-out;
+  padding: 20px; /* Add padding for better spacing */
 }
 
+/* Expanded Navbar */
 .layout.expanded .content {
-  margin-left: 240px; /* Adjust based on navbar width */
+  margin-left: 240px; /* Width of the expanded navbar */
 }
 
+/* Collapsed Navbar */
 .layout.collapsed .content {
-  margin-left: 60px; /* Adjust based on navbar width */
+  margin-left: 60px; /* Width of the collapsed navbar */
+}
+
+/* No Navbar (e.g., login/register pages) */
+.layout:not(.expanded):not(.collapsed) .content {
+  margin-left: 0; /* No margin when navbar is hidden */
 }

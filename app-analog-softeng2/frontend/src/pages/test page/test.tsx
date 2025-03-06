@@ -66,14 +66,15 @@ const LineChartComponent: React.FC = () => {
         variant="fullWidth"
         sx={{ marginBottom: 2, fontFamily: "Poppins, sans-serif" }}
       >
-        <Tab label="Daily" sx={{ fontFamily: "Poppins, sans-serif" }}/>
-        <Tab label="Weekly" sx={{ fontFamily: "Poppins, sans-serif" }}/>
-        <Tab label="Monthly" sx={{ fontFamily: "Poppins, sans-serif" }}/>
+        <Tab label="Daily" sx={{ fontFamily: "Poppins, sans-serif" }} />
+        <Tab label="Weekly" sx={{ fontFamily: "Poppins, sans-serif" }} />
+        <Tab label="Monthly" sx={{ fontFamily: "Poppins, sans-serif" }} />
       </Tabs>
 
       {/* ✅ Daily Chart & Summary */}
       <CustomTabPanel value={tabIndex} index={0}>
-        <LineChart fontFamily={"Poppins, sans-serif"}
+        <LineChart
+          fontFamily={"Poppins, sans-serif"}
           xAxis={[
             { scaleType: "point", data: data.daily.map((entry) => entry.name) },
           ]}
@@ -98,7 +99,9 @@ const LineChartComponent: React.FC = () => {
           height={400}
         />
         <Box mt={2}>
-          <Typography variant="h6" fontFamily={"Poppins, sans-serif"}>Today's Summary</Typography>
+          <Typography variant="h6" fontFamily={"Poppins, sans-serif"}>
+            Today's Summary
+          </Typography>
           <Typography fontFamily={"Poppins, sans-serif"}>
             Produced: {todayData.produced}, Requirement: {todayData.requirement}
           </Typography>
@@ -112,7 +115,8 @@ const LineChartComponent: React.FC = () => {
 
       {/* ✅ Weekly Chart & Summary */}
       <CustomTabPanel value={tabIndex} index={1}>
-        <LineChart fontFamily={"Poppins, sans-serif"}
+        <LineChart
+          fontFamily={"Poppins, sans-serif"}
           xAxis={[
             {
               scaleType: "point",
@@ -136,7 +140,9 @@ const LineChartComponent: React.FC = () => {
           height={400}
         />
         <Box mt={2} sx={{ fontFamily: "Poppins, sans-serif" }}>
-          <Typography variant="h6" fontFamily={"Poppins, sans-serif"}>Weekly Summary</Typography>
+          <Typography variant="h6" fontFamily={"Poppins, sans-serif"}>
+            Weekly Summary
+          </Typography>
           <Typography fontFamily={"Poppins, sans-serif"}>
             Produced: {lastWeekData.produced}, Requirement:{" "}
             {lastWeekData.requirement}
@@ -150,8 +156,13 @@ const LineChartComponent: React.FC = () => {
       </CustomTabPanel>
 
       {/* ✅ Monthly Chart & Summary */}
-      <CustomTabPanel value={tabIndex} index={2} fontFamily={"Poppins, sans-serif"}>
-        <LineChart fontFamily={"Poppins, sans-serif"}
+      <CustomTabPanel
+        value={tabIndex}
+        index={2}
+        fontFamily={"Poppins, sans-serif"}
+      >
+        <LineChart
+          fontFamily={"Poppins, sans-serif"}
           xAxis={[
             {
               scaleType: "point",
@@ -175,7 +186,9 @@ const LineChartComponent: React.FC = () => {
           height={400}
         />
         <Box mt={2} sx={{ fontFamily: "Poppins, sans-serif" }}>
-          <Typography variant="h6" fontFamily={"Poppins, sans-serif"}>Monthly Summary</Typography>
+          <Typography variant="h6" fontFamily={"Poppins, sans-serif"}>
+            Monthly Summary
+          </Typography>
           <Typography fontFamily={"Poppins, sans-serif"}>
             Produced: {lastMonthData.produced}, Requirement:{" "}
             {lastMonthData.requirement}

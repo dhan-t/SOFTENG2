@@ -1,83 +1,45 @@
 import React, { useState, useEffect } from "react";
 import { useProductionData } from "../../hooks/useProductionData";
+import { useDataWorkOrder } from "../../hooks/useDataWorkOrder";
 import "./ReportProduction.css";
 import "../components/global.css";
 import Header from "../components/Header";
-
 import TextField from "@mui/material/TextField";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import Chip from "@mui/material/Chip";
-
 import CancelIcon from "@mui/icons-material/Cancel";
 import SaveIcon from "@mui/icons-material/Save";
 import EditIcon from "@mui/icons-material/Edit";
-
+import DeleteIcon from "@mui/icons-material/Delete";
 import Button from "@mui/material/Button";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-
-import useDataWorkOrder from "../../hooks/useDataWorkOrder";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+} from "@mui/material";
 
 import {
   Event as EventIcon,
   Person as PersonIcon,
-  WidgetsRounded as WidgetsRoundedIcon,
   SmartphoneRounded as SmartphoneRoundedIcon,
 } from "@mui/icons-material";
 
-// Define your icons as SVGs or use an icon library
-const CameraIcon = () => (
-  <span role="img" aria-label="camera">
-    📷
-  </span>
-);
-const RectangleIcon = () => (
-  <span role="img" aria-label="rectangle">
-    📱
-  </span>
-);
-const SpeakerIcon = () => (
-  <span role="img" aria-label="speaker">
-    🔊
-  </span>
-);
-
-const WorkOrderSelector = () => {
-  const handleSelectionChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const workOrderId = event.target.value;
-    const selectedOrder = workOrders.find((order) => order.id === workOrderId);
-
-    if (selectedOrder) {
-      setSelectedWorkOrder(selectedOrder);
-      setFormData({
-        module: selectedOrder.module,
-        requestDate: selectedOrder.requestDate,
-        dueDate: selectedOrder.dueDate,
-        quantity: selectedOrder.quantity,
-      });
-    }
-  };
-};
-
 interface ProductionData {
-  productId: string;
-  productName: string;
-  quantityProduced: number;
-  dateProduced: string;
-  moduleCode: string;
-  description: string;
-  reportedBy: string;
-}
-
-interface ModuleOption {
-  code: string;
-  description: string;
-  icon: JSX.Element;
+  id?: string;
+  workOrderID: string;
+  dateRequested: string;
+  fulfilledBy: string;
+  dateFulfilled: string;
+  producedQty: number;
+  orderFulfilled: boolean;
+  orderOnTime: boolean;
+  phoneModel?: string; // Add phone model to ProductionData
 }
 
 const ReportProduction: React.FC = () => {
@@ -91,55 +53,65 @@ const ReportProduction: React.FC = () => {
     error,
   } = useProductionData();
 
+  const { workOrders } = useDataWorkOrder();
+
   const [formData, setFormData] = useState<ProductionData>({
-    productId: "",
-    productName: "",
-    quantityProduced: 0,
-    dateProduced: "",
-    moduleCode: "",
-    description: "",
-    reportedBy: "",
+    workOrderID: "",
+    phoneModel: "", // Add phone model to form data
+    dateRequested: "",
+    fulfilledBy: "",
+    dateFulfilled: "",
+    producedQty: 0,
+    orderFulfilled: false,
+    orderOnTime: false,
   });
   const [editMode, setEditMode] = useState<string | null>(null);
-
-  const moduleOptions: ModuleOption[] = [
-    { code: "CMR123", description: "Camera module", icon: <CameraIcon /> },
-    { code: "HSN123", description: "Housing module", icon: <RectangleIcon /> },
-    { code: "SPK123", description: "Speaker module", icon: <SpeakerIcon /> },
-  ];
-
-  const handleModuleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    const selectedValue = event.target.value as string;
-    const selectedOption = moduleOptions.find(
-      (option) => option.code === selectedValue
-    );
-
-    setFormData({
-      ...formData,
-      moduleCode: selectedOption?.code || "",
-      description: selectedOption?.description || "",
-    });
-  };
 
   useEffect(() => {
     fetchProductionData();
   }, []);
 
+  const handleWorkOrderChange = (event: SelectChangeEvent<string>) => {
+    const selectedValue = event.target.value as string;
+    const selectedOrder = workOrders.find(
+      (order) => order.id === selectedValue
+    );
+
+    setFormData({
+      ...formData,
+      workOrderID: selectedOrder?.id || "",
+      dateRequested: selectedOrder?.requestDate || "",
+      phoneModel: selectedOrder?.module || "", // Add phone model to form data
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const formattedData = {
+      workOrderID: formData.workOrderID,
+      dateRequested: formData.dateRequested,
+      fulfilledBy: formData.fulfilledBy,
+      dateFulfilled: formData.dateFulfilled,
+      producedQty: formData.producedQty,
+      orderFulfilled: formData.producedQty >= 100, // Example logic for order fulfillment
+      orderOnTime:
+        new Date(formData.dateFulfilled) <= new Date(formData.dateRequested), // Example logic for on-time fulfillment
+    };
+
     if (editMode) {
-      await updateProductionData(formData);
+      await updateProductionData({ ...formattedData, id: editMode });
     } else {
-      await addProductionData(formData);
+      await addProductionData(formattedData);
     }
     setFormData({
-      productId: "",
-      productName: "",
-      quantityProduced: 0,
-      dateProduced: "",
-      moduleCode: "",
-      description: "",
-      reportedBy: "",
+      workOrderID: "",
+      phoneModel: "", // Reset phone model
+      dateRequested: "",
+      fulfilledBy: "",
+      dateFulfilled: "",
+      producedQty: 0,
+      orderFulfilled: false,
+      orderOnTime: false,
     });
     setEditMode(null);
   };
@@ -147,53 +119,102 @@ const ReportProduction: React.FC = () => {
   const handleEdit = (item: ProductionData) => {
     setFormData({
       ...item,
-      dateProduced: item.dateProduced.split("T")[0], // Convert date to YYYY-MM-DD format
+      dateFulfilled: item.dateFulfilled.split("T")[0], // Convert date to YYYY-MM-DD format
     });
-    setEditMode(item.productId);
+    setEditMode(item.id || null);
   };
 
-  const rows = productionData.map((item, index) => ({
+  const handleDelete = async (id: string) => {
+    await deleteProductionData(id);
+    fetchProductionData(); // Refresh the data after deletion
+  };
+
+  // Merge productionData with workOrders to include phoneModel
+  const mergedData = productionData.map((item) => {
+    const workOrder = workOrders.find((order) => order.id === item.workOrderID);
+    return {
+      ...item,
+      phoneModel: workOrder?.module || "",
+    };
+  });
+
+  const rows = mergedData.map((item, index) => ({
     ...item,
-    id: item.productId || index,
+    id: item.id || index,
     index: index + 1,
   }));
 
   const columns: GridColDef[] = [
     { field: "index", headerName: "ID", width: 20, maxWidth: 20 },
-    { field: "id", headerName: "Request ID", flex: 1, sortable: true },
+    {
+      field: "workOrderID",
+      headerName: "Work Order ID",
+      width: 100,
+      sortable: true,
+    },
+    {
+      field: "phoneModel",
+      headerName: "Phone Model",
+      width: 150,
+      sortable: true,
+    },
     {
       field: "dateRequested",
       headerName: "Date Requested",
-      flex: 1,
+      width: 200,
       sortable: true,
     },
     {
-      field: "quantityRequested",
-      headerName: "Requested Qty",
-      flex: 1,
-      sortable: true,
-    },
-    {
-      field: "dateProduced",
-      headerName: "Date Fulfilled",
-      flex: 1,
-      sortable: true,
-    },
-    {
-      field: "quantityProduced",
+      field: "producedQty",
       headerName: "Produced Qty",
-      flex: 1,
+      width: 150,
+      sortable: true,
+    },
+    {
+      field: "dateFulfilled",
+      headerName: "Date Fulfilled",
+      width: 200,
       sortable: true,
     },
     {
       field: "orderFulfilled",
       headerName: "Order Fulfilled?",
-      flex: 1,
+      width: 100,
       sortable: true,
-      renderCell: (params) =>
-        params.row.quantityProduced >= params.row.quantityRequested
-          ? "✅"
-          : "❌",
+      renderCell: (params) => (params.row.orderFulfilled ? "✅" : "❌"),
+    },
+    {
+      field: "orderOnTime",
+      headerName: "Order On Time?",
+      width: 100,
+      sortable: true,
+      renderCell: (params) => (params.row.orderOnTime ? "✅" : "❌"),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 150,
+      sortable: false,
+      renderCell: (params) => (
+        <>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<EditIcon />}
+            onClick={() => handleEdit(params.row)}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<DeleteIcon />}
+            onClick={() => handleDelete(params.row.id)}
+          >
+            Delete
+          </Button>
+        </>
+      ),
     },
   ];
 
@@ -206,6 +227,7 @@ const ReportProduction: React.FC = () => {
       <Header />
 
       <div className="form-and-card">
+
   <div className="form-holder">
     <form onSubmit={handleSubmit} className="form">
       <h2>{editMode ? "Edit report" : "Report production"}</h2>
@@ -230,6 +252,189 @@ const ReportProduction: React.FC = () => {
             ))}
           </Select>
         </FormControl>
+
+            </div>
+
+            <div className="form-group">
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  label="Date Requested"
+                  value={
+                    formData.dateRequested
+                      ? dayjs(formData.dateRequested)
+                      : null
+                  }
+                  onChange={(newValue) =>
+                    setFormData({
+                      ...formData,
+                      dateRequested: newValue
+                        ? newValue.format("YYYY-MM-DD")
+                        : "",
+                    })
+                  }
+                  slotProps={{ textField: { fullWidth: true } }}
+                />
+              </LocalizationProvider>
+            </div>
+
+            <div className="form-group">
+              <TextField
+                label="Fulfilled By"
+                variant="outlined"
+                type="text"
+                value={formData.fulfilledBy}
+                onChange={(e) =>
+                  setFormData({ ...formData, fulfilledBy: e.target.value })
+                }
+                required
+                fullWidth
+              />
+            </div>
+
+            <div className="form-group">
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  label="Date Fulfilled"
+                  value={
+                    formData.dateFulfilled
+                      ? dayjs(formData.dateFulfilled)
+                      : null
+                  }
+                  onChange={(newValue) =>
+                    setFormData({
+                      ...formData,
+                      dateFulfilled: newValue
+                        ? newValue.format("YYYY-MM-DD")
+                        : "",
+                    })
+                  }
+                  slotProps={{ textField: { fullWidth: true } }}
+                />
+              </LocalizationProvider>
+            </div>
+
+            <div className="form-group">
+              <TextField
+                label="Produced Quantity"
+                variant="outlined"
+                type="number"
+                value={formData.producedQty}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    producedQty: parseInt(e.target.value),
+                  })
+                }
+                required
+                fullWidth
+              />
+            </div>
+
+            <Button
+              type="submit"
+              variant="contained"
+              disableElevation
+              color={editMode ? "primary" : "success"}
+              startIcon={editMode ? <EditIcon /> : <SaveIcon />}
+            >
+              {editMode ? "Update" : "Add"}
+            </Button>
+            {editMode && (
+              <Button
+                type="button"
+                variant="contained"
+                color="error"
+                disableElevation
+                startIcon={<CancelIcon />}
+                onClick={() => setEditMode(null)}
+              >
+                Cancel
+              </Button>
+            )}
+          </form>
+        </div>
+
+        <div id="report-preview" className="preview-card">
+          <h2 className="preview-title" id="report-title">
+            Report Preview
+          </h2>
+
+          <div className="preview-icon">
+            <SmartphoneRoundedIcon sx={{ fontSize: 300, color: "#E65100" }} />
+          </div>
+
+          <div className="preview-details">
+            <div>
+              <h2 id="report-module-code">
+                {formData.phoneModel || "Phone Model"}{" "}
+                {/* Display phone model */}
+              </h2>
+              <h3 id="report-module-desc">
+                {formData.dateRequested || "Date Requested"}
+              </h3>
+            </div>
+
+            <div className="chip-holder">
+              <Chip
+                label={
+                  formData.producedQty
+                    ? `${formData.producedQty} pcs`
+                    : "Produced Qty"
+                }
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#FFCCBC",
+                  color: "#BF360C",
+                }}
+              />
+
+              <Chip
+                icon={
+                  <SmartphoneRoundedIcon
+                    sx={{ color: "#e65100", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={formData.phoneModel || "Phone Model"}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#FFF3E0",
+                  color: "#E65100",
+                }}
+              />
+
+              <Chip
+                icon={
+                  <EventIcon
+                    sx={{ color: "#E65100", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={formData.dateFulfilled || "Date Fulfilled"}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#FFF3E0",
+                  color: "#E65100",
+                }}
+              />
+            </div>
+
+            <div className="chip-holder">
+              <Chip
+                icon={
+                  <PersonIcon
+                    sx={{ color: "#e65100", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={formData.fulfilledBy || "Fulfilled By"}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#FFF3E0",
+                  color: "#E65100",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <TextField
@@ -374,11 +579,11 @@ const ReportProduction: React.FC = () => {
           initialState={{ pagination: { paginationModel } }}
           pageSizeOptions={[5, 10, 50, 100]}
           sx={{
-            backgroundColor: "white", // Set background to white
-            border: "none", // Remove border if needed
+            backgroundColor: "white",
+            border: "none",
 
             "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "#f5f5f5", // Optional: header background color
+              backgroundColor: "#f5f5f5",
             },
           }}
         />

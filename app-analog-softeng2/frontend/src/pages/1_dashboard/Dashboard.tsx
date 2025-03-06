@@ -1,17 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import { IconType } from "react-icons/lib";
 import { useProductionData } from "../../hooks/useProductionData";
 import { useLogistics } from "../../hooks/useLogistics";
 import { useTracking } from "../../hooks/useTracking";
+import { useWorkOrders } from "../../hooks/useWorkOrder";
 import "./Dashboard.css";
 import Header from "../components/Header";
-import { FaBox, FaTruck, FaUser, FaClipboardList } from "react-icons/fa";
 import LineChartComponent from "../test page/test";
 import { ToggleButton, ToggleButtonGroup, Box } from "@mui/material";
 import { TrendingUp, TrendingDown } from "@mui/icons-material";
 import { AssignmentTurnedIn } from "@mui/icons-material";
+import "../components/global.css";
 import {
   BarChart,
   Bar,
@@ -26,6 +26,8 @@ import {
   LineChart,
   Line,
   CartesianGrid,
+  RadialBarChart,
+  RadialBar,
 } from "recharts";
 import {
   Card,
@@ -35,6 +37,10 @@ import {
   Chip,
 } from "@mui/material";
 import { useReports } from "../../hooks/useReports";
+import { SvgIconComponent } from "@mui/icons-material";
+import { Home as HomeIcon } from "@mui/icons-material";
+import ProductionTable from "../tables/ProductionTable";
+import ModulesTable from "../tables/ModulesTable";
 
 const GenerateReport = () => {
   const { productionData } = useProductionData();
@@ -60,7 +66,7 @@ const GenerateReport = () => {
   );
 };
 
-// ✅ Define props for better reusability
+// ✅ Small dashboard cards
 interface UnifiedCardProps {
   type: "rate" | "progress" | "summary";
   title: string;
@@ -70,11 +76,10 @@ interface UnifiedCardProps {
   oldValue?: number; // Required for "rate" type
   description?: string;
 }
-
+// ✅ Small dashboard cards
 const UnifiedCard: React.FC<UnifiedCardProps> = ({
   type,
   title,
-  icon,
   currentValue,
   maxValue = 100,
   oldValue = 0,
@@ -417,260 +422,504 @@ const TrackingTest: React.FC = () => {
   );
 };
 
-// ✅ Logistics stuff
-const dataLogistics = [
-  {
-    moduleCode: "CAM-001",
-    variety: "Camera Module",
-    requestedBy: "Alice",
-    recipient: "Factory A",
-    dateProduced: "2023-10-01",
-    quantity: 100,
-    status: "Pending",
-  },
-  {
-    moduleCode: "SPK-001",
-    variety: "Speaker Module",
-    requestedBy: "Bob",
-    recipient: "Factory B",
-    dateProduced: "2023-10-02",
-    quantity: 50,
-    status: "Completed",
-  },
-  {
-    moduleCode: "HOS-001",
-    variety: "Housing Module",
-    requestedBy: "Charlie",
-    recipient: "Factory C",
-    dateProduced: "2023-10-03",
-    quantity: 200,
-    status: "In Transit",
-  },
-  {
-    moduleCode: "SCR-1",
-    variety: "Screen Module",
-    requestedBy: "David",
-    recipient: "Factory D",
-    dateProduced: "2023-10-04",
-    quantity: 150,
-    status: "Pending",
-  },
-  {
-    moduleCode: "BTN-001",
-    variety: "Button Module",
-    requestedBy: "Eve",
-    recipient: "Factory E",
-    dateProduced: "2023-10-05",
-    quantity: 75,
-    status: "Completed",
-  },
-  {
-    moduleCode: "CHP-001",
-    variety: "Chip Module",
-    requestedBy: "Frank",
-    recipient: "Factory F",
-    dateProduced: "2023-10-06",
-    quantity: 120,
-    status: "Pending",
-  },
-  {
-    moduleCode: "STG-001",
-    variety: "Storage Module",
-    requestedBy: "Grace",
-    recipient: "Factory G",
-    dateProduced: "2023-10-07",
-    quantity: 90,
-    status: "In Transit",
-  },
-];
+// ✅ Module Barchart
+const fetchBarChartData = (
+  apiUri: string,
+  setState: React.Dispatch<React.SetStateAction<any[]>>
+) => {
+  useEffect(() => {
+    fetch(apiUri)
+      .then((res) => res.json())
+      .then((data) => setState(data))
+      .catch((err) => console.error("Error fetching bar chart data:", err));
+  }, [apiUri]);
+};
 
-// Bar Chart
-const barChartData = dataLogistics.map((item) => ({
-  name: item.moduleCode,
-  quantity: item.quantity,
-}));
+// ✅ Module Barchart component
+const CustomBarChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
+  const [barChartData, setBarChartData] = useState<
+    { name: string; value: number }[]
+  >([]);
 
-// Pie Chart
-const factoryCounts = dataLogistics.reduce((acc, item) => {
-  acc[item.recipient] = (acc[item.recipient] || 0) + 1;
-  return acc;
-}, {} as Record<string, number>);
-const pieChartData = Object.keys(factoryCounts).map((key) => ({
-  name: key,
-  value: factoryCounts[key],
-}));
-const pieColors = [
-  "#FFB3B3", // Soft pastel red
-  "#FF9999", // Light pastel red
-  "#FF7F7F", // Muted pastel red
-  "#FF6666", // Balanced pastel red
-  "#FF4D4D", // Slightly deeper pastel red
-  "#E67373", // Warm pastel red
-  "#D65C5C", // Darker pastel red
-];
+  fetchBarChartData(apiUri, setBarChartData);
 
+  // Function to calculate bar chart summary
+  const getBarChartSummary = (data: { name: string; value: number }[]) => {
+    if (data.length === 0) return "No data available.";
 
-// Line Chart
-const requestTrendsData = dataLogistics.reduce((acc, item) => {
-  acc[item.dateProduced] = (acc[item.dateProduced] || 0) + 1;
-  return acc;
-}, {} as Record<string, number>);
-const lineChartData = Object.keys(requestTrendsData).map((key) => ({
-  date: key,
-  requests: requestTrendsData[key],
-}));
+    // Find the category with the highest value
+    const highestValue = data.reduce((prev, current) =>
+      prev.value > current.value ? prev : current
+    );
 
+    // Find the category with the lowest value
+    const lowestValue = data.reduce((prev, current) =>
+      prev.value < current.value ? prev : current
+    );
 
-const ModulePie: React.FC = () => {
+    // Calculate total value
+    const totalValue = data.reduce((sum, item) => sum + item.value, 0);
+
+    // Calculate average value
+    const averageValue = totalValue / data.length;
+
+    // Generate a summary message
+    const summaryMessage = `
+      The category with the highest value is "${highestValue.name}" with ${
+      highestValue.value
+    } items.
+      The category with the lowest value is "${lowestValue.name}" with ${
+      lowestValue.value
+    } items.
+      On average, each category has ${averageValue.toFixed(2)} items.
+      Total value across all categories: ${totalValue}.
+    `;
+
+    return summaryMessage;
+  };
+
+  // Get the bar chart summary
+  const summaryMessage = getBarChartSummary(barChartData);
+
   return (
-    <div className="p-4">
-      
+    <div>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={barChartData}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Bar dataKey="value" fill="#a10a2f" />
+        </BarChart>
+      </ResponsiveContainer>
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "10px",
+          fontFamily: "Poppins, sans-serif",
+        }}
+      >
+        <strong>Summary:</strong> {summaryMessage}
+      </div>
+    </div>
+  );
+};
+// ✅ Piechart colors
+const piechartCOLORS = [
+  "#FFB3B3",
+  "#FF9999",
+  "#FF7F7F",
+  "#FF6666",
+  "#FF4D4D",
+  "#E67373",
+  "#D65C5C",
+];
+
+// ✅ Piechart component
+const PieChartComponent: React.FC<{ apiUrl: string }> = ({ apiUrl }) => {
+  const [chartData, setChartData] = useState<{ name: string; value: number }[]>(
+    []
+  );
+
+  useEffect(() => {
+    fetch(apiUrl)
+      .then((res) => res.json())
+      .then((data) => setChartData(data))
+      .catch((err) => console.error("Error fetching pie chart data:", err));
+  }, [apiUrl]);
+
+  // Function to calculate pie chart summary
+  const getPieChartSummary = (data: { name: string; value: number }[]) => {
+    if (data.length === 0) return "No data available.";
+
+    // Find the largest segment
+    const largestSegment = data.reduce((prev, current) =>
+      prev.value > current.value ? prev : current
+    );
+
+    // Find the smallest segment
+    const smallestSegment = data.reduce((prev, current) =>
+      prev.value < current.value ? prev : current
+    );
+
+    // Calculate total value
+    const totalValue = data.reduce((sum, item) => sum + item.value, 0);
+
+    // Calculate percentage distribution
+    const percentageDistribution = data
+      .map((item) => ({
+        name: item.name,
+        percentage: ((item.value / totalValue) * 100).toFixed(2),
+      }))
+      .map((item) => `${item.name}: ${item.percentage}%`)
+      .join(", ");
+
+    // Generate a summary message
+    const summaryMessage = `
+      The largest segment is "${largestSegment.name}" with ${largestSegment.value} items.
+      The smallest segment is "${smallestSegment.name}" with ${smallestSegment.value} items.
+      Total value across all segments: ${totalValue}.
+      Percentage distribution: ${percentageDistribution}.
+    `;
+
+    return summaryMessage;
+  };
+
+  // Get the pie chart summary
+  const summaryMessage = getPieChartSummary(chartData);
+
+  return (
+    <div>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
-            data={pieChartData}
+            data={chartData}
             dataKey="value"
             nameKey="name"
             cx="50%"
             cy="50%"
-            innerRadius={50} // Added an inner radius for a donut chart effect
             outerRadius={100}
-            fill="#8884d8"
-            label={({ name, percent }) =>
-              `${name} ${(percent * 100).toFixed(0)}%`
-            } // Improved label format
-            labelLine={false} // Removed lines for cleaner design
+            label
           >
-            {pieChartData.map((_, index) => (
+            {chartData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={pieColors[index % pieColors.length]}
+                fill={piechartCOLORS[index % piechartCOLORS.length]}
               />
             ))}
           </Pie>
           <Tooltip />
+          <Legend />
         </PieChart>
       </ResponsiveContainer>
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "10px",
+          fontFamily: "Poppins, sans-serif",
+        }}
+      >
+        <strong>Summary:</strong> {summaryMessage}
+      </div>
     </div>
   );
 };
 
-const ModuleLine: React.FC = () => {
+const GaugeChart: React.FC<{ apiUri: string }> = ({ apiUri }) => {
+  const [gaugeData, setGaugeData] = useState<{ name: string; value: number }[]>(
+    []
+  );
+
+  useEffect(() => {
+    const fetchGaugeChartData = async () => {
+      try {
+        const res = await fetch(apiUri);
+        const data = await res.json();
+        setGaugeData(data);
+      } catch (err) {
+        console.error("Error fetching gauge chart data:", err);
+      }
+    };
+
+    fetchGaugeChartData();
+  }, [apiUri]);
+
+  // ✅ Function to summarize gauge data
+  const getSummary = () => {
+    if (gaugeData.length === 0)
+      return { total: 0, average: 0, max: null, min: null };
+
+    const total = gaugeData.reduce((sum, item) => sum + item.value, 0);
+    const average = total / gaugeData.length;
+    const max = Math.max(...gaugeData.map((item) => item.value));
+    const min = Math.min(...gaugeData.map((item) => item.value));
+
+    return { total, average, max, min };
+  };
+
+  const summary = getSummary();
+
   return (
     <div>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={lineChartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis />
+      {/* ✅ Gauge Chart */}
+      <ResponsiveContainer width="100%" height={250}>
+        <RadialBarChart
+          cx="50%"
+          cy="50%"
+          innerRadius="60%"
+          outerRadius="100%"
+          barSize={20}
+          data={gaugeData}
+        >
+          <RadialBar background dataKey="value" fill="#FF4D4D" />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="requests" stroke="#ff9800" />
-        </LineChart>
+        </RadialBarChart>
       </ResponsiveContainer>
+
+      {/* ✅ Summary Display */}
+      <div style={{ marginBottom: "10px", textAlign: "center" }}>
+        <h3>Summary</h3>
+        <p>Total: {summary.total}</p>
+        <p>Average: {summary.average.toFixed(2)}</p>
+        <p>Max: {summary.max}</p>
+        <p>Min: {summary.min}</p>
+      </div>
     </div>
   );
 };
-
-// Main logistic code
-const ModuleBar: React.FC = () => {
-  return (
-    <div className="p-4">
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={barChartData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
-          <XAxis dataKey="name" tick={{ fill: "#555" }} />
-          <YAxis tick={{ fill: "#555" }} />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="quantity" fill="#a10a2f" radius={[10, 10, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
-
-interface SummaryItem {
-  icon: IconType;
-  value: number;
-  label: string;
-  iconBgColor: string;
-  iconColor: string;
-}
-
-interface SummaryCardProps {
-  title: string;
-  items: SummaryItem[];
-  linkText?: string;
-  onLinkClick?: () => void;
-}
 
 interface Reminder {
   date: string;
   title: string;
 }
 
+interface SummaryItem {
+  icon: SvgIconComponent;
+  value: number;
+  label: string;
+  iconBgColor?: string;
+  iconColor?: string;
+}
+
 const Heatmap = () => {
   const { productionData, loading, error } = useProductionData();
+  const { workOrders } = useWorkOrders();
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
   if (productionData.length === 0) return <p>No production data available.</p>;
 
+  // Merge productionData with workOrders to include phoneModel
+  const mergedData = productionData.map((item) => {
+    const workOrder = workOrders.find(
+      (order) => order._id === item.workOrderID
+    );
+    return {
+      ...item,
+      phoneModel: workOrder?.module || "Unknown Model",
+    };
+  });
+
   // Calculate max value for normalization
   const maxProduced = Math.max(
-    ...productionData.map((item) => item.quantityProduced),
+    ...mergedData.map((item) => item.producedQty),
     1
   );
 
-  
   return (
     <div className="heatmap">
-      {[...productionData] // Create a copy to avoid modifying the original array
-        .reverse() // Reverse the order so the latest push is first
-        .map((item) => {
-          const intensity = (item.quantityProduced / maxProduced) * 500; // Keeps colors soft and balanced
-          return (
-            <div
-              key={item.productId}
-              className="heatmap-cell"
-              style={{
-                backgroundColor: `rgb(${280 - intensity / 5}, ${90 - intensity / 5}, ${130 - intensity / 3})`, 
-                // Soft Red → Coral → Light Pink
-              }}
-              
-              
-            >
-              <span className="product-name">{item.productName}</span>
-              <span className="product-quantity">{item.quantityProduced}</span>
-            </div>
-          );
-        })}
+      {mergedData.reverse().map((item) => {
+        const intensity = (item.producedQty / maxProduced) * 500;
+        return (
+          <div
+            key={item.workOrderID}
+            className="heatmap-cell"
+            style={{
+              backgroundColor: `rgb(${280 - intensity / 5}, ${
+                90 - intensity / 5
+              }, ${130 - intensity / 3})`,
+            }}
+          >
+            <span className="product-name">{item.phoneModel}</span>
+            <span className="product-quantity">{item.producedQty}</span>
+          </div>
+        );
+      })}
     </div>
   );
 };
 
-const SummaryCard: React.FC<SummaryCardProps> = ({ title, items }) => (
-  <div className="small-card">
-    <div className="summary-header">
-      <h2>{title}</h2>
-    </div>
-    <div className="summary-content">
-      {items.map((item, index) => (
-        <div className="summary-item" key={index}>
-          <div
-            className="icon-container"
-            style={{ backgroundColor: item.iconBgColor }}
-          >
-            <item.icon className="icon" style={{ color: item.iconColor }} />
-          </div>
-          <p className="value">{item.value}</p>
-          <p className="label">{item.label}</p>
-        </div>
-      ))}
-    </div>
-  </div>
+const createSummaryItem = (
+  value: number,
+  label: string,
+  Icon: SvgIconComponent,
+  iconBgColor: string = "#f0f0f0",
+  iconColor: string = "#333"
+): SummaryItem => ({
+  icon: Icon,
+  value,
+  label,
+  iconBgColor,
+  iconColor,
+});
+
+const totalUnitsProducedItem = createSummaryItem(
+  1000, // Example value
+  "Total Units Produced",
+  HomeIcon // MUI icon
 );
+
+const anotherItem = createSummaryItem(
+  500, // Another value
+  "Another Metric",
+  HomeIcon, // Another MUI icon
+  "#e0e0e0", // Custom background color
+  "#555" // Custom icon color
+);
+
+// ✅ Production Barchart component
+const BarChartComponent: React.FC<{ apiUri: string }> = ({ apiUri }) => {
+  const [barData, setBarData] = useState<{ name: string; value: number }[]>([]);
+
+  // Fetch data from the API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(apiUri);
+        if (!response.ok) throw new Error("Failed to fetch data");
+        const data = await response.json();
+        setBarData(data);
+      } catch (error) {
+        console.error("Error fetching bar chart data:", error);
+      }
+    };
+
+    fetchData();
+  }, [apiUri]);
+
+  // Function to calculate fulfillment summary
+  const getFulfillmentSummary = (data: { name: string; value: number }[]) => {
+    // Find the number of fulfilled and unfulfilled orders
+    const fulfilled =
+      data.find((item) => item.name === "Fulfilled")?.value || 0;
+    const unfulfilled =
+      data.find((item) => item.name === "Unfulfilled")?.value || 0;
+
+    // Calculate the total number of orders
+    const totalOrders = fulfilled + unfulfilled;
+
+    // Calculate the fulfillment rate
+    const fulfillmentRate =
+      totalOrders > 0 ? (fulfilled / totalOrders) * 100 : 0;
+
+    // Generate a summary message
+    let summaryMessage = "";
+    if (fulfillmentRate > 50) {
+      summaryMessage = `📈 The fulfillment rate is high (${fulfillmentRate.toFixed(
+        2
+      )}%). Great job!`;
+    } else if (fulfillmentRate > 0) {
+      summaryMessage = `📉 The fulfillment rate is moderate (${fulfillmentRate.toFixed(
+        2
+      )}%). Keep improving!`;
+    } else {
+      summaryMessage = "⭕ No orders have been fulfilled yet.";
+    }
+
+    return summaryMessage;
+  };
+
+  // Get the fulfillment summary
+  const summaryMessage = getFulfillmentSummary(barData);
+
+  return (
+    <div>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={barData}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="value" fill="#c10300" />
+        </BarChart>
+      </ResponsiveContainer>
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "10px",
+          fontFamily: "Poppins, sans-serif",
+        }}
+      >
+        <strong>Summary:</strong> {summaryMessage}
+      </div>
+    </div>
+  );
+};
+
+// ✅ Production Histogram
+const fetchHistogramData = (
+  apiUri: string,
+  setState: React.Dispatch<React.SetStateAction<any[]>>
+) => {
+  useEffect(() => {
+    fetch(apiUri)
+      .then((res) => res.json())
+      .then((data) => setState(data))
+      .catch((err) => console.error("Error fetching histogram data:", err));
+  }, [apiUri]);
+};
+
+// ✅ Production Histogram component
+const Histogram: React.FC<{ apiUri: string }> = ({ apiUri }) => {
+  const [histogramData, setHistogramData] = useState<
+    { range: string; count: number }[]
+  >([]);
+
+  fetchHistogramData(apiUri, setHistogramData);
+
+  // Function to calculate histogram summary
+  const getHistogramSummary = (data: { range: string; count: number }[]) => {
+    if (data.length === 0) return "No data available.";
+
+    // Find the most common range
+    const mostCommon = data.reduce((prev, current) =>
+      prev.count > current.count ? prev : current
+    );
+
+    // Find the least common range
+    const leastCommon = data.reduce((prev, current) =>
+      prev.count < current.count ? prev : current
+    );
+
+    // Calculate total items
+    const totalItems = data.reduce((sum, item) => sum + item.count, 0);
+
+    // Calculate average count
+    const averageCount = totalItems / data.length;
+
+    // Generate a summary message
+    const summaryMessage = `
+      The most common range is "${mostCommon.range}" with ${
+      mostCommon.count
+    } items.
+      The least common range is "${leastCommon.range}" with ${
+      leastCommon.count
+    } items.
+      On average, each range has ${averageCount.toFixed(2)} items.
+      Total items across all ranges: ${totalItems}.
+    `;
+
+    return summaryMessage;
+  };
+
+  // Get the histogram summary
+  const summaryMessage = getHistogramSummary(histogramData);
+
+  return (
+    <div>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={histogramData}>
+          <XAxis dataKey="range" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="count" fill="#d8847c" />
+        </BarChart>
+      </ResponsiveContainer>
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "10px",
+          fontFamily: "Poppins, sans-serif",
+        }}
+      >
+        <strong>Summary:</strong> {summaryMessage}
+      </div>
+    </div>
+  );
+};
+
+//
 
 const Dashboard: React.FC = () => {
   const {
@@ -680,10 +929,17 @@ const Dashboard: React.FC = () => {
   } = useProductionData();
 
   const {
+    workOrders,
+    loading: workOrdersLoading,
+    error: workOrdersError,
+  } = useWorkOrders();
+
+  const {
     requests,
     loading: logisticsLoading,
     error: logisticsError,
   } = useLogistics();
+
   const {
     trackingLogs,
     loading: trackingLoading,
@@ -726,6 +982,7 @@ const Dashboard: React.FC = () => {
     }
     return null;
   };
+
   const handleDayHover = (date: Date) => {
     const formattedDate = date.toISOString().split("T")[0];
     const reminderForDate = reminders.find(
@@ -733,51 +990,58 @@ const Dashboard: React.FC = () => {
     );
     return reminderForDate ? reminderForDate.title : null;
   };
-  if (productionLoading || logisticsLoading || trackingLoading)
+
+  if (
+    productionLoading ||
+    workOrdersLoading ||
+    logisticsLoading ||
+    trackingLoading
+  )
     return <div className="loading">Loading...</div>;
-  if (productionError || logisticsError || trackingError)
+  if (productionError || workOrdersError || logisticsError || trackingError)
     return <div className="error">Error loading data.</div>;
 
-  const inventoryItems: SummaryItem[] = [
-    {
-      icon: FaBox,
-      value: 868,
-      label: "Finished units",
-      iconBgColor: "#FFF4E5",
-      iconColor: "#FFA500",
-    },
-    {
-      icon: FaTruck,
-      value: 200,
-      label: "To be shipped",
-      iconBgColor: "#EEF3FF",
-      iconColor: "#5A78F0",
-    },
-  ];
+  // Calculate dynamic values
+  const totalActiveWorkOrders = workOrders.length;
+  const completedWorkOrders = workOrders.filter(
+    (order) => order.status === "Completed"
+  ).length;
+  const pendingModuleRequests = requests.filter(
+    (request) => request.status === "Pending"
+  ).length;
+  const shipmentsInTransit = trackingLogs.filter(
+    (log) => log.status === "In Transit"
+  ).length;
 
-  const logisticsItems: SummaryItem[] = [
-    {
-      icon: FaUser,
-      value: 31,
-      label: "Number of Suppliers",
-      iconBgColor: "#E6F7FF",
-      iconColor: "#00A3FF",
-    },
-    {
-      icon: FaClipboardList,
-      value: 21,
-      label: "Number of Categories",
-      iconBgColor: "#F6F2FF",
-      iconColor: "#A461D8",
-    },
-  ];
+  {
+    /*db.production.updateMany(
+   {}, 
+   { $rename: { "quantityProduced": "producedQty" } }
+)*/
+  }
+
+  // Calculate production view values
+  const productionRate =
+    productionData.reduce((acc, item) => acc + item.producedQty, 0) /
+      productionData.length || 0;
+  const lateFulfillments = productionData.filter(
+    (item) => !item.orderOnTime
+  ).length;
+  const totalUnitsProduced = productionData.reduce(
+    (acc, item) => acc + item.producedQty,
+    0
+  );
+  const fulfillmentEfficiency =
+    (productionData.filter((item) => item.orderFulfilled).length /
+      productionData.length) *
+      100 || 0;
 
   const softCoolColors = [
     "#D64550", // Soft Crimson
     "#E57373", // Light Coral
     "#F28E8E", // Warm Pastel Red
     "#F8B6B6", // Pale Blush Red
-   "#FDDCDC", // Very Soft Pink
+    "#FDDCDC", // Very Soft Pink
   ];
 
   return (
@@ -896,7 +1160,7 @@ const Dashboard: React.FC = () => {
               type="summary"
               title="Total Active Work Orders"
               icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={94} // DYNAMICVALUE
+              currentValue={totalActiveWorkOrders} // DYNAMICVALUE
               description="in 24 hours"
             />
 
@@ -905,7 +1169,7 @@ const Dashboard: React.FC = () => {
               type="summary"
               title="Completed Work Orders"
               icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={10} // DYNAMICVALUE
+              currentValue={completedWorkOrders} // DYNAMICVALUE
               description="in 24 hours"
             />
 
@@ -914,16 +1178,16 @@ const Dashboard: React.FC = () => {
               type="summary"
               title="Pending Module Requests"
               icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={90} // DYNAMICVALUE
+              currentValue={pendingModuleRequests} // DYNAMICVALUE
               description="in 24 hours"
             />
 
             {/* ✅ Monthly Revenue Summary */}
             <UnifiedCard
               type="summary"
-              title="Shipments in Transit "
+              title="Shipments in Transit"
               icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={5000}
+              currentValue={shipmentsInTransit} // DYNAMICVALUE
               description="vs 30 days"
             />
           </div>
@@ -931,22 +1195,22 @@ const Dashboard: React.FC = () => {
           <div className="dashboard-contents">
             {/* Left side components */}
             <div className="bigger-components">
-              <div className="component-holder">
+              <div id="production-heatmap" className="component-holder">
                 <h2>Production feed</h2>
                 <div className="chart">
                   <Heatmap />
                 </div>
               </div>
 
-
               <div className="component-holder">
                 <h2>Recent requests</h2>
                 <div className="chart">
                   <div className="pie-chart">
                     {requests.map((item, index) => {
-                      const bgColor = softCoolColors[index % softCoolColors.length];
+                      const bgColor =
+                        softCoolColors[index % softCoolColors.length];
                       const textColor = index < 3 ? "#000" : "#000"; // Darker colors get white text, lighter get dark text
-                      
+
                       return (
                         <div
                           key={item._id}
@@ -965,35 +1229,14 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
-
-              <div className="component-holder">
-              <h2>Shipping updates</h2>
-              <ul className="tracking-logs">
-                {trackingLogs.map((log) => (
-                  <li key={log.logId}>
-                    <span className="module">{log.module}</span>: {log.status}{" "}
-                    (Updated by {log.updatedBy} on{" "}
-                    {new Date(log.updatedAt).toLocaleDateString()})
-                  </li>
-                ))}
-              </ul>
-            </div>
             </div>
             {/* End of left side components */}
 
             {/* Right side components */}
             <div className="smaller-components">
               <div className="component-holder">
-                <SummaryCard title="Inventory Summary" items={inventoryItems} />
-              </div>
-              <div className="component-holder">
-                <SummaryCard title="Logistics Summary" items={logisticsItems} />
-              </div>
-              <div className="component-holder">
-                <h2>Production Schedule</h2>
-
                 <div className="calendar-dashboard">
-                  <h2>Production Schedule</h2>
+                  <h2>Reminders</h2>
                   <Calendar
                     className={"calendar"}
                     onChange={(date) => setValue(date as Date)}
@@ -1033,10 +1276,26 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
+              <div className="component-holder">
+                <h2>Shipping updates</h2>
+                <ul className="tracking-logs">
+                  {trackingLogs.map((log) => (
+                    <li key={log.requestID}>
+                      <span className="module">{log.moduleCode}</span>:{" "}
+                      {log.status} (Updated by {log.dispatchedBy} on{" "}
+                      {log.deliveredDate
+                        ? new Date(log.deliveredDate).toLocaleDateString()
+                        : "N/A"}
+                      )
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       )}
+
       {/*jump2prod*/}
       {view === "production" && (
         <div className="main-div">
@@ -1046,8 +1305,8 @@ const Dashboard: React.FC = () => {
               type="rate"
               title="Production Rate"
               icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={94} // DYNAMICVALUE
-              oldValue={58}
+              currentValue={productionRate} // DYNAMICVALUE
+              oldValue={58} // You can replace this with a dynamic value if needed
             />
 
             {/* ✅ Unresolved Requests Summary */}
@@ -1055,7 +1314,7 @@ const Dashboard: React.FC = () => {
               type="summary"
               title="Late Fulfillments "
               icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={10} // DYNAMICVALUE
+              currentValue={lateFulfillments} // DYNAMICVALUE
               description="in 24 hours"
             />
 
@@ -1064,7 +1323,7 @@ const Dashboard: React.FC = () => {
               type="summary"
               title="Total Units Produced"
               icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={90} // DYNAMICVALUE
+              currentValue={totalUnitsProduced} // DYNAMICVALUE
               description="in 24 hours"
             />
 
@@ -1073,8 +1332,8 @@ const Dashboard: React.FC = () => {
               type="rate"
               title="Fulfillment Efficiency"
               icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={88}
-              oldValue={100}
+              currentValue={fulfillmentEfficiency} // DYNAMICVALUE
+              oldValue={100} // You can replace this with a dynamic value if needed
             />
           </div>
 
@@ -1084,13 +1343,24 @@ const Dashboard: React.FC = () => {
                 <h2>Production Performance</h2>
                 <LineChartComponent />
               </div>
+
+              <div className="component-holder">
+                <ProductionTable />
+              </div>
             </div>
+
             <div className="smaller-components">
               <div className="component-holder">
-                <SummaryCard title="Logistics Summary" items={logisticsItems} />
+                <h2>Order Fulfillment Status</h2>
+                <BarChartComponent apiUri="http://localhost:5001/api/order-fulfillment" />
+              </div>
+              <div className="component-holder">
+                <h2>Produced Quantity Distribution</h2>
+                <Histogram apiUri="http://localhost:5001/api/produced-quantity-distribution" />
               </div>
             </div>
           </div>
+
           <div className="component-holder">
             <h2>Production feed</h2>
             <div id="full-width-heatmap" className="chart">
@@ -1145,48 +1415,51 @@ const Dashboard: React.FC = () => {
             <div className="bigger-components">
               <div className="component-holder">
                 <h2>Most Requested Items</h2>
-                <ModuleBar />
+                <CustomBarChart apiUri="http://localhost:5001/api/module-chart" />
               </div>
+
               <div className="component-holder">
-                <h2>Factory Request Distribuition</h2>
-                <ModulePie />
-              </div>
-              <div className="component-holder">
-                <h2>Request Trends Over Time</h2>
-                <ModuleLine />
+                <ModulesTable />
               </div>
             </div>
             <div className="smaller-components">
-            <div className="component-holder">
-              <h2>Logistics Summary</h2>
-              <div className="chart">
-                <div className="pie-chart">
-                  {requests.map((item, index) => {
-                    const bgColor = softCoolColors[index % softCoolColors.length];
-                    const textColor = index < 3 ? "#000" : "#000"; // White on dark, deep red on light
-
-                    return (
-                      <div
-                        key={item._id}
-                        className="slice"
-                        style={{
-                          backgroundColor: bgColor,
-                          color: textColor,
-                          borderRadius: "12px", // ⬅️ Rounded boxes
-                          padding: "8px 12px", // ⬅️ Better spacing
-                        }}
-                      >
-                        <span>{item.module}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+              <div className="component-holder">
+                <h2>Factory Request Distribuition</h2>
+                <PieChartComponent apiUrl="http://localhost:5001/api/logistics-summary" />
+              </div>
+              <div className="component-holder">
+                <h2>Module Request Fulfillment Rate</h2>
+                <GaugeChart apiUri="http://localhost:5001/api/fulfillment-rate" />
               </div>
             </div>
-          </div>            
           </div>
+          <div className="component-holder">
+            <h2>Recent requests</h2>
+            <div className="chart">
+              <div className="pie-chart">
+                {requests.map((item, index) => {
+                  const bgColor = softCoolColors[index % softCoolColors.length];
+                  const textColor = index < 3 ? "#000" : "#000"; // Darker colors get white text, lighter get dark text
+
+                  return (
+                    <div
+                      key={item._id}
+                      className="slice"
+                      style={{
+                        backgroundColor: bgColor,
+                        color: textColor, // Dynamic font color
+                        borderRadius: "12px",
+                        padding: "8px 17px 10px",
+                      }}
+                    >
+                      <span>{item.module}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        
+        </div>
       )}
     </div>
   );

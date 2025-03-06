@@ -6,9 +6,12 @@ import dotenv from "dotenv";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import jwt from "jsonwebtoken";
 import { fileURLToPath } from "url";
 import { generatePDF } from "./pdfGenerator.js";
 import notificationsRouter from "../routes/notifications.js";
+import nodemailer from "nodemailer";
+import { authenticateToken } from "../middleware/auth.js";
 import { ObjectId } from "mongodb";
 
 dotenv.config({ path: "./config.env" });
@@ -42,6 +45,15 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
+
+// Configure Nodemailer
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 connect()
   .then((client) => {
@@ -154,7 +166,7 @@ connect()
 
     // Login User
     app.post("/api/login", async (req, res) => {
-      const { email, password } = req.body;
+      const { email, password, remember } = req.body;
 
       try {
         const collection = db.collection("user");
@@ -170,7 +182,11 @@ connect()
           return res.status(401).json({ error: "Invalid credentials" });
         }
 
-        res.status(200).json({ message: "Login successful!" });
+        const token = jwt.sign({ email }, process.env.JWT_SECRET, {
+          expiresIn: remember ? "30d" : "1d",
+        });
+
+        res.status(200).json({ message: "Login successful!", token });
       } catch (err) {
         console.error("Error during login:", err);
         res.status(500).json({ error: "Login failed" });
@@ -186,6 +202,7 @@ connect()
         recipient,
         requestDate,
         quantity,
+        status,
       } = req.body;
 
       if (
@@ -194,7 +211,8 @@ connect()
         !description ||
         !recipient ||
         !requestDate ||
-        !quantity
+        !quantity ||
+        !status
       ) {
         return res.status(400).json({ error: "All fields are required" });
       }
@@ -202,6 +220,9 @@ connect()
       try {
         const logisticsCollection = db.collection("logistics");
         const trackingCollection = db.collection("tracking");
+        const query = status ? { status } : {}; // Filter by status if provided
+        const requests = await collection.find(query).toArray();
+        res.status(200).json(requests);
 
         const newRequest = {
           module,
@@ -223,6 +244,10 @@ connect()
           status: "Pending",
           updatedBy: requestedBy,
           updatedAt: new Date(),
+          factory: recipient, // Add factory
+          moduleOrigin: "Tokyo, Japan", // Set moduleOrigin to Tokyo, Japan
+          recipient, // Add recipient
+          client: requestedBy, // Add client
         });
 
         await createNotification(
@@ -253,23 +278,21 @@ connect()
     // 📌 Production Data: Create
     app.post("/api/production", async (req, res) => {
       const {
-        productId,
-        productName,
-        quantityProduced,
-        dateProduced,
-        dateRequested, // New field
-        quantityRequested, // New field
-        fulfilledBy, // New field
+        workOrderID,
+        dateRequested,
+        fulfilledBy,
+        dateFulfilled,
+        producedQty,
       } = req.body;
 
+      console.log("Received production data:", req.body); // Log the request body
+
       if (
-        !productId ||
-        !productName ||
-        !quantityProduced ||
-        !dateProduced ||
-        !dateRequested || // Ensure all required fields are passed
-        !quantityRequested ||
-        !fulfilledBy
+        !workOrderID ||
+        !dateRequested ||
+        !fulfilledBy ||
+        !dateFulfilled ||
+        !producedQty
       ) {
         return res.status(400).json({ error: "All fields are required" });
       }
@@ -277,17 +300,18 @@ connect()
       try {
         const collection = db.collection("production");
         const newProduction = {
-          productId,
-          productName,
-          quantityProduced,
-          dateProduced: new Date(dateProduced),
-          dateRequested: new Date(dateRequested), // Store as date
-          quantityRequested,
+          workOrderID,
+          dateRequested: new Date(dateRequested),
           fulfilledBy,
+          dateFulfilled: new Date(dateFulfilled),
+          producedQty,
+          orderFulfilled: producedQty >= 100, // Example logic for order fulfillment
+          orderOnTime: new Date(dateFulfilled) <= new Date(dateRequested), // Example logic for on-time fulfillment
         };
 
         await collection.insertOne(newProduction);
-        await createNotification(`New production data added: ${productName}`);
+
+        await createNotification(`New production data added: ${workOrderID}`);
 
         res.status(201).json({ message: "Production data added successfully" });
       } catch (err) {
@@ -296,7 +320,7 @@ connect()
       }
     });
 
-    // 📌 Production Data: Get All (No change needed)
+    // 📌 Production Data: Get All
     app.get("/api/production", async (req, res) => {
       try {
         const collection = db.collection("production");
@@ -311,23 +335,21 @@ connect()
     // 📌 Production Data: Update
     app.put("/api/production", async (req, res) => {
       const {
-        productId,
-        productName,
-        quantityProduced,
-        dateProduced,
-        dateRequested, // New field
-        quantityRequested, // New field
-        fulfilledBy, // New field
+        id,
+        workOrderID,
+        dateRequested,
+        fulfilledBy,
+        dateFulfilled,
+        producedQty,
       } = req.body;
 
       if (
-        !productId ||
-        !productName ||
-        !quantityProduced ||
-        !dateProduced ||
-        !dateRequested || // Ensure all required fields are present
-        !quantityRequested ||
-        !fulfilledBy
+        !id ||
+        !workOrderID ||
+        !dateRequested ||
+        !fulfilledBy ||
+        !dateFulfilled ||
+        !producedQty
       ) {
         return res.status(400).json({ error: "All fields are required" });
       }
@@ -335,20 +357,21 @@ connect()
       try {
         const collection = db.collection("production");
         await collection.updateOne(
-          { productId },
+          { _id: new ObjectId(id) },
           {
             $set: {
-              productName,
-              quantityProduced,
-              dateProduced: new Date(dateProduced),
+              workOrderID,
               dateRequested: new Date(dateRequested),
-              quantityRequested,
               fulfilledBy,
+              dateFulfilled: new Date(dateFulfilled),
+              producedQty,
+              orderFulfilled: producedQty >= 100,
+              orderOnTime: new Date(dateFulfilled) <= new Date(dateRequested),
             },
           }
         );
 
-        await createNotification(`Production data updated: ${productName}`);
+        await createNotification(`Production data updated: ${workOrderID}`);
 
         res
           .status(200)
@@ -359,19 +382,19 @@ connect()
       }
     });
 
-    // 📌 Production Data: Delete (No changes needed)
+    // 📌 Production Data: Delete
     app.delete("/api/production", async (req, res) => {
-      const { productId } = req.body;
+      const { id } = req.body;
 
-      if (!productId) {
-        return res.status(400).json({ error: "Product ID is required" });
+      if (!id) {
+        return res.status(400).json({ error: "ID is required" });
       }
 
       try {
         const collection = db.collection("production");
-        await collection.deleteOne({ productId });
+        await collection.deleteOne({ _id: new ObjectId(id) });
 
-        await createNotification(`Production data deleted: ${productId}`);
+        await createNotification(`Production data deleted: ${id}`);
 
         res
           .status(200)
@@ -387,6 +410,7 @@ connect()
       try {
         const collection = db.collection("tracking");
         const trackingLogs = await collection.find().toArray();
+        console.log(trackingLogs);
         res.status(200).json(trackingLogs);
       } catch (err) {
         console.error("Error fetching tracking logs:", err);
@@ -424,8 +448,6 @@ connect()
       }
     });
 
-    // starting from here fri_14
-
     // 📌 Work Orders: Submit New Work Order (with Tracking)
     app.post("/api/workorder", async (req, res) => {
       const newWorkOrder = req.body;
@@ -435,6 +457,7 @@ connect()
           ...newWorkOrder,
           createdDate: new Date(newWorkOrder.createdDate).toISOString(),
           dueDate: new Date(newWorkOrder.dueDate).toISOString(),
+          status: newWorkOrder.status || "Pending",
         };
 
         const workOrdersCollection = req.app.locals.db.collection("workorder");
@@ -466,34 +489,381 @@ connect()
       }
     });
 
-    // ending from here fri_14
+    app.put("/api/workorder/:workOrderId", async (req, res) => {
+      const { workOrderId } = req.params;
+      const { status } = req.body;
+
+      if (!status) {
+        return res.status(400).json({ error: "Status is required" });
+      }
+
+      try {
+        const workOrdersCollection = req.app.locals.db.collection("workorder");
+        const result = await workOrdersCollection.updateOne(
+          { _id: new ObjectId(workOrderId) },
+          { $set: { status, updatedAt: new Date() } }
+        );
+
+        if (result.modifiedCount > 0) {
+          res
+            .status(200)
+            .json({ message: "Work order status updated successfully" });
+        } else {
+          res.status(500).json({ error: "Failed to update work order status" });
+        }
+      } catch (err) {
+        console.error("Error updating work order status:", err);
+        res.status(500).json({
+          error: "An error occurred while updating work order status",
+        });
+      }
+    });
 
     // 📌 Reports: Generate PDF Report
     app.post("/api/reports", async (req, res) => {
       try {
         const { productionData, logisticsData, trackingData } = req.body;
 
-        // Ensure the data is valid
         if (!productionData || !logisticsData || !trackingData) {
           return res
             .status(400)
             .json({ error: "All data fields are required" });
         }
 
-        // Generate the PDF
         const pdfBuffer = await generatePDF(
           productionData,
           logisticsData,
           trackingData
         );
 
-        // Send the PDF as a response
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Disposition", "attachment; filename=report.pdf");
-        res.send(Buffer.from(pdfBuffer)); // Ensure the buffer is sent correctly
+        res.send(Buffer.from(pdfBuffer));
       } catch (err) {
         console.error("Error generating PDF report:", err);
         res.status(500).json({ error: "Failed to generate report" });
+      }
+    });
+
+    // 📌 Piechart logic. Logistics/ModuleReqs
+    app.get("/api/logistics-summary", async (req, res) => {
+      try {
+        const collection = db.collection("logistics");
+        const logisticsData = await collection.find().toArray();
+
+        const factoryCounts = logisticsData.reduce((acc, item) => {
+          acc[item.recipient] = (acc[item.recipient] || 0) + 1;
+          return acc;
+        }, {});
+
+        const pieChartData = Object.keys(factoryCounts).map((key) => ({
+          name: key,
+          value: factoryCounts[key],
+        }));
+
+        res.status(200).json(pieChartData);
+      } catch (err) {
+        console.error("Error fetching logistics summary:", err);
+        res.status(500).json({ error: "Failed to fetch logistics summary" });
+      }
+    });
+
+    // 📌 Barchart logic. Logistics/ModuleReqs
+    app.get("/api/module-chart", async (req, res) => {
+      try {
+        res.json(
+          await db
+            .collection("logistics")
+            .aggregate([
+              { $group: { _id: "$module", count: { $sum: 1 } } },
+              { $sort: { count: -1 } },
+            ])
+            .toArray()
+            .then((data) =>
+              data.map((item) => ({ name: item._id, value: item.count }))
+            )
+        );
+      } catch (err) {
+        console.error("Error fetching module chart data:", err);
+        res.status(500).json({ error: "Failed to fetch module chart data" });
+      }
+    });
+
+    // 📌 Gaugechart logic. Logistics/ModuleReqs
+    app.get("/api/fulfillment-rate", async (req, res) => {
+      try {
+        const data = await db
+          .collection("logistics")
+          .aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }])
+          .toArray();
+
+        const total = data.reduce((sum, item) => sum + item.count, 0);
+        const pending = data.find((item) => item._id === "Pending")?.count || 0;
+        const fulfilled = total - pending;
+
+        res.json([
+          { name: "Pending", value: pending },
+          { name: "Fulfilled", value: fulfilled },
+        ]);
+      } catch (err) {
+        console.error("Error fetching fulfillment data:", err);
+        res.status(500).json({ error: "Failed to fetch fulfillment data" });
+      }
+    });
+
+    // Password Reset
+    app.post("/api/forgot-password", async (req, res) => {
+      const { email } = req.body;
+
+      try {
+        const collection = db.collection("user");
+        const user = await collection.findOne({ email });
+
+        if (!user) {
+          return res.status(404).json({ error: "User not found" });
+        }
+
+        const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
+          expiresIn: "1h",
+        });
+
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: email,
+          subject: "Password Reset",
+          html: `
+            <p>You requested a password reset. Click the link below to reset your password:</p>
+            <a href="http://localhost:5173/reset-password?token=${resetToken}">Reset Password</a>
+          `,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.error("Error sending email:", error);
+            return res.status(500).json({ error: "Failed to send email" });
+          } else {
+            console.log("Email sent:", info.response);
+            res
+              .status(200)
+              .json({ message: "Password reset link sent to your email." });
+          }
+        });
+      } catch (err) {
+        console.error("Error during password reset request:", err);
+        res
+          .status(500)
+          .json({ error: "Failed to process password reset request" });
+      }
+    });
+
+    app.post("/api/reset-password", async (req, res) => {
+      const { token, password } = req.body;
+
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const email = decoded.email;
+
+        const collection = db.collection("user");
+        const user = await collection.findOne({ email });
+
+        if (!user) {
+          return res.status(404).json({ error: "User not found" });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await collection.updateOne(
+          { email },
+          { $set: { password: hashedPassword, updatedAt: new Date() } }
+        );
+
+        res.status(200).json({ message: "Password reset successful!" });
+      } catch (err) {
+        console.error("Error during password reset:", err);
+        res.status(500).json({ error: "Failed to reset password" });
+      }
+    });
+
+    // User Settings
+    app.get("/api/settings", authenticateToken, async (req, res) => {
+      try {
+        const collection = db.collection("settings");
+        const settings = await collection.findOne({ user: req.user.email });
+
+        if (!settings) {
+          return res.status(404).json({ error: "Settings not found" });
+        }
+
+        res.status(200).json(settings);
+      } catch (err) {
+        console.error("Error fetching settings:", err);
+        res.status(500).json({ error: "Failed to fetch settings" });
+      }
+    });
+
+    app.post("/api/settings", authenticateToken, async (req, res) => {
+      const { pushNotifications, darkMode, emailNotifications, autoLogout } =
+        req.body;
+
+      try {
+        const collection = db.collection("settings");
+        await collection.updateOne(
+          { user: req.user.email },
+          {
+            $set: {
+              pushNotifications,
+              darkMode,
+              emailNotifications,
+              autoLogout,
+            },
+          },
+          { upsert: true }
+        );
+
+        res.status(200).json({ message: "Settings saved successfully!" });
+      } catch (err) {
+        console.error("Error saving settings:", err);
+        res.status(500).json({ error: "Failed to save settings" });
+      }
+    });
+
+    // 📌 Piechart logic. Logistics/ModuleReqs
+    app.get("/api/logistics-summary", async (req, res) => {
+      try {
+        const collection = db.collection("logistics");
+        const logisticsData = await collection.find().toArray();
+
+        // Count occurrences of each recipient (Factory A, B, etc.)
+        const factoryCounts = logisticsData.reduce((acc, item) => {
+          acc[item.recipient] = (acc[item.recipient] || 0) + 1;
+          return acc;
+        }, {});
+
+        const pieChartData = Object.keys(factoryCounts).map((key) => ({
+          name: key,
+          value: factoryCounts[key],
+        }));
+
+        res.status(200).json(pieChartData);
+      } catch (err) {
+        console.error("Error fetching logistics summary:", err);
+        res.status(500).json({ error: "Failed to fetch logistics summary" });
+      }
+    });
+
+    // 📌 Barchart logic. Logistics/ModuleReqs
+    app.get("/api/module-chart", async (req, res) => {
+      try {
+        res.json(
+          await db
+            .collection("logistics")
+            .aggregate([
+              { $group: { _id: "$module", count: { $sum: 1 } } },
+              { $sort: { count: -1 } },
+            ])
+            .toArray()
+            .then((data) =>
+              data.map((item) => ({ name: item._id, value: item.count }))
+            )
+        );
+      } catch (err) {
+        console.error("Error fetching module chart data:", err);
+        res.status(500).json({ error: "Failed to fetch module chart data" });
+      }
+    });
+
+    // 📌 Gaugechart logic. Logistics/ModuleReqs
+    app.get("/api/fulfillment-rate", async (req, res) => {
+      try {
+        const data = await db
+          .collection("logistics")
+          .aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }])
+          .toArray();
+
+        const total = data.reduce((sum, item) => sum + item.count, 0);
+        const pending = data.find((item) => item._id === "Pending")?.count || 0;
+        const fulfilled = total - pending;
+
+        res.json([
+          { name: "Pending", value: pending },
+          { name: "Fulfilled", value: fulfilled },
+        ]);
+      } catch (err) {
+        console.error("Error fetching fulfillment data:", err);
+        res.status(500).json({ error: "Failed to fetch fulfillment data" });
+      }
+    });
+
+    // 📌 Bar Chart logic. Production/Order Fulfillment
+    app.get("/api/order-fulfillment", async (req, res) => {
+      try {
+        const data = await db
+          .collection("production")
+          .aggregate([
+            {
+              $group: {
+                _id: "$orderFulfilled", // Corrected column name
+                count: { $sum: 1 }, // Count the number of orders
+              },
+            },
+          ])
+          .toArray();
+
+        // Format data for the bar chart
+        const formattedData = [
+          {
+            name: "Fulfilled",
+            value: data.find((item) => item._id === true)?.count || 0,
+          },
+          {
+            name: "Unfulfilled",
+            value: data.find((item) => item._id === false)?.count || 0,
+          },
+        ];
+
+        res.json(formattedData);
+      } catch (err) {
+        console.error("Error fetching order fulfillment data:", err);
+        res
+          .status(500)
+          .json({ error: "Failed to fetch order fulfillment data" });
+      }
+    });
+
+    // 📌 Histogram logic. Production/Produced Quantity Distribution
+    app.get("/api/produced-quantity-distribution", async (req, res) => {
+      try {
+        const data = await db
+          .collection("production")
+          .aggregate([
+            {
+              $bucket: {
+                groupBy: "$producedQty", // Group by producedQty
+                boundaries: [0, 100, 200, 300, 400, 500], // Define bin ranges
+                default: "Other", // Handle values outside the boundaries
+                output: {
+                  count: { $sum: 1 }, // Count the number of orders in each bin
+                },
+              },
+            },
+          ])
+          .toArray();
+
+        // Format data for the histogram
+        const formattedData = data.map((item) => ({
+          range: `${item._id} - ${item._id + 99}`, // Define the range for each bin
+          count: item.count, // Number of orders in this bin
+        }));
+
+        res.json(formattedData);
+      } catch (err) {
+        console.error(
+          "Error fetching produced quantity distribution data:",
+          err
+        );
+        res.status(500).json({
+          error: "Failed to fetch produced quantity distribution data",
+        });
       }
     });
 
