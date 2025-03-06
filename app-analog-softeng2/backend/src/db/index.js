@@ -425,9 +425,7 @@ connect()
       console.log("Received payload:", { id, status }); // Log the payload
 
       if (!id || !status) {
-        return res
-          .status(400)
-          .json({ error: "ID and status are required" });
+        return res.status(400).json({ error: "ID and status are required" });
       }
 
       try {
@@ -437,9 +435,7 @@ connect()
           { $set: { status, updatedAt: new Date() } }
         );
 
-        await createNotification(
-          `Tracking status updated: ${id} to ${status}`
-        );
+        await createNotification(`Tracking status updated: ${id} to ${status}`);
 
         res
           .status(200)

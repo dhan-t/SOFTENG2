@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { useWorkOrders, WorkOrder as WorkOrderType } from "../../hooks/useWorkOrder";
+import {
+  useWorkOrders,
+  WorkOrder as WorkOrderType,
+} from "../../hooks/useWorkOrder";
 import "./WorkOrder.css";
 import Header from "../components/Header";
 import "../components/global.css";
@@ -168,7 +171,10 @@ const WorkOrder: React.FC = () => {
       recipient: order.assignedTo,
       quantity: order.quantity,
       status: order.status,
-      daysDifference: typeof daysDifference === "number" && daysDifference < 0 ? "-" : daysDifference, // Handle negative values
+      daysDifference:
+        typeof daysDifference === "number" && daysDifference < 0
+          ? "-"
+          : daysDifference, // Handle negative values
     };
   });
 
@@ -188,32 +194,32 @@ const WorkOrder: React.FC = () => {
 
             {/* Responsive Form Grid */}
             <div className="form-grid">
-            <FormControl
-              fullWidth
-              required
-              className="form-group"
-              sx={{
-                marginBottom: "8px", // Reduce bottom margin to save space
-                "& .MuiInputBase-root": {
-                  minHeight: "40px", // Reduce input field height
-                },
-                "& .MuiInputLabel-root": {
-                  fontSize: "12px", // Slightly smaller label
-                },
-              }}
-            >
-              <InputLabel>Phone model</InputLabel>
-              <Select value={formData.module} onChange={handlePhoneChange}>
-                <MenuItem value="">
-                  <em>Select model</em>
-                </MenuItem>
-                {phoneOptions.map((option) => (
-                  <MenuItem key={option.code} value={option.code}>
-                    {option.code} : {option.description}
+              <FormControl
+                fullWidth
+                required
+                className="form-group"
+                sx={{
+                  marginBottom: "8px", // Reduce bottom margin to save space
+                  "& .MuiInputBase-root": {
+                    minHeight: "40px", // Reduce input field height
+                  },
+                  "& .MuiInputLabel-root": {
+                    fontSize: "12px", // Slightly smaller label
+                  },
+                }}
+              >
+                <InputLabel>Phone model</InputLabel>
+                <Select value={formData.module} onChange={handlePhoneChange}>
+                  <MenuItem value="">
+                    <em>Select model</em>
                   </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                  {phoneOptions.map((option) => (
+                    <MenuItem key={option.code} value={option.code}>
+                      {option.code} : {option.description}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
               <TextField
                 className="form-group"
@@ -230,7 +236,10 @@ const WorkOrder: React.FC = () => {
 
               <FormControl fullWidth required className="form-group">
                 <InputLabel>Assign factory</InputLabel>
-                <Select value={formData.recipient} onChange={handleFactoryChange}>
+                <Select
+                  value={formData.recipient}
+                  onChange={handleFactoryChange}
+                >
                   <MenuItem value="">
                     <em>Assign factory</em>
                   </MenuItem>
@@ -272,47 +281,52 @@ const WorkOrder: React.FC = () => {
                 />
               </LocalizationProvider>
 
-            <div className="form-group">
-              <FormControl fullWidth required>
-                <InputLabel>Priority</InputLabel>
-                <Select value={formData.priority} onChange={handlePriorityChange}>
-                  {priorityOptions.map((priority) => (
-                    <MenuItem key={priority} value={priority}>
-                      {priority}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <div className="form-group">
+                <FormControl fullWidth required>
+                  <InputLabel>Priority</InputLabel>
+                  <Select
+                    value={formData.priority}
+                    onChange={handlePriorityChange}
+                  >
+                    {priorityOptions.map((priority) => (
+                      <MenuItem key={priority} value={priority}>
+                        {priority}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
+              <div className="form-group">
+                <TextField
+                  type="number"
+                  label="Quantity"
+                  value={formData.quantity}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      quantity: parseInt(e.target.value) || 0,
+                    }))
+                  }
+                  required
+                />
+              </div>
 
-              <TextField
-                className="form-group"
-                type="number"
-                label="Quantity"
-                value={formData.quantity}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    quantity: parseInt(e.target.value) || 0,
-                  }))
-                }
-                required
-              />
+              {/* Submit Button */}
+              <div className="form-actions">
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="success"
+                  startIcon={<SendIcon />}
+                >
+                  Submit
+                </Button>
+              </div>
             </div>
-
-            {/* Submit Button */}
-            <div className="form-actions">
-              <Button
-                type="submit"
-                variant="contained"
-                color="success"
-                startIcon={<SendIcon />}
-
-           
-              Submit
-            </Button>
           </form>
         </div>
 
+        {/* Preview Card */}
         <div id="workorder-preview" className="preview-card">
           <h2 className="preview-title" id="workorder-title">
             Work Order Preview
@@ -323,7 +337,7 @@ const WorkOrder: React.FC = () => {
           </div>
 
           <div className="preview-details">
-            <div>
+            <div className="module-info">
               <h2 id="workorder-module-code">
                 {formData.module || "Module Code"}
               </h2>
@@ -332,39 +346,19 @@ const WorkOrder: React.FC = () => {
               </h3>
             </div>
 
-            <div className="chip-holder">
+            {/* Container for Chips */}
+            <div className="chip-container">
               <Chip
                 label={
                   formData.quantity ? `${formData.quantity} pc` : "Order Pc"
                 }
                 sx={{
-                  fontFamily: "Poppins",
-                  padding: "10px 20px",
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  borderRadius: "8px",
-                  textTransform: "none",
-                  boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                  transition: "all 0.3s linear",
-                  "&:hover": {
-                    backgroundColor: "#1b5e20", // Darker green shade
-                  },
+                  fontWeight: "medium",
+                  backgroundColor: "#0d47a1",
+                  color: "white",
+                  minWidth: "120px",
                 }}
-              >
-                Submit
-              </Button>
-            </div>
-          </form>
-        </div>
-
-
-        <div id="workorder-preview" 
-              className="preview-card"> 
-        {/* Preview Card */}
-        <h2 className="preview-title" id="workorder-title">
-          Work Order Preview
-        </h2>
-
+              />
               <Chip
                 icon={
                   <SmartphoneRoundedIcon
@@ -376,76 +370,56 @@ const WorkOrder: React.FC = () => {
                   fontWeight: "medium",
                   backgroundColor: "#90caf9",
                   color: "#0d47a1",
+                  minWidth: "140px",
                 }}
               />
-
-
-        {/* Always show a smartphone icon */}
-        <div className="preview-icon">
-          <SmartphoneRoundedIcon sx={{ fontSize: 200, color: "#1565C0", marginBottom: 2 }} />
-        </div>
-
-        <div className="preview-details">
-          <div className="module-info">
-            <h2 id="workorder-module-code">{formData.module || "Module Code"}</h2>
-            <h3 id="workorder-module-desc">{formData.description || "Module Description"}</h3>
-          </div>
-
-          {/* Container for Chips - Now using Grid for cleaner layout */}
-          <div className="chip-container">
-            <Chip
-              label={formData.quantity ? `${formData.quantity} pc` : "Order Pc"}
-              sx={{
-                fontWeight: "medium",
-                backgroundColor: "#0d47a1",
-                color: "white",
-                minWidth: "120px",
-              }}
-            />
-            <Chip
-              icon={<SmartphoneRoundedIcon sx={{ color: "#0D47A1", fontSize: 25, paddingLeft: 1 }} />}
-              label={formData.module || "Phone Model"}
-              sx={{
-                fontWeight: "medium",
-                backgroundColor: "#90caf9",
-                color: "#0d47a1",
-                minWidth: "140px",
-              }}
-            />
-            <Chip
-              icon={<PersonIcon sx={{ color: "#0D47A1", fontSize: 25, paddingLeft: 1 }} />}
-              label={formData.requestedBy || "Requester"}
-              sx={{
-                fontWeight: "medium",
-                backgroundColor: "#90caf9",
-                color: "#0d47a1",
-                minWidth: "130px",
-              }}
-            />
-            <Chip
-              icon={<HourglassBottomIcon sx={{ color: "#0D47A1", fontSize: 25, paddingLeft: 1 }} />}
-              label={requestTime !== "N/A" ? `${requestTime} days` : "Timeline"}
-              sx={{
-                fontWeight: "medium",
-                backgroundColor: "#90caf9",
-                color: "#0d47a1",
-                minWidth: "130px",
-              }}
-            />
-            <Chip
-              icon={<FactoryIcon sx={{ color: "#0d47a1", fontSize: 25, paddingLeft: 1 }} />}
-              label={formData.recipient || "Recipient"}
-              sx={{
-                fontWeight: "medium",
-                backgroundColor: "#90caf9",
-                color: "#0d47a1",
-                minWidth: "100px",
-              }}
-            />
+              <Chip
+                icon={
+                  <PersonIcon
+                    sx={{ color: "#0D47A1", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={formData.requestedBy || "Requester"}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#90caf9",
+                  color: "#0d47a1",
+                  minWidth: "130px",
+                }}
+              />
+              <Chip
+                icon={
+                  <HourglassBottomIcon
+                    sx={{ color: "#0D47A1", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={
+                  requestTime !== "N/A" ? `${requestTime} days` : "Timeline"
+                }
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#90caf9",
+                  color: "#0d47a1",
+                  minWidth: "130px",
+                }}
+              />
+              <Chip
+                icon={
+                  <FactoryIcon
+                    sx={{ color: "#0d47a1", fontSize: 25, paddingLeft: 1 }}
+                  />
+                }
+                label={formData.recipient || "Recipient"}
+                sx={{
+                  fontWeight: "medium",
+                  backgroundColor: "#90caf9",
+                  color: "#0d47a1",
+                  minWidth: "100px",
+                }}
+              />
+            </div>
           </div>
         </div>
-      </div>
-
       </div>
 
       <h2>Existing work orders</h2>

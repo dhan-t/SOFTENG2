@@ -1,14 +1,9 @@
-// src/hooks/useWorkOrderColumns.ts
 import { useState, useEffect } from "react";
 import { useWorkOrders } from "./useWorkOrder";
 
 export const useWorkOrderColumns = () => {
-  const { workOrders, fetchWorkOrders } = useWorkOrders();
+  const { workOrders } = useWorkOrders();
   const [columns, setColumns] = useState<any[]>([]);
-
-  useEffect(() => {
-    fetchWorkOrders();
-  }, []);
 
   useEffect(() => {
     if (workOrders.length > 0) {
@@ -17,7 +12,9 @@ export const useWorkOrderColumns = () => {
         module: order.module,
         assignedTo: order.assignedTo,
         phoneModel: order.phoneModel,
-        dateRequested: order.dateRequested,
+        createdDate: order.createdDate, // Include createdDate
+        dueDate: order.dueDate, // Include dueDate
+        quantity: order.quantity, // Include quantity
       }));
       setColumns(extractedColumns);
     }

@@ -260,171 +260,184 @@ const RequestModule: React.FC = () => {
       <Header />
 
       <div className="main-div">
-  <div className="form-and-card">
-    {/* Submit Request Form */}
-    <div className="form-holder">
-      <form onSubmit={handleSubmit} className="form">
-        <h2 className="h2">Module Request</h2>
-        
-        <div className="form-grid">
-          {/* Module Code Selection */}
-          <FormControl fullWidth required>
-            <InputLabel id="module-label">Module Code</InputLabel>
-            <Select
-              labelId="module-label"
-              id="module"
-              value={formData.module}
-              onChange={handleModuleChange}
-              label="Module Code"
-            >
-              <MenuItem value="">
-                <em>Select Module</em>
-              </MenuItem>
-              {moduleOptions.map((option) => (
-                <MenuItem key={option.code} value={option.code}>
-                  {option.code}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+        <div className="form-and-card">
+          {/* Submit Request Form */}
+          <div className="form-holder">
+            <form onSubmit={handleSubmit} className="form">
+              <h2 className="h2">Module Request</h2>
 
-          <TextField
-            type="text"
-            id="description"
-            label="Module name"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            disabled
-          />
+              <div className="form-grid">
+                {/* Module Code Selection */}
+                <FormControl fullWidth required>
+                  <InputLabel id="module-label">Module Code</InputLabel>
+                  <Select
+                    labelId="module-label"
+                    id="module"
+                    value={formData.module}
+                    onChange={handleModuleChange}
+                    label="Module Code"
+                  >
+                    <MenuItem value="">
+                      <em>Select Module</em>
+                    </MenuItem>
+                    {moduleOptions.map((option) => (
+                      <MenuItem key={option.code} value={option.code}>
+                        {option.code}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
-          <TextField
-            type="text"
-            id="requestedBy"
-            label="Requested by"
-            value={formData.requestedBy}
-            onChange={(e) =>
-              setFormData({ ...formData, requestedBy: e.target.value })
-            }
-            required
-          />
+                <TextField
+                  type="text"
+                  id="description"
+                  label="Module name"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  disabled
+                />
 
-          <FormControl fullWidth required>
-            <InputLabel id="recipient-label">Recipient</InputLabel>
-            <Select
-              labelId="recipient-label"
-              id="recipient"
-              value={formData.recipient}
-              onChange={handleFactoryChange}
-              label="Recipient"
-            >
-              <MenuItem value="">
-                <em>Select Recipient</em>
-              </MenuItem>
-              {factoryNames.map((option) => (
-                <MenuItem key={option.name} value={option.name}>
-                  {option.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+                <TextField
+                  type="text"
+                  id="requestedBy"
+                  label="Requested by"
+                  value={formData.requestedBy}
+                  onChange={(e) =>
+                    setFormData({ ...formData, requestedBy: e.target.value })
+                  }
+                  required
+                />
 
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label="Request date"
-              value={
-                formData.requestDate ? dayjs(formData.requestDate) : null
-              }
-              onChange={(newValue) =>
-                setFormData({
-                  ...formData,
-                  requestDate: newValue ? newValue.format("YYYY-MM-DD") : "",
-                })
-              }
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-          </LocalizationProvider>
+                <FormControl fullWidth required>
+                  <InputLabel id="recipient-label">Recipient</InputLabel>
+                  <Select
+                    labelId="recipient-label"
+                    id="recipient"
+                    value={formData.recipient}
+                    onChange={handleFactoryChange}
+                    label="Recipient"
+                  >
+                    <MenuItem value="">
+                      <em>Select Recipient</em>
+                    </MenuItem>
+                    {factoryNames.map((option) => (
+                      <MenuItem key={option.name} value={option.name}>
+                        {option.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
-          <TextField
-            type="number"
-            id="quantity"
-            label="Quantity"
-            value={formData.quantity}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                quantity: parseInt(e.target.value),
-              })
-            }
-            required
-          />
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    label="Request date"
+                    value={
+                      formData.requestDate ? dayjs(formData.requestDate) : null
+                    }
+                    onChange={(newValue) =>
+                      setFormData({
+                        ...formData,
+                        requestDate: newValue
+                          ? newValue.format("YYYY-MM-DD")
+                          : "",
+                      })
+                    }
+                    slotProps={{ textField: { fullWidth: true } }}
+                  />
+                </LocalizationProvider>
+
+                <TextField
+                  type="number"
+                  id="quantity"
+                  label="Quantity"
+                  value={formData.quantity}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      quantity: parseInt(e.target.value),
+                    })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="form-actions">
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disableElevation
+                  color="success"
+                  startIcon={<SendIcon />}
+                  sx={{
+                    fontFamily: "Poppins",
+                    padding: "10px 20px",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    borderRadius: "8px",
+                    textTransform: "none",
+                    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                    transition: "all 0.3s linear",
+                    "&:hover": {
+                      backgroundColor: "#1b5e20", // Darker green shade
+                    },
+                  }}
+                >
+                  Submit
+                </Button>
+              </div>
+            </form>
+          </div>
+
+          {/* Preview Section */}
+          <div id="request-preview">
+            <h2 id="request-title">Request Preview</h2>
+            <div className="preview-icon">
+              {formData.module ? (
+                moduleOptions.find((option) => option.code === formData.module)
+                  ?.icon
+              ) : (
+                <WidgetsRoundedIcon sx={{ fontSize: 270, color: "#33691e" }} />
+              )}
+            </div>
+
+            <div className="preview-details">
+              <h2 id="request-module-code">
+                {formData.module || "Module Code"}
+              </h2>
+              <h3 id="request-module-desc">
+                {formData.description || "Module Description"}
+              </h3>
+            </div>
+
+            <div className="chip-container">
+              <Chip
+                label={
+                  formData.quantity ? `${formData.quantity} pc` : "Quantity"
+                }
+              />
+              <Chip
+                icon={
+                  <PlaceOutlinedIcon sx={{ color: "#33691e", fontSize: 25 }} />
+                }
+                label={formData.recipient || "Recipient"}
+                sx={{ backgroundColor: "#f1f8e9", color: "#33691e" }}
+              />
+              <Chip
+                icon={<EventIcon sx={{ color: "#33691e", fontSize: 25 }} />}
+                label={formData.requestDate || "Date"}
+                sx={{ backgroundColor: "#f1f8e9", color: "#33691e" }}
+              />
+              <Chip
+                icon={<PersonIcon sx={{ color: "#33691e", fontSize: 25 }} />}
+                label={formData.requestedBy || "Requester"}
+                sx={{ backgroundColor: "#f1f8e9", color: "#33691e" }}
+              />
+            </div>
+          </div>
         </div>
-        
-        <div className="form-actions">
-          <Button
-            type="submit"
-            variant="contained"
-            disableElevation
-            color="success"
-            startIcon={<SendIcon />}
-            sx={{
-              fontFamily: "Poppins",
-              padding: "10px 20px",
-              fontSize: "16px",
-              fontWeight: "bold",
-              borderRadius: "8px",
-              textTransform: "none",
-              boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-              transition: "all 0.3s linear",
-              "&:hover": {
-                backgroundColor: "#1b5e20", // Darker green shade
-              },
-            }}
-          >
-            Submit
-          </Button>
-        </div>
-      </form>
-    </div>
-
-    {/* Preview Section */}
-    <div id="request-preview">
-      <h2 id="request-title">Request Preview</h2>
-      <div className="preview-icon">
-        {formData.module ? (
-          moduleOptions.find((option) => option.code === formData.module)?.icon
-        ) : (
-          <WidgetsRoundedIcon sx={{ fontSize: 270, color: "#33691e" }} />
-        )}
       </div>
-      
-      <div className="preview-details">
-        <h2 id="request-module-code">{formData.module || "Module Code"}</h2>
-        <h3 id="request-module-desc">{formData.description || "Module Description"}</h3>
-      </div>
-
-      <div className="chip-container">
-        <Chip label={formData.quantity ? `${formData.quantity} pc` : "Quantity"} />
-        <Chip
-          icon={<PlaceOutlinedIcon sx={{ color: "#33691e", fontSize: 25 }} />}
-          label={formData.recipient || "Recipient"}
-          sx={{ backgroundColor: "#f1f8e9", color: "#33691e" }}
-        />
-        <Chip
-          icon={<EventIcon sx={{ color: "#33691e", fontSize: 25 }} />}
-          label={formData.requestDate || "Date"}
-          sx={{ backgroundColor: "#f1f8e9", color: "#33691e" }}
-        />
-        <Chip
-          icon={<PersonIcon sx={{ color: "#33691e", fontSize: 25 }} />}
-          label={formData.requestedBy || "Requester"}
-          sx={{ backgroundColor: "#f1f8e9", color: "#33691e" }}
-        />
-      </div>
-    </div>
-  </div>
-</div>
 
       {/* Existing Requests */}
       <div style={{ height: 400, width: "100%" }}>

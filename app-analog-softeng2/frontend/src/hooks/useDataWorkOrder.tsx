@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 interface WorkOrder {
   id: string;
   module: string;
-  requestDate: string;
+  createdDate: string; // Add createdDate
   dueDate: string;
   quantity: number;
+  phoneModel: string; // Add phoneModel
 }
 
 export const useDataWorkOrder = () => {
@@ -21,12 +22,14 @@ export const useDataWorkOrder = () => {
 
         const data = await response.json();
 
+        // Map the backend response to the WorkOrder interface
         const formattedData = data.map((order: any) => ({
           id: order._id,
           module: order.module,
-          requestDate: order.requestDate,
+          createdDate: order.createdDate, // Add createdDate
           dueDate: order.dueDate,
           quantity: order.quantity,
+          phoneModel: order.phoneModel || "Unknown Model", // Add phoneModel
         }));
 
         setWorkOrders(formattedData);

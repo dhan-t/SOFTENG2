@@ -19,7 +19,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 import Button from "@mui/material/Button";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+} from "@mui/material";
 
 import {
   Event as EventIcon,
@@ -34,9 +40,10 @@ interface ProductionData {
   fulfilledBy: string;
   dateFulfilled: string;
   producedQty: number;
+  requestedQuantity: number; // Add requestedQuantity
   orderFulfilled: boolean;
   orderOnTime: boolean;
-  phoneModel?: string; // Add phone model to ProductionData
+  phoneModel?: string;
 }
 
 const ReportProduction: React.FC = () => {
@@ -54,13 +61,14 @@ const ReportProduction: React.FC = () => {
 
   const [formData, setFormData] = useState<ProductionData>({
     workOrderID: "",
-    phoneModel: "", // Add phone model to form data
+    phoneModel: "",
     dateRequested: "",
     fulfilledBy: "",
     dateFulfilled: "",
     producedQty: 0,
+    requestedQuantity: 0, // Add requestedQuantity
     orderFulfilled: false,
-    orderOnTime: false
+    orderOnTime: false,
   });
   const [editMode, setEditMode] = useState<string | null>(null);
 
@@ -68,18 +76,23 @@ const ReportProduction: React.FC = () => {
     fetchProductionData();
   }, []);
 
+  // Handle work order selection change
   const handleWorkOrderChange = (event: SelectChangeEvent<string>) => {
     const selectedValue = event.target.value as string;
-    const selectedOrder = workOrders.find((order) => order.id === selectedValue);
+    const selectedOrder = workOrders.find(
+      (order) => order.id === selectedValue
+    );
 
-    setFormData({
-      ...formData,
-      workOrderID: selectedOrder?.id || "",
-      dateRequested: selectedOrder?.requestDate || "",
-      phoneModel: selectedOrder?.module || "Unknown Model", // Add phone model to form data
-    });
+    if (selectedOrder) {
+      setFormData({
+        ...formData,
+        workOrderID: selectedOrder.id,
+        dateRequested: selectedOrder.createdDate, // Autofill dateRequested
+        phoneModel: selectedOrder.phoneModel, // Autofill phoneModel
+        requestedQuantity: selectedOrder.quantity, // Autofill requestedQuantity
+      });
+    }
   };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formattedData = {
@@ -88,8 +101,10 @@ const ReportProduction: React.FC = () => {
       fulfilledBy: formData.fulfilledBy,
       dateFulfilled: formData.dateFulfilled,
       producedQty: formData.producedQty,
-      orderFulfilled: formData.producedQty >= 100, // Example logic for order fulfillment
-      orderOnTime: new Date(formData.dateFulfilled) <= new Date(formData.dateRequested), // Example logic for on-time fulfillment
+      requestedQuantity: formData.requestedQuantity, // Include requestedQuantity
+      orderFulfilled: formData.producedQty >= formData.requestedQuantity, // Compare producedQty with requestedQuantity
+      orderOnTime:
+        new Date(formData.dateFulfilled) <= new Date(formData.dateRequested), // Example logic for on-time fulfillment
     };
 
     if (editMode) {
@@ -99,13 +114,14 @@ const ReportProduction: React.FC = () => {
     }
     setFormData({
       workOrderID: "",
-      phoneModel: "", // Reset phone model
+      phoneModel: "",
       dateRequested: "",
       fulfilledBy: "",
       dateFulfilled: "",
       producedQty: 0,
+      requestedQuantity: 0, // Reset requestedQuantity
       orderFulfilled: false,
-      orderOnTime: false
+      orderOnTime: false,
     });
     setEditMode(null);
   };
@@ -128,7 +144,7 @@ const ReportProduction: React.FC = () => {
     const workOrder = workOrders.find((order) => order.id === item.workOrderID);
     return {
       ...item,
-      phoneModel: workOrder?.module || item.phoneModel || "Unknown Model",
+      phoneModel: workOrder?.phoneModel || item.phoneModel || "Unknown Model",
     };
   });
 
@@ -140,7 +156,12 @@ const ReportProduction: React.FC = () => {
 
   const columns: GridColDef[] = [
     { field: "index", headerName: "ID", width: 20, maxWidth: 20 },
-    { field: "workOrderID", headerName: "Work Order ID", width: 100, sortable: true },
+    {
+      field: "workOrderID",
+      headerName: "Work Order ID",
+      width: 100,
+      sortable: true,
+    },
     {
       field: "phoneModel",
       headerName: "Phone Model",
@@ -170,16 +191,14 @@ const ReportProduction: React.FC = () => {
       headerName: "Order Fulfilled?",
       width: 100,
       sortable: true,
-      renderCell: (params) =>
-        params.row.orderFulfilled ? "✅" : "❌",
+      renderCell: (params) => (params.row.orderFulfilled ? "✅" : "❌"), // Fixed logic
     },
     {
       field: "orderOnTime",
       headerName: "Order On Time?",
       width: 100,
       sortable: true,
-      renderCell: (params) =>
-        params.row.orderOnTime ? "✅" : "❌",
+      renderCell: (params) => (params.row.orderOnTime ? "✅" : "❌"), // Fixed logic
     },
     {
       field: "actions",
@@ -218,35 +237,56 @@ const ReportProduction: React.FC = () => {
       <Header />
 
       <div className="form-and-card">
+        <div className="form-holder">
+          <form onSubmit={handleSubmit} className="form">
+            <h2 className="h2">
+              {editMode ? "Edit report" : "Report production"}
+            </h2>
 
-            <div className="form-group">
-              <FormControl fullWidth variant="outlined">
+            {/* Responsive Form Grid */}
+            <div className="form-grid">
+              {/* Work Order Dropdown */}
+              <FormControl
+                fullWidth
+                required
+                className="form-group"
+                sx={{
+                  marginBottom: "8px", // Reduce bottom margin to save space
+                  "& .MuiInputBase-root": {
+                    minHeight: "40px", // Reduce input field height
+                  },
+                  "& .MuiInputLabel-root": {
+                    fontSize: "12px", // Slightly smaller label
+                  },
+                }}
+              >
                 <InputLabel>Select Work Order</InputLabel>
                 <Select
                   value={formData.workOrderID}
                   onChange={handleWorkOrderChange}
                   label="Work Order ID"
-                  required
                 >
                   <MenuItem value="">
                     <em>Select Work Order</em>
                   </MenuItem>
                   {workOrders.map((order) => (
                     <MenuItem key={order.id} value={order.id}>
-                      {order.id} - {order.module} {/* Display work order ID and phone model */}
+                      {order.id} - {order.phoneModel}{" "}
+                      {/* Display work order ID and phone model */}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
 
-            </div>
-
-            <div className="form-group">
+              {/* Date Requested Field (Autofilled) */}
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
+                  className="form-group"
                   label="Date Requested"
                   value={
-                    formData.dateRequested ? dayjs(formData.dateRequested) : null
+                    formData.dateRequested
+                      ? dayjs(formData.dateRequested)
+                      : null
                   }
                   onChange={(newValue) =>
                     setFormData({
@@ -257,12 +297,31 @@ const ReportProduction: React.FC = () => {
                     })
                   }
                   slotProps={{ textField: { fullWidth: true } }}
+                  disabled // Disable editing since it's autofilled
                 />
               </LocalizationProvider>
-            </div>
 
-            <div className="form-group">
+              {/* Requested Quantity Field (Autofilled) */}
               <TextField
+                className="form-group"
+                label="Requested Quantity"
+                variant="outlined"
+                type="number"
+                value={formData.requestedQuantity}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    requestedQuantity: parseInt(e.target.value),
+                  })
+                }
+                required
+                fullWidth
+                disabled // Disable editing since it's autofilled
+              />
+
+              {/* Fulfilled By Field */}
+              <TextField
+                className="form-group"
                 label="Fulfilled By"
                 variant="outlined"
                 type="text"
@@ -273,14 +332,16 @@ const ReportProduction: React.FC = () => {
                 required
                 fullWidth
               />
-            </div>
 
-            <div className="form-group">
+              {/* Date Fulfilled Field */}
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
+                  className="form-group"
                   label="Date Fulfilled"
                   value={
-                    formData.dateFulfilled ? dayjs(formData.dateFulfilled) : null
+                    formData.dateFulfilled
+                      ? dayjs(formData.dateFulfilled)
+                      : null
                   }
                   onChange={(newValue) =>
                     setFormData({
@@ -293,10 +354,10 @@ const ReportProduction: React.FC = () => {
                   slotProps={{ textField: { fullWidth: true } }}
                 />
               </LocalizationProvider>
-            </div>
 
-            <div className="form-group">
+              {/* Produced Quantity Field */}
               <TextField
+                className="form-group"
                 label="Produced Quantity"
                 variant="outlined"
                 type="number"
@@ -310,32 +371,34 @@ const ReportProduction: React.FC = () => {
                 required
                 fullWidth
               />
-            </div>
 
-            <Button
-              type="submit"
-              variant="contained"
-              disableElevation
-              color={editMode ? "primary" : "success"}
-              startIcon={editMode ? <EditIcon /> : <SaveIcon />}
-            >
-              {editMode ? "Update" : "Add"}
-            </Button>
-            {editMode && (
-              <Button
-                type="button"
-                variant="contained"
-                color="error"
-                disableElevation
-                startIcon={<CancelIcon />}
-                onClick={() => setEditMode(null)}
-              >
-                Cancel
-              </Button>
-            )}
+              {/* Submit Button */}
+              <div className="form-actions">
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color={editMode ? "primary" : "success"}
+                  startIcon={editMode ? <EditIcon /> : <SaveIcon />}
+                >
+                  {editMode ? "Update" : "Add"}
+                </Button>
+                {editMode && (
+                  <Button
+                    type="button"
+                    variant="contained"
+                    color="error"
+                    startIcon={<CancelIcon />}
+                    onClick={() => setEditMode(null)}
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            </div>
           </form>
         </div>
 
+        {/* Preview Card */}
         <div id="report-preview" className="preview-card">
           <h2 className="preview-title" id="report-title">
             Report Preview
@@ -346,16 +409,18 @@ const ReportProduction: React.FC = () => {
           </div>
 
           <div className="preview-details">
-            <div>
+            <div className="module-info">
               <h2 id="report-module-code">
-                {formData.phoneModel || "Phone Model"} {/* Display phone model */}
+                {formData.phoneModel || "Phone Model"}{" "}
+                {/* Display phone model */}
               </h2>
               <h3 id="report-module-desc">
                 {formData.dateRequested || "Date Requested"}
               </h3>
             </div>
 
-            <div className="chip-holder">
+            {/* Container for Chips */}
+            <div className="chip-container">
               <Chip
                 label={
                   formData.producedQty
@@ -366,6 +431,7 @@ const ReportProduction: React.FC = () => {
                   fontWeight: "medium",
                   backgroundColor: "#FFCCBC",
                   color: "#BF360C",
+                  minWidth: "120px",
                 }}
               />
 
@@ -380,6 +446,7 @@ const ReportProduction: React.FC = () => {
                   fontWeight: "medium",
                   backgroundColor: "#FFF3E0",
                   color: "#E65100",
+                  minWidth: "140px",
                 }}
               />
 
@@ -394,11 +461,10 @@ const ReportProduction: React.FC = () => {
                   fontWeight: "medium",
                   backgroundColor: "#FFF3E0",
                   color: "#E65100",
+                  minWidth: "130px",
                 }}
               />
-            </div>
 
-            <div className="chip-holder">
               <Chip
                 icon={
                   <PersonIcon
@@ -410,146 +476,13 @@ const ReportProduction: React.FC = () => {
                   fontWeight: "medium",
                   backgroundColor: "#FFF3E0",
                   color: "#E65100",
+                  minWidth: "130px",
                 }}
               />
             </div>
           </div>
         </div>
-
       </div>
-
-      <TextField
-        label="Phone model AUTOFILL"
-        variant="outlined"
-        type="text"
-        value={formData.productId}
-        onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
-        required
-        fullWidth
-        sx={{ marginBottom: 2, fontFamily: "Poppins" }}
-      />
-
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <DatePicker
-          label="Date requested"
-          value={formData.requestDate ? dayjs(formData.requestDate) : null}
-          onChange={(newValue) =>
-            setFormData({
-              ...formData,
-              requestDate: newValue ? newValue.format("YYYY-MM-DD") : "",
-            })
-          }
-          slotProps={{ textField: { fullWidth: true, sx: { fontFamily: "Poppins" } } }}
-        />
-      </LocalizationProvider>
-
-      <TextField
-        label="Reporter"
-        variant="outlined"
-        type="text"
-        value={formData.reportedBy}
-        onChange={(e) => setFormData({ ...formData, reportedBy: e.target.value })}
-        required
-        fullWidth
-        sx={{ marginBottom: 2, fontFamily: "Poppins" }}
-      />
-
-      <TextField
-        label="Quantity Produced"
-        variant="outlined"
-        type="number"
-        value={formData.quantityProduced}
-        onChange={(e) =>
-          setFormData({ ...formData, quantityProduced: parseInt(e.target.value) })
-        }
-        required
-        fullWidth
-        sx={{ marginBottom: 2, fontFamily: "Poppins" }}
-      />
-
-      <Button
-        type="submit"
-        variant="contained"
-        disableElevation
-        color={editMode ? "primary" : "success"}
-        startIcon={editMode ? <EditIcon /> : <SaveIcon />}
-        sx={{
-          fontFamily: "Poppins",
-          padding: "10px 20px",
-          fontSize: "16px",
-          fontWeight: "bold",
-          borderRadius: "8px",
-          textTransform: "none",
-          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-          transition: "all 0.3s linear",
-          "&:hover": {
-            backgroundColor: "#1b5e20",
-            transform: "translateY(-2px)",
-          },
-        }}
-      >
-        {editMode ? "Update" : "Add"}
-      </Button>
-
-      {editMode && (
-        <Button
-          type="button"
-          variant="contained"
-          color="error"
-          disableElevation
-          startIcon={<CancelIcon />}
-          onClick={() => setEditMode(null)}
-          sx={{
-            fontFamily: "Poppins",
-            padding: "10px 20px",
-            fontSize: "16px",
-            fontWeight: "bold",
-            borderRadius: "8px",
-            textTransform: "none",
-            marginLeft: 2,
-          }}
-        >
-          Cancel
-        </Button>
-      )}
-    </form>
-  </div>
-
-{/* Report Preview Section */}
-<div id="report-preview" className="preview-card">
-  <h2 className="preview-title" id="report-title">
-    Report Preview
-  </h2>
-
-  <div className="preview-icon">
-    <SmartphoneRoundedIcon sx={{ fontSize: 270, color: "#E65100" }} />
-  </div>
-
-  <div className="preview-details">
-    <h2 id="report-module-code">{formData.moduleCode || "Module Code"}</h2>
-    <h3 id="report-module-desc">{formData.description || "Module Description"}</h3>
-  </div>
-
-  <div className="chip-container">
-    <Chip label={formData.quantityProduced ? `${formData.quantityProduced} pc` : "Qty"} />
-    <Chip
-      icon={<SmartphoneRoundedIcon sx={{ color: "#E65100", fontSize: 25 }} />}
-      label={formData.productId || "Phone Model"}
-      sx={{ backgroundColor: "#FFF3E0", color: "#BF360C" }}
-    />
-    <Chip
-      icon={<EventIcon sx={{ color: "#E65100", fontSize: 25 }} />}
-      label={formData.dateProduced || "Fulfilled"}
-      sx={{ backgroundColor: "#FFF3E0", color: "#E65100" }}
-    />
-    <Chip
-      icon={<PersonIcon sx={{ color: "#E65100", fontSize: 25 }} />}
-      label={formData.reportedBy || "Reporter"}
-      sx={{ backgroundColor: "#FFF3E0", color: "#E65100" }}
-    />
-  </div>
-  </div>
-</div>
 
       <div className="styled-table">
         <h2>Production Reports</h2>
@@ -562,7 +495,6 @@ const ReportProduction: React.FC = () => {
           sx={{
             backgroundColor: "white",
             border: "none",
-
             "& .MuiDataGrid-columnHeaders": {
               backgroundColor: "#f5f5f5",
             },
@@ -572,5 +504,4 @@ const ReportProduction: React.FC = () => {
     </div>
   );
 };
-
 export default ReportProduction;
