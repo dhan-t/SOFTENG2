@@ -316,8 +316,22 @@ const WorkOrder: React.FC = () => {
                 <Button
                   type="submit"
                   variant="contained"
+                  disableElevation
                   color="success"
                   startIcon={<SendIcon />}
+                  sx={{
+                    fontFamily: "Poppins",
+                    padding: "10px 20px",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    borderRadius: "8px",
+                    textTransform: "none",
+                    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                    transition: "all 0.3s linear",
+                    "&:hover": {
+                      backgroundColor: "#1b5e20", // Darker green shade
+                    },
+                  }}
                 >
                   Submit
                 </Button>

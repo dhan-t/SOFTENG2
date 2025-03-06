@@ -70,8 +70,6 @@
   font-size: 300px !important;
 }
 
-
-
 /* Report Page Specific Styling */
 #report-preview {
   background-color: #ffe0b2;
@@ -89,7 +87,7 @@
 
 #report-module-desc {
   color: #e64a19;
-  margin-bottom: 4%;
+  margin-top: 2%;
 }
 
 /* Chips */

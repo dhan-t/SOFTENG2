@@ -11,11 +11,15 @@
   height: fit-content;
 }
 
+.form-actions {
+  margin-top: -20%; /* Adjust the value as needed */
+}
+
 #workorder-preview {
   background-color: #bbdefb;
   border-radius: 1rem;
-  width: 40%;
   padding: 1rem;
+  width: 40%;
 }
 
 #workorder-title {

@@ -9,8 +9,6 @@ import "./Dashboard.css";
 import Header from "../components/Header";
 import LineChartComponent from "../tables/LineChartComponent"; // Update the import path if necessary
 import { ToggleButton, ToggleButtonGroup, Box } from "@mui/material";
-import { TrendingUp, TrendingDown } from "@mui/icons-material";
-import { AssignmentTurnedIn } from "@mui/icons-material";
 import "../components/global.css";
 import {
   BarChart,
@@ -81,13 +79,13 @@ const DynamicLineChart: React.FC = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: "20px" }}>
         <input
           type="number"
           value={inputValue}
           onChange={handleInputChange}
           placeholder="Enter produced value"
-          style={{ marginRight: '10px' }}
+          style={{ marginRight: "10px" }}
         />
         <button onClick={handleAddData}>Add Data</button>
       </div>
@@ -109,7 +107,6 @@ const DynamicLineChart: React.FC = () => {
 interface UnifiedCardProps {
   type: "rate" | "progress" | "summary";
   title: string;
-  icon?: React.ReactNode; // Icon Component
   currentValue: number;
   maxValue?: number; // Required for "progress" type
   oldValue?: number; // Required for "rate" type
@@ -123,7 +120,6 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
   maxValue = 100,
   oldValue = 0,
   description = "",
-  icon,
 }) => {
   // Round off values to 2 decimal places
   const roundedCurrentValue = currentValue.toFixed(2);
@@ -192,10 +188,14 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                 alignItems: "center",
               }}
             >
-              {icon && React.cloneElement(icon as React.ReactElement, { sx: { fontSize: "3rem", color: iconColor } })}
               <Chip
                 label={`${percentageChange}%`}
-                sx={{ backgroundColor: iconColor, color: "white", mt: 0.5 }}
+                sx={{
+                  backgroundColor: iconColor,
+                  color: "white",
+                  mt: 0.5,
+                  maxWidth: "4rem",
+                }}
               />
             </Box>
           </Box>
@@ -957,8 +957,6 @@ const Histogram: React.FC<{ apiUri: string }> = ({ apiUri }) => {
   );
 };
 
-//
-
 const Dashboard: React.FC = () => {
   const {
     productionData,
@@ -1039,6 +1037,10 @@ const Dashboard: React.FC = () => {
   if (productionError || workOrdersError || logisticsError || trackingError)
     return <div className="error">Error loading data.</div>;
 
+  const ensureWholeNumber = (value) => {
+    return Math.round(value);
+  };
+
   // Calculate dynamic values
   const totalActiveWorkOrders = workOrders.length;
   const completedWorkOrders = workOrders.filter(
@@ -1047,53 +1049,50 @@ const Dashboard: React.FC = () => {
   const pendingModuleRequests = requests.filter(
     (request) => request.status === "Pending"
   ).length;
-  const shipmentsInTransit = trackingLogs.filter(
-    (log) => log.status === "In Transit"
-  ).length;
   const shipmentsCompleted = trackingLogs.filter(
     (log) => log.status === "Completed"
   ).length;
 
-  {
-    /*db.production.updateMany(
-   {}, 
-   { $rename: { "quantityProduced": "producedQty" } }
-)*/
-  }
+  // Combine data from trackingLogs and requests
+  const combinedData = trackingLogs.map((log) => {
+    const request = requests.find((req) => req._id === log.requestID);
+    return {
+      ...log,
+      requestDate: request ? request.requestDate : null,
+    };
+  });
 
-// Combine data from trackingLogs and requests
-const combinedData = trackingLogs.map((log) => {
-  const request = requests.find((req) => req._id === log.requestID);
-  return {
-    ...log,
-    requestDate: request ? request.requestDate : null,
-  };
-});
+  // Calculate dynamic values for the modules section
+  const totalModuleRequests = requests.length;
+  const fulfilledModuleRequests = requests.filter(
+    (request) => request.status && request.status.toLowerCase() === "fulfilled"
+  ).length;
+  const pendingShipments = trackingLogs.filter(
+    (log) => log.status.toLowerCase() === "pending"
+  ).length;
 
-// Calculate dynamic values for the modules section
-const totalModuleRequests = requests.length;
-const fulfilledModuleRequests = requests.filter(
-  (request) => request.status && request.status.toLowerCase() === "fulfilled"
-).length;
-const pendingShipments = trackingLogs.filter(
-  (log) => log.status.toLowerCase() === "pending"
-).length;
-// Calculate average delivery time
-const averageDeliveryTime = combinedData.reduce((acc, log) => {
-  if (log.deliveredDate && log.requestDate) {
-    const deliveryTime = new Date(log.deliveredDate).getTime() - new Date(log.requestDate).getTime();
-    return acc + deliveryTime;
-  }
-  return acc;
-}, 0) / combinedData.length || 0;
+  // Calculate average delivery time
+  const averageDeliveryTime =
+    combinedData.reduce((acc, log) => {
+      if (log.deliveredDate && log.requestDate) {
+        const deliveryTime =
+          new Date(log.deliveredDate).getTime() -
+          new Date(log.requestDate).getTime();
+        return acc + deliveryTime;
+      }
+      return acc;
+    }, 0) / combinedData.length || 0;
 
-// Convert average delivery time from milliseconds to days
-const averageDeliveryTimeInDays = averageDeliveryTime / (1000 * 60 * 60 * 24);
+  // Convert average delivery time from milliseconds to days
+  const averageDeliveryTimeInDays = ensureWholeNumber(
+    averageDeliveryTime / (1000 * 60 * 60 * 24)
+  );
 
   // Calculate production view values
-  const productionRate =
+  const productionRate = ensureWholeNumber(
     productionData.reduce((acc, item) => acc + item.producedQty, 0) /
-      productionData.length || 0;
+      productionData.length || 0
+  );
   const lateFulfillments = productionData.filter(
     (item) => !item.orderOnTime
   ).length;
@@ -1101,11 +1100,12 @@ const averageDeliveryTimeInDays = averageDeliveryTime / (1000 * 60 * 60 * 24);
     (acc, item) => acc + item.producedQty,
     0
   );
-  
-  const fulfillmentEfficiency =
+
+  const fulfillmentEfficiency = ensureWholeNumber(
     (productionData.filter((item) => item.orderFulfilled).length /
       productionData.length) *
-      100 || 0;
+      100 || 0
+  );
 
   const softCoolColors = [
     "#D64550", // Soft Crimson
@@ -1230,7 +1230,6 @@ const averageDeliveryTimeInDays = averageDeliveryTime / (1000 * 60 * 60 * 24);
             <UnifiedCard
               type="summary"
               title="Total Active Work Orders"
-              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
               currentValue={totalActiveWorkOrders} // DYNAMICVALUE
               description="in 24 hours"
             />
@@ -1239,7 +1238,6 @@ const averageDeliveryTimeInDays = averageDeliveryTime / (1000 * 60 * 60 * 24);
             <UnifiedCard
               type="summary"
               title="Completed Work Orders"
-              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
               currentValue={completedWorkOrders} // DYNAMICVALUE
               description="in 24 hours"
             />
@@ -1248,7 +1246,6 @@ const averageDeliveryTimeInDays = averageDeliveryTime / (1000 * 60 * 60 * 24);
             <UnifiedCard
               type="summary"
               title="Pending Module Requests"
-              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
               currentValue={pendingModuleRequests} // DYNAMICVALUE
               description="in 24 hours"
             />
@@ -1257,7 +1254,6 @@ const averageDeliveryTimeInDays = averageDeliveryTime / (1000 * 60 * 60 * 24);
             <UnifiedCard
               type="summary"
               title="Shipments Completed"
-              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
               currentValue={shipmentsCompleted} // DYNAMICVALUE
               description="vs 30 days"
             />
@@ -1367,6 +1363,7 @@ const averageDeliveryTimeInDays = averageDeliveryTime / (1000 * 60 * 60 * 24);
         </div>
       )}
 
+      {/*jump2prod*/}
       {view === "production" && (
         <div className="main-div">
           <div className="small-holder">
@@ -1374,8 +1371,7 @@ const averageDeliveryTimeInDays = averageDeliveryTime / (1000 * 60 * 60 * 24);
             <UnifiedCard
               type="rate"
               title="Production Rate"
-              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={parseFloat(productionRate.toFixed(2))} // DYNAMICVALUE
+              currentValue={productionRate} // DYNAMICVALUE
               oldValue={58} // You can replace this with a dynamic value if needed
             />
 
@@ -1383,8 +1379,7 @@ const averageDeliveryTimeInDays = averageDeliveryTime / (1000 * 60 * 60 * 24);
             <UnifiedCard
               type="summary"
               title="Late Fulfillments "
-              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={parseFloat(lateFulfillments.toFixed(2))} // DYNAMICVALUE
+              currentValue={lateFulfillments} // DYNAMICVALUE
               description="in 24 hours"
             />
 
@@ -1392,8 +1387,7 @@ const averageDeliveryTimeInDays = averageDeliveryTime / (1000 * 60 * 60 * 24);
             <UnifiedCard
               type="summary"
               title="Total Units Produced"
-              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={parseFloat(totalUnitsProduced.toFixed(2))} // DYNAMICVALUE
+              currentValue={totalUnitsProduced} // DYNAMICVALUE
               description="in 24 hours"
             />
 
@@ -1401,15 +1395,14 @@ const averageDeliveryTimeInDays = averageDeliveryTime / (1000 * 60 * 60 * 24);
             <UnifiedCard
               type="rate"
               title="Fulfillment Efficiency"
-              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={parseFloat(fulfillmentEfficiency.toFixed(2))} // DYNAMICVALUE
+              currentValue={fulfillmentEfficiency} // DYNAMICVALUE
               oldValue={100} // You can replace this with a dynamic value if needed
             />
           </div>
 
           <div className="dashboard-contents">
             <div className="bigger-components">
-              <div id="linechart-70" className="component-holder">
+              <div id="production-heatmap" className="component-holder">
                 <h2>Production Performance</h2>
                 <LineChartComponent />
               </div>
@@ -1440,96 +1433,93 @@ const averageDeliveryTimeInDays = averageDeliveryTime / (1000 * 60 * 60 * 24);
         </div>
       )}
 
-        {view === "logistics" && (
-          <div className="main-div">
-            <div className="small-holder">
-              {/* ✅ Total Module Requests */}
-              <UnifiedCard
-                type="summary"
-                title="Total Module Requests"
-                icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-                currentValue={totalModuleRequests} // DYNAMICVALUE
-                description="in 24 hours"
-              />
+      {/*jump2mod*/}
+      {view === "logistics" && (
+        <div className="main-div">
+          <div className="small-holder">
+            {/* ✅ Total Module Requests */}
+            <UnifiedCard
+              type="summary"
+              title="Total Module Requests"
+              currentValue={totalModuleRequests} // DYNAMICVALUE
+              description="in 24 hours"
+            />
 
-              {/* ✅ Fulfilled Module Requests */}
-              <UnifiedCard
-                type="summary"
-                title="Fulfilled Module Requests"
-                icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-                currentValue={fulfilledModuleRequests} // DYNAMICVALUE
-                description="in 24 hours"
-              />
+            {/* ✅ Fulfilled Module Requests */}
+            <UnifiedCard
+              type="summary"
+              title="Fulfilled Module Requests"
+              currentValue={fulfilledModuleRequests} // DYNAMICVALUE
+              description="in 24 hours"
+            />
 
-              {/* ✅ Pending Shipments */}
-              <UnifiedCard
-                type="summary"
-                title="Pending Shipments"
-                icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-                currentValue={pendingShipments} // DYNAMICVALUE
-                description="in 24 hours"
-              />
+            {/* ✅ Pending Shipments */}
+            <UnifiedCard
+              type="summary"
+              title="Pending Shipments"
+              currentValue={pendingShipments} // DYNAMICVALUE
+              description="in 24 hours"
+            />
 
-              {/* ✅ Average Delivery Time */}
-              <UnifiedCard
-                type="summary"
-                title="Average Delivery Time"
-                icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-                currentValue={parseFloat(averageDeliveryTimeInDays.toFixed(2))} // DYNAMICVALUE
-                description="in days"
-              />
-            </div>
+            {/* ✅ Average Delivery Time */}
+            <UnifiedCard
+              type="summary"
+              title="Average Delivery Time"
+              currentValue={parseFloat(averageDeliveryTimeInDays.toFixed(2))} // DYNAMICVALUE
+              description="in days"
+            />
+          </div>
 
-            <div className="dashboard-contents">
-              <div className="bigger-components">
-                <div className="component-holder">
-                  <h2>Most Requested Items</h2>
-                  <CustomBarChart apiUri="http://localhost:5001/api/module-chart" />
-                </div>
-
-                <div className="component-holder">
-                  <ModulesTable />
-                </div>
+          <div className="dashboard-contents">
+            <div className="bigger-components">
+              <div className="component-holder">
+                <h2>Most Requested Items</h2>
+                <CustomBarChart apiUri="http://localhost:5001/api/module-chart" />
               </div>
-              <div className="smaller-components">
-                <div className="component-holder">
-                  <h2>Factory Request Distribution</h2>
-                  <PieChartComponent apiUrl="http://localhost:5001/api/logistics-summary" />
-                </div>
-                <div className="component-holder">
-                  <h2>Module Request Fulfillment Rate</h2>
-                  <GaugeChart apiUri="http://localhost:5001/api/fulfillment-rate" />
-                </div>
+
+              <div className="component-holder">
+                <ModulesTable />
               </div>
             </div>
-            <div className="component-holder">
-              <h2>Recent requests</h2>
-              <div className="chart">
-                <div className="pie-chart">
-                  {requests.map((item, index) => {
-                    const bgColor = softCoolColors[index % softCoolColors.length];
-                    const textColor = index < 3 ? "#000" : "#000"; // Darker colors get white text, lighter get dark text
-
-                    return (
-                      <div
-                        key={item._id}
-                        className="slice"
-                        style={{
-                          backgroundColor: bgColor,
-                          color: textColor, // Dynamic font color
-                          borderRadius: "12px",
-                          padding: "8px 17px 10px",
-                        }}
-                      >
-                        <span>{item.module}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+            <div className="smaller-components">
+              <div className="component-holder">
+                <h2>Factory Request Distribution</h2>
+                <PieChartComponent apiUrl="http://localhost:5001/api/logistics-summary" />
+              </div>
+              <div className="component-holder">
+                <h2>Module Request Fulfillment Rate</h2>
+                <GaugeChart apiUri="http://localhost:5001/api/fulfillment-rate" />
               </div>
             </div>
           </div>
-        )}
+          <div className="component-holder">
+            <h2>Recent requests</h2>
+            <div className="chart">
+              <div className="pie-chart">
+                {requests.map((item, index) => {
+                  const bgColor = softCoolColors[index % softCoolColors.length];
+                  const textColor = index < 3 ? "#000" : "#000"; // Darker colors get white text, lighter get dark text
+
+                  return (
+                    <div
+                      key={item._id}
+                      className="slice"
+                      style={{
+                        backgroundColor: bgColor,
+                        color: textColor, // Dynamic font color
+                        borderRadius: "12px",
+                        padding: "8px 17px 10px",
+                      }}
+                    >
+                      <span>{item.module}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

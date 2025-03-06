@@ -21,6 +21,7 @@ import Button from "@mui/material/Button";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -161,68 +162,69 @@ const ReportProduction: React.FC = () => {
       headerName: "Work Order ID",
       width: 100,
       sortable: true,
+      flex: 1,
     },
     {
       field: "phoneModel",
       headerName: "Phone Model",
-      width: 150,
       sortable: true,
+      flex: 1,
     },
     {
       field: "dateRequested",
       headerName: "Date Requested",
-      width: 200,
+
       sortable: true,
+      flex: 1,
     },
     {
       field: "producedQty",
-      headerName: "Produced Qty",
-      width: 150,
+      headerName: "Qty",
+      width: 50,
       sortable: true,
     },
     {
       field: "dateFulfilled",
       headerName: "Date Fulfilled",
-      width: 200,
+
       sortable: true,
+      flex: 1,
     },
     {
       field: "orderFulfilled",
       headerName: "Order Fulfilled?",
-      width: 100,
       sortable: true,
+
       renderCell: (params) => (params.row.orderFulfilled ? "✅" : "❌"), // Fixed logic
     },
     {
       field: "orderOnTime",
       headerName: "Order On Time?",
-      width: 100,
       sortable: true,
+
       renderCell: (params) => (params.row.orderOnTime ? "✅" : "❌"), // Fixed logic
     },
     {
       field: "actions",
       headerName: "Actions",
-      width: 150,
       sortable: false,
+      flex: 1,
       renderCell: (params) => (
         <>
-          <Button
-            variant="contained"
+          <IconButton
             color="primary"
-            startIcon={<EditIcon />}
             onClick={() => handleEdit(params.row)}
+            aria-label="edit"
           >
-            Edit
-          </Button>
-          <Button
-            variant="contained"
+            <EditIcon />
+          </IconButton>
+          <IconButton
             color="secondary"
-            startIcon={<DeleteIcon />}
             onClick={() => handleDelete(params.row.id)}
+            aria-label="delete"
           >
-            Delete
-          </Button>
+            <DeleteIcon />
+          </IconButton>
         </>
       ),
     },
