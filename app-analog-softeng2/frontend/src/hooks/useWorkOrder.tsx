@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 
-interface WorkOrder {
+export interface WorkOrder {
   _id?: string;
+  id?: string;
   module: string;
   createdBy: string;
   description: string;
@@ -10,6 +11,8 @@ interface WorkOrder {
   dueDate: string;
   priority: "Low" | "Medium" | "High";
   status?: string;
+  phoneModel: string;
+  quantity: number;
 }
 
 export const useWorkOrders = () => {

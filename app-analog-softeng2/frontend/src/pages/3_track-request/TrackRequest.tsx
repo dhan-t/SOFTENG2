@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -13,18 +13,27 @@ import {
   Select,
   Tooltip,
 } from "@mui/material";
-
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LocalShippingOutlined from "@mui/icons-material/LocalShippingOutlined";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CircleIcon from "@mui/icons-material/Circle";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet-routing-machine";
+import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
+
+// Extend Leaflet to include Routing
+declare module "leaflet" {
+  namespace Routing {
+    function control(options: any): any;
+  }
+}
 import { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Header from "../components/Header";
 import { useTracking } from "../../hooks/useTracking";
 import { useLogistics } from "../../hooks/useLogistics";
-import { useAuth } from "../../hooks/useAuth"; // Import useAuth hook and User type
+import { useAuth } from "../../hooks/useAuth";
 import "./TrackRequest.css";
 
 const factoryLocations: { [key: string]: LatLngExpression } = {
@@ -49,25 +58,67 @@ const TrackRequest = () => {
     error,
   } = useTracking();
   const { requests } = useLogistics();
-  const { user } = useAuth(); // Get the logged-in user's information
+  const { user } = useAuth();
   const [status, setStatus] = useState("Pending");
   const [selectedFactory, setSelectedFactory] = useState("");
   const [profile, setProfile] = useState({
     firstName: "",
     profilePicture: "",
   });
+  const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const routingControlRef = useRef<any>(null);
+  const [locationCache, setLocationCache] = useState<{ [key: string]: LatLngExpression }>({});
+  const getCoordinates = async (locationName: string): Promise<LatLngExpression | null> => {
+    if (locationCache[locationName]) {
+      console.log("Using cached coordinates for:", locationName);
+      return locationCache[locationName];
+    }
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+          locationName
+        )}&format=json`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.length > 0) {
+        const { lat, lon } = data[0];
+        const coordinates = [parseFloat(lat), parseFloat(lon)] as LatLngExpression;
+
+        // Cache the coordinates
+        setLocationCache((prev) => ({
+          ...prev,
+          [locationName]: coordinates,
+        }));
+
+        return coordinates;
+      } else {
+        console.error("No coordinates found for location:", locationName);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching coordinates:", error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     fetchTrackingLogs();
   }, []);
 
   useEffect(() => {
-    console.log(trackingLogs); // Log the tracking logs to verify the data
-    console.log(requests); // Log the logistics requests to verify the data
+    console.log(trackingLogs);
+    console.log(requests);
   }, [trackingLogs, requests]);
 
   useEffect(() => {
-    // Fetch user profile from the backend
     const fetchProfile = async () => {
       if (user) {
         try {
@@ -100,33 +151,90 @@ const TrackRequest = () => {
   const updateShipmentStatus = async (id: string, currentStatus: string) => {
     let newStatus = "";
     if (currentStatus === "Pending") {
-      newStatus = "In-Transit";
-    } else if (currentStatus === "In-Transit") {
-      newStatus = "Out-for-Delivery";
-    } else if (currentStatus === "Out-for-Delivery") {
-      newStatus = "Delivered";
+      newStatus = "Completed";
     }
-    console.log(`Updating status of ${id} to ${newStatus}`); // Debugging statement
-    await updateTrackingStatus(id, newStatus);
-    fetchTrackingLogs(); // Re-fetch tracking logs to update the UI
+
+    console.log(`Updating status of ${id} to ${newStatus}`);
+
+    try {
+      await updateTrackingStatus(id, newStatus);
+      fetchTrackingLogs(); // Refresh the tracking logs after updating
+      console.log("Shipment status updated successfully.");
+    } catch (error) {
+      console.error("Error updating shipment status:", error);
+    }
+  };
+
+  interface Shipment {
+    id: string;
+    moduleCode: string;
+    moduleOrigin: string;
+    recipient: string;
+    status: string;
+  }
+
+  interface Profile {
+    firstName: string;
+    profilePicture: string;
+  }
+
+  const handleViewShipment = async (shipment: Shipment) => {
+    console.log("Selected Shipment:", shipment);
+
+    const map = mapRef.current;
+
+    if (!map) {
+      console.error("Map is not initialized.");
+      return;
+    }
+
+    console.log("Map instance:", map);
+
+    // Fetch coordinates for moduleOrigin
+    const factoryLocation = await getCoordinates(shipment.moduleOrigin);
+
+    // Fetch coordinates for recipient (if not already in factoryLocations)
+    const recipientLocation = factoryLocations[shipment.recipient] || await getCoordinates(shipment.recipient);
+
+    if (!factoryLocation || !recipientLocation) {
+      console.error("Invalid coordinates for moduleOrigin or recipient.");
+      return;
+    }
+
+    console.log("Factory Location:", factoryLocation);
+    console.log("Recipient Location:", recipientLocation);
+
+    if (routingControlRef.current) {
+      console.log("Removing existing routing control.");
+      map.removeControl(routingControlRef.current);
+    }
+
+    routingControlRef.current = L.Routing.control({
+      waypoints: [L.latLng(factoryLocation), L.latLng(recipientLocation)],
+      routeWhileDragging: true,
+    }).addTo(map);
+
+    console.log("Routing control added to map.");
   };
 
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">Error: {error}</div>;
 
-  // Combine tracking logs with logistics requests
   const combinedLogs = trackingLogs.map((log) => {
-    return {
-      ...log,
-    };
-  });
+        return {
+          ...log,
+          id: log.id ?? log._id, // Ensure id is always defined
+          moduleCode: log.moduleCode ?? "", // Ensure moduleCode is always a string
+          moduleOrigin: log.moduleOrigin ?? "", // Ensure moduleOrigin is always a string
+          recipient: log.recipient ?? "", // Ensure recipient is always a string
+        };
+      });
 
-  // Filter combinedLogs based on selected status and factory
   const filteredLogs = combinedLogs.filter(
     (shipment) =>
       (status === "Completed"
-        ? shipment.status === "Completed" // Show only "Completed" shipments
-        : shipment.status === status) && // Show shipments matching the selected status
+        ? shipment.status === "Completed"
+        : shipment.status === status) &&
       (selectedFactory === "" || shipment.recipient === selectedFactory)
   );
 
@@ -135,10 +243,8 @@ const TrackRequest = () => {
       <Header />
 
       <div className="map-and-card">
-        {/* Left Panel - Shipment List */}
         <div className="shipment-side">
           <h2>Tracking</h2>
-          {/* Status Toggle */}
           <ToggleButtonGroup
             value={status}
             exclusive
@@ -209,18 +315,17 @@ const TrackRequest = () => {
             </ToggleButton>
           </ToggleButtonGroup>
 
-          {/* Factory Filter */}
           <Select
             value={selectedFactory}
             onChange={(e) => setSelectedFactory(e.target.value)}
             displayEmpty
             sx={{
               fontFamily: "Poppins, sans-serif",
-              borderRadius: 2, // Soft rounded corners
-              backgroundColor: "#f8f9fc", // Light background for a softer feel
-              boxShadow: "0px 2px 5px rgba(161, 6, 6, 0.1)", // Subtle shadow
-              padding: "8px 12px", // More comfortable padding
-              width: "100%", // Adjust width
+              borderRadius: 2,
+              backgroundColor: "#f8f9fc",
+              boxShadow: "0px 2px 5px rgba(161, 6, 6, 0.1)",
+              padding: "8px 12px",
+              width: "100%",
               "& .MuiSelect-select": {
                 padding: "7px",
               },
@@ -263,7 +368,6 @@ const TrackRequest = () => {
                   }}
                 >
                   <CardContent sx={{ fontFamily: "Poppins, sans-serif" }}>
-                    {/* Shipment Header */}
                     <Box
                       display="flex"
                       justifyContent="space-between"
@@ -302,7 +406,6 @@ const TrackRequest = () => {
 
                     <Divider sx={{ my: 2 }} />
 
-                    {/* Module Origin */}
                     <Box display="flex" alignItems="center" gap={1}>
                       <CircleIcon
                         sx={{
@@ -329,7 +432,6 @@ const TrackRequest = () => {
                       </Box>
                     </Box>
 
-                    {/* Recipient */}
                     <Box display="flex" alignItems="center" gap={1} mt={1}>
                       <LocationOnIcon
                         sx={{
@@ -358,7 +460,6 @@ const TrackRequest = () => {
 
                     <Divider sx={{ my: 2 }} />
 
-                    {/* Requester */}
                     <Box
                       display="flex"
                       justifyContent="space-between"
@@ -392,7 +493,6 @@ const TrackRequest = () => {
                           ></Typography>
                         </Box>
                       </Box>
-                      {/* Show in Map Button */}
                       <Tooltip title="View shipment location on map">
                         <span>
                           <Button
@@ -403,20 +503,19 @@ const TrackRequest = () => {
                               borderRadius: 2,
                               fontFamily: "Poppins, sans-serif",
                               textTransform: "none",
-
                               "&:disabled": {
                                 bgcolor: "#ccc",
                                 color: "#666",
                               },
                             }}
-                            disabled={shipment.status === "Completed"} // Disable if status is "Completed"
+                            onClick={() => handleViewShipment(shipment)}
+                            disabled={shipment.status === "Completed"}
                           >
                             <LocationOnIcon />
                           </Button>
                         </span>
                       </Tooltip>
 
-                      {/* Mark as Completed Button (changes the value of "status" in database) */}
                       <Tooltip title="Mark order as completed">
                         <span>
                           <Button
@@ -432,7 +531,10 @@ const TrackRequest = () => {
                                 color: "#666",
                               },
                             }}
-                            disabled={shipment.status === "Completed"} // Disable if status is "Completed"
+                            onClick={() =>
+                              updateShipmentStatus(shipment.id, shipment.status)
+                            }
+                            disabled={shipment.status === "Completed"}
                           >
                             <CheckCircleIcon />
                           </Button>
@@ -454,28 +556,31 @@ const TrackRequest = () => {
           </div>
         </div>
 
-        {/* Right Panel - Map */}
         <div className="map-side">
-          <MapContainer
-            center={[12.8797, 121.774]} // Center of the Philippines
-            zoom={6}
-            style={{
-              height: "100%",
-              width: "100%",
-              borderTopRightRadius: "20px",
-              borderBottomRightRadius: "20px",
-            }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            {Object.entries(factoryLocations).map(([factory, position]) => (
-              <Marker key={factory} position={position}>
-                <Popup>{factory}</Popup>
-              </Marker>
-            ))}
-          </MapContainer>
+        <MapContainer
+          center={[12.8797, 121.774]}
+          zoom={6}
+          style={{
+            height: "100%",
+            width: "100%",
+            borderTopRightRadius: "20px",
+            borderBottomRightRadius: "20px",
+          }}
+          ref={mapRef}
+          whenReady={() => {
+            console.log("Map is ready:", mapRef.current);
+          }}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          {Object.entries(factoryLocations).map(([factory, position]) => (
+            <Marker key={factory} position={position}>
+              <Popup>{factory}</Popup>
+            </Marker>
+          ))}
+        </MapContainer>
         </div>
       </div>
     </div>

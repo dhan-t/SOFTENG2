@@ -17,6 +17,7 @@ const GenerateReport = () => {
 
   return (
     <div>
+      <Header />
       <button
         className="generate-button"
         onClick={handleGenerateReport}
