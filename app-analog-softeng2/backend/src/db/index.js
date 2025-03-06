@@ -420,23 +420,25 @@ connect()
 
     // 📌 Tracking: Update Status
     app.put("/api/tracking", async (req, res) => {
-      const { logId, status } = req.body;
+      const { id, status } = req.body; // Use `id` instead of `logId`
 
-      if (!logId || !status) {
+      console.log("Received payload:", { id, status }); // Log the payload
+
+      if (!id || !status) {
         return res
           .status(400)
-          .json({ error: "Log ID and status are required" });
+          .json({ error: "ID and status are required" });
       }
 
       try {
         const collection = db.collection("tracking");
         await collection.updateOne(
-          { logId },
+          { id }, // Use `id` instead of `logId`
           { $set: { status, updatedAt: new Date() } }
         );
 
         await createNotification(
-          `Tracking status updated: ${logId} to ${status}`
+          `Tracking status updated: ${id} to ${status}`
         );
 
         res
