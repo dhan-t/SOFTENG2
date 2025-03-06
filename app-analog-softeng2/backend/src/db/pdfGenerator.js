@@ -1,61 +1,88 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { ChartJSNodeCanvas } from "chartjs-node-canvas";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const generateChartImage = async (chartConfig) => {
+  const width = 800;
+  const height = 600;
+  const chartJSNodeCanvas = new ChartJSNodeCanvas({ width, height });
+  return await chartJSNodeCanvas.renderToBuffer(chartConfig);
+};
 
 export const generatePDF = async (productionData, logisticsData, trackingData) => {
   try {
-    console.log("Generating PDF with data:", { productionData, logisticsData, trackingData });
-
-    // Create a new PDF document
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([600, 800]); // Increase height to accommodate more content
-    const { width, height } = page.getSize();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-
-    let y = height - 50; // Start from the top of the page
-
-    // Function to add text to the PDF
-    const addText = (text, size = 12, x = 50) => {
-      page.drawText(text, { x, y, size, font, color: rgb(0, 0, 0) });
-      y -= size + 10; // Move down for the next line
+    
+    const createNewPage = () => {
+      const newPage = pdfDoc.addPage([600, 850]);
+      return { newPage, y: 800 };
     };
 
-    // Add Production Data Summary
-    addText("Production Data Summary", 18);
-    if (productionData.length > 0) {
-      productionData.forEach((item) => {
-        addText(`Product: ${item.productName}, Quantity: ${item.quantityProduced}, Date: ${item.dateProduced}`);
+    let { newPage: page, y } = createNewPage();
+    const { width, height } = page.getSize();
+
+    // Add Company Header & Logo (Smaller Size)
+    const logoPath = path.join(__dirname, "company_logo.png");
+    if (fs.existsSync(logoPath)) {
+      const logoImageBytes = fs.readFileSync(logoPath);
+      const logoImage = await pdfDoc.embedPng(logoImageBytes);
+      const logoDims = logoImage.scale(0.15); 
+      page.drawImage(logoImage, {
+        x: width / 2 - logoDims.width / 2,
+        y: y - logoDims.height,
+        width: logoDims.width,
+        height: logoDims.height,
       });
-    } else {
-      addText("No production data available.");
+      y -= logoDims.height + 10;
     }
 
-    y -= 20; // Add extra space between sections
+    // Report Title & Date
+    page.drawText("Manufacturing Production Report", {
+      x: 50, y, size: 18, font, color: rgb(0, 0, 0),
+    });
+    page.drawText(`Date: ${new Date().toLocaleDateString()}`, { x: 400, y, size: 12, font });
+    y -= 30;
 
-    // Add Logistics Summary
-    addText("Logistics Summary", 18);
-    if (logisticsData.length > 0) {
-      logisticsData.forEach((item) => {
-        addText(`Module: ${item.module}, Requested By: ${item.requestedBy}, Status: ${item.status}`);
-      });
-    } else {
-      addText("No logistics data available.");
+    // Summary Statistics
+    const totalProduced = productionData.reduce((sum, item) => sum + (item.producedQty || 0), 0);
+    const totalLogistics = logisticsData.length;
+    const totalCompletedTracking = trackingData.filter(item => item.status === "Completed").length;
+    
+    page.drawText(`Total Production Quantity: ${totalProduced}`, { x: 50, y, size: 12, font });
+    y -= 15;
+    page.drawText(`Total Logistics Requests: ${totalLogistics}`, { x: 50, y, size: 12, font });
+    y -= 15;
+    page.drawText(`Total Completed Deliveries: ${totalCompletedTracking}`, { x: 50, y, size: 12, font });
+    y -= 30;
+
+    // Charts Configurations
+    const chartConfigs = [
+      { type: "bar", data: { labels: productionData.map(i => i.dateFulfilled || "N/A"), datasets: [{ label: "Produced Quantity", data: productionData.map(i => i.producedQty || 0), backgroundColor: "rgba(75, 192, 192, 0.6)" }] } },
+      { type: "pie", data: { labels: [...new Set(logisticsData.map(i => i.status || "N/A"))], datasets: [{ data: logisticsData.reduce((acc, i) => (acc[i.status] = (acc[i.status] || 0) + 1, acc), {}), backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"] }] } },
+      { type: "bar", data: { labels: trackingData.map(i => i.phoneModel || "N/A"), datasets: [{ label: "Delivered Quantity", data: trackingData.map(i => i.quantity || 0), backgroundColor: "rgba(255, 159, 64, 0.6)" }] } },
+      { type: "line", data: { labels: productionData.map(i => i.dateRequested || "N/A"), datasets: [{ label: "Production Requests Over Time", data: productionData.map(i => i.producedQty || 0), borderColor: "#FF6384" }] } },
+      { type: "doughnut", data: { labels: [...new Set(trackingData.map(i => i.status || "N/A"))], datasets: [{ data: trackingData.reduce((acc, i) => (acc[i.status] = (acc[i.status] || 0) + 1, acc), {}), backgroundColor: ["#36A2EB", "#FFCE56", "#FF6384"] }] } }
+    ];
+
+    for (const chartConfig of chartConfigs) {
+      if (y < 250) { ({ newPage: page, y } = createNewPage()); }
+      const chartImage = await generateChartImage(chartConfig);
+      const chartImageEmbed = await pdfDoc.embedPng(chartImage);
+      const chartDims = chartImageEmbed.scale(0.5);
+      y -= chartDims.height;
+      page.drawImage(chartImageEmbed, { x: width / 2 - chartDims.width / 2, y: y, width: chartDims.width, height: chartDims.height });
+      y -= 30;
     }
 
-    y -= 20; // Add extra space between sections
-
-    // Add Tracking Summary
-    addText("Tracking Summary", 18);
-    if (trackingData.length > 0) {
-      trackingData.forEach((item) => {
-        addText(`Module: ${item.module}, Status: ${item.status}, Updated By: ${item.updatedBy}, Date: ${item.updatedAt}`);
-      });
-    } else {
-      addText("No tracking data available.");
-    }
-
-    // Save the PDF and return the buffer
-    const pdfBytes = await pdfDoc.save();
-    console.log("PDF generated successfully.");
-    return pdfBytes;
+    // Footer
+    page.drawText("Generated by Analog", { x: width / 2 - 80, y: 20, size: 10, font, color: rgb(0.5, 0.5, 0.5) });
+    return await pdfDoc.save();
   } catch (err) {
     console.error("Error generating PDF:", err);
     throw err;

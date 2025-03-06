@@ -7,7 +7,7 @@ import { useTracking } from "../../hooks/useTracking";
 import { useWorkOrders } from "../../hooks/useWorkOrder";
 import "./Dashboard.css";
 import Header from "../components/Header";
-import LineChartComponent from "../test page/test";
+import LineChartComponent from "../tables/LineChartComponent"; // Update the import path if necessary
 import { ToggleButton, ToggleButtonGroup, Box } from "@mui/material";
 import { TrendingUp, TrendingDown } from "@mui/icons-material";
 import { AssignmentTurnedIn } from "@mui/icons-material";
@@ -66,6 +66,45 @@ const GenerateReport = () => {
   );
 };
 
+const DynamicLineChart: React.FC = () => {
+  const [data, setData] = useState<{ name: string; produced: number }[]>([]);
+  const [inputValue, setInputValue] = useState<number>(0);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(parseFloat(e.target.value));
+  };
+
+  const handleAddData = () => {
+    const newData = { name: `Point ${data.length + 1}`, produced: inputValue };
+    setData([...data, newData]);
+  };
+
+  return (
+    <div>
+      <div style={{ marginBottom: '20px' }}>
+        <input
+          type="number"
+          value={inputValue}
+          onChange={handleInputChange}
+          placeholder="Enter produced value"
+          style={{ marginRight: '10px' }}
+        />
+        <button onClick={handleAddData}>Add Data</button>
+      </div>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey="produced" stroke="#8884d8" />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
 // ✅ Small dashboard cards
 interface UnifiedCardProps {
   type: "rate" | "progress" | "summary";
@@ -84,30 +123,27 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
   maxValue = 100,
   oldValue = 0,
   description = "",
+  icon,
 }) => {
-  // ✅ Calculate percentage change (for "rate" type)
-  const difference = currentValue - oldValue;
-  const isPositive = difference >= 0;
-  const percentageChange = oldValue
-    ? ((difference / Math.abs(oldValue)) * 100).toFixed(2)
-    : "0.00";
+  // Round off values to 2 decimal places
+  const roundedCurrentValue = currentValue.toFixed(2);
+  const roundedOldValue = oldValue.toFixed(2);
 
-  // ✅ Select the correct icon & color dynamically
-  const IconComponent = isPositive ? TrendingUp : TrendingDown;
-  const iconColor = isPositive ? "green" : "red";
+  // Define iconColor based on the rate change
+  const percentageChange = ((currentValue - oldValue) / oldValue) * 100;
+  const iconColor = percentageChange > 0 ? "#4caf50" : "#f44336";
 
   return (
     <Card
       sx={{
         boxShadow: "0px 10px 20px 0px rgba(133, 133, 133, 0.1)",
         borderRadius: 5,
-        paddingLeft: 2,
-        paddingRight: 2,
+        padding: 2,
         width: "100%",
         backgroundColor: "white",
       }}
     >
-      <CardContent sx={{ display: "flex", flexDirection: "column" }}>
+      <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {/* Title & Icon */}
         <Box
           sx={{
@@ -117,13 +153,12 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
             width: "100%",
           }}
         >
-          {/* Allow title to take the remaining space and align it to the right */}
           <Typography
             variant="h6"
             sx={{
               fontWeight: "bold",
               color: "#09194f",
-              textAlign: "left", // Aligns text to the right
+              textAlign: "left",
             }}
           >
             {title}
@@ -135,34 +170,32 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
           <Box
             sx={{
               display: "flex",
-              alignItems: "top",
+              alignItems: "center",
               justifyContent: "space-between",
+              gap: 2,
             }}
           >
-            {/* Current Value */}
             <Typography
               variant="h4"
               color="primary"
-              sx={{ fontWeight: 500, fontSize: "3rem", textAlign: "baseline" }}
+              sx={{ fontWeight: 500, fontSize: "3rem" }}
             >
-              {currentValue}
+              {roundedCurrentValue}
             </Typography>
             <Typography variant="body2" color="textSecondary">
               {description}
             </Typography>
-            {/* Icon and Chip (Stacked) */}
             <Box
               sx={{
                 display: "flex",
-                flexDirection: "column", // Stack items vertically
+                flexDirection: "column",
                 alignItems: "center",
-                // Center items horizontally
               }}
             >
-              <IconComponent sx={{ fontSize: "3rem", color: iconColor }} />
+              {icon && React.cloneElement(icon as React.ReactElement, { sx: { fontSize: "3rem", color: iconColor } })}
               <Chip
                 label={`${percentageChange}%`}
-                sx={{ backgroundColor: iconColor, color: "white", mt: 0.5 }} // Adds spacing between icon and chip
+                sx={{ backgroundColor: iconColor, color: "white", mt: 0.5 }}
               />
             </Box>
           </Box>
@@ -175,14 +208,15 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
+              gap: 2,
             }}
           >
             <Typography
               variant="h4"
               color="primary"
-              sx={{ fontWeight: 500, fontSize: "3rem", textAlign: "baseline" }}
+              sx={{ fontWeight: 500, fontSize: "3rem" }}
             >
-              {currentValue}
+              {roundedCurrentValue}
             </Typography>
             <Typography variant="body2" color="textSecondary">
               {description}
@@ -204,9 +238,9 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
           <Typography
             variant="h4"
             color="primary"
-            sx={{ fontWeight: 500, fontSize: "3rem", textAlign: "top" }}
+            sx={{ fontWeight: 500, fontSize: "3rem" }}
           >
-            {currentValue}
+            {roundedCurrentValue}
           </Typography>
           <Typography variant="body2" color="textSecondary">
             {description}
@@ -327,22 +361,26 @@ const trackingData = [
 ];
 
 const TrackingTest: React.FC = () => {
-  const statusCounts = trackingData.reduce((acc, item) => {
+  const completedShipments = trackingData.filter(
+    (item) => item.status === "Completed"
+  );
+
+  const statusCounts = completedShipments.reduce((acc, item) => {
     acc[item.status] = (acc[item.status] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  const moduleCounts = trackingData.reduce((acc, item) => {
+  const moduleCounts = completedShipments.reduce((acc, item) => {
     acc[item.module] = (acc[item.module] || 0) + item.quantity;
     return acc;
   }, {} as Record<string, number>);
 
-  const recipientCounts = trackingData.reduce((acc, item) => {
+  const recipientCounts = completedShipments.reduce((acc, item) => {
     acc[item.recipient] = (acc[item.recipient] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  const requestTrends = trackingData.reduce((acc, item) => {
+  const requestTrends = completedShipments.reduce((acc, item) => {
     acc[item.requestDate] = (acc[item.requestDate] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -368,7 +406,7 @@ const TrackingTest: React.FC = () => {
     <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
       <Card>
         <CardContent>
-          <Typography variant="h6">Request Status Breakdown</Typography>
+          <Typography variant="h6">Shipments Completed</Typography>
           <PieChart width={400} height={300}>
             <Pie
               data={statusData}
@@ -413,7 +451,7 @@ const TrackingTest: React.FC = () => {
             <XAxis dataKey="date" />
             <YAxis />
             <Tooltip />
-            <Legend />f
+            <Legend />
             <Line type="monotone" dataKey="requests" stroke="#8884d8" />
           </LineChart>
         </CardContent>
@@ -692,11 +730,11 @@ const Heatmap = () => {
   // Merge productionData with workOrders to include phoneModel
   const mergedData = productionData.map((item) => {
     const workOrder = workOrders.find(
-      (order) => order._id === item.workOrderID
+      (order) => order._id === item.workOrderID || order.id === item.workOrderID
     );
     return {
       ...item,
-      phoneModel: workOrder?.module || "Unknown Model",
+      phoneModel: workOrder?.phoneModel || workOrder?.module || "Unknown Model",
     };
   });
 
@@ -1012,6 +1050,9 @@ const Dashboard: React.FC = () => {
   const shipmentsInTransit = trackingLogs.filter(
     (log) => log.status === "In Transit"
   ).length;
+  const shipmentsCompleted = trackingLogs.filter(
+    (log) => log.status === "Completed"
+  ).length;
 
   {
     /*db.production.updateMany(
@@ -1019,6 +1060,35 @@ const Dashboard: React.FC = () => {
    { $rename: { "quantityProduced": "producedQty" } }
 )*/
   }
+
+// Combine data from trackingLogs and requests
+const combinedData = trackingLogs.map((log) => {
+  const request = requests.find((req) => req._id === log.requestID);
+  return {
+    ...log,
+    requestDate: request ? request.requestDate : null,
+  };
+});
+
+// Calculate dynamic values for the modules section
+const totalModuleRequests = requests.length;
+const fulfilledModuleRequests = requests.filter(
+  (request) => request.status && request.status.toLowerCase() === "fulfilled"
+).length;
+const pendingShipments = trackingLogs.filter(
+  (log) => log.status.toLowerCase() === "pending"
+).length;
+// Calculate average delivery time
+const averageDeliveryTime = combinedData.reduce((acc, log) => {
+  if (log.deliveredDate && log.requestDate) {
+    const deliveryTime = new Date(log.deliveredDate).getTime() - new Date(log.requestDate).getTime();
+    return acc + deliveryTime;
+  }
+  return acc;
+}, 0) / combinedData.length || 0;
+
+// Convert average delivery time from milliseconds to days
+const averageDeliveryTimeInDays = averageDeliveryTime / (1000 * 60 * 60 * 24);
 
   // Calculate production view values
   const productionRate =
@@ -1031,6 +1101,7 @@ const Dashboard: React.FC = () => {
     (acc, item) => acc + item.producedQty,
     0
   );
+  
   const fulfillmentEfficiency =
     (productionData.filter((item) => item.orderFulfilled).length /
       productionData.length) *
@@ -1185,9 +1256,9 @@ const Dashboard: React.FC = () => {
             {/* ✅ Monthly Revenue Summary */}
             <UnifiedCard
               type="summary"
-              title="Shipments in Transit"
+              title="Shipments Completed"
               icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={shipmentsInTransit} // DYNAMICVALUE
+              currentValue={shipmentsCompleted} // DYNAMICVALUE
               description="vs 30 days"
             />
           </div>
@@ -1296,7 +1367,6 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/*jump2prod*/}
       {view === "production" && (
         <div className="main-div">
           <div className="small-holder">
@@ -1305,7 +1375,7 @@ const Dashboard: React.FC = () => {
               type="rate"
               title="Production Rate"
               icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={productionRate} // DYNAMICVALUE
+              currentValue={parseFloat(productionRate.toFixed(2))} // DYNAMICVALUE
               oldValue={58} // You can replace this with a dynamic value if needed
             />
 
@@ -1314,7 +1384,7 @@ const Dashboard: React.FC = () => {
               type="summary"
               title="Late Fulfillments "
               icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={lateFulfillments} // DYNAMICVALUE
+              currentValue={parseFloat(lateFulfillments.toFixed(2))} // DYNAMICVALUE
               description="in 24 hours"
             />
 
@@ -1323,7 +1393,7 @@ const Dashboard: React.FC = () => {
               type="summary"
               title="Total Units Produced"
               icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={totalUnitsProduced} // DYNAMICVALUE
+              currentValue={parseFloat(totalUnitsProduced.toFixed(2))} // DYNAMICVALUE
               description="in 24 hours"
             />
 
@@ -1332,7 +1402,7 @@ const Dashboard: React.FC = () => {
               type="rate"
               title="Fulfillment Efficiency"
               icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={fulfillmentEfficiency} // DYNAMICVALUE
+              currentValue={parseFloat(fulfillmentEfficiency.toFixed(2))} // DYNAMICVALUE
               oldValue={100} // You can replace this with a dynamic value if needed
             />
           </div>
@@ -1370,97 +1440,96 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/*jump2module*/}
-      {view === "logistics" && (
-        <div className="main-div">
-          <div className="small-holder">
-            {/* ✅ Daily Quota Progress Card */}
-            <UnifiedCard
-              type="summary"
-              title="Total Module Requests "
-              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={94} // DYNAMICVALUE
-              description="in 24 hours"
-            />
+        {view === "logistics" && (
+          <div className="main-div">
+            <div className="small-holder">
+              {/* ✅ Total Module Requests */}
+              <UnifiedCard
+                type="summary"
+                title="Total Module Requests"
+                icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+                currentValue={totalModuleRequests} // DYNAMICVALUE
+                description="in 24 hours"
+              />
 
-            {/* ✅ Unresolved Requests Summary */}
-            <UnifiedCard
-              type="summary"
-              title="Fulfilled Module Requests"
-              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={10} // DYNAMICVALUE
-              description="in 24 hours"
-            />
+              {/* ✅ Fulfilled Module Requests */}
+              <UnifiedCard
+                type="summary"
+                title="Fulfilled Module Requests"
+                icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+                currentValue={fulfilledModuleRequests} // DYNAMICVALUE
+                description="in 24 hours"
+              />
 
-            {/* ✅ Weekly Trend Rate Card */}
-            <UnifiedCard
-              type="summary"
-              title="Pending Shipments"
-              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={90} // DYNAMICVALUE
-              description="in 24 hours"
-            />
+              {/* ✅ Pending Shipments */}
+              <UnifiedCard
+                type="summary"
+                title="Pending Shipments"
+                icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+                currentValue={pendingShipments} // DYNAMICVALUE
+                description="in 24 hours"
+              />
 
-            {/* ✅ Monthly Revenue Summary */}
-            <UnifiedCard
-              type="summary"
-              title="Average Delivery Time"
-              icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
-              currentValue={88}
-              description="in 24 hours"
-            />
-          </div>
+              {/* ✅ Average Delivery Time */}
+              <UnifiedCard
+                type="summary"
+                title="Average Delivery Time"
+                icon={<AssignmentTurnedIn sx={{ color: "#0f38bf" }} />}
+                currentValue={parseFloat(averageDeliveryTimeInDays.toFixed(2))} // DYNAMICVALUE
+                description="in days"
+              />
+            </div>
 
-          <div className="dashboard-contents">
-            <div className="bigger-components">
-              <div className="component-holder">
-                <h2>Most Requested Items</h2>
-                <CustomBarChart apiUri="http://localhost:5001/api/module-chart" />
+            <div className="dashboard-contents">
+              <div className="bigger-components">
+                <div className="component-holder">
+                  <h2>Most Requested Items</h2>
+                  <CustomBarChart apiUri="http://localhost:5001/api/module-chart" />
+                </div>
+
+                <div className="component-holder">
+                  <ModulesTable />
+                </div>
               </div>
-
-              <div className="component-holder">
-                <ModulesTable />
+              <div className="smaller-components">
+                <div className="component-holder">
+                  <h2>Factory Request Distribution</h2>
+                  <PieChartComponent apiUrl="http://localhost:5001/api/logistics-summary" />
+                </div>
+                <div className="component-holder">
+                  <h2>Module Request Fulfillment Rate</h2>
+                  <GaugeChart apiUri="http://localhost:5001/api/fulfillment-rate" />
+                </div>
               </div>
             </div>
-            <div className="smaller-components">
-              <div className="component-holder">
-                <h2>Factory Request Distribuition</h2>
-                <PieChartComponent apiUrl="http://localhost:5001/api/logistics-summary" />
-              </div>
-              <div className="component-holder">
-                <h2>Module Request Fulfillment Rate</h2>
-                <GaugeChart apiUri="http://localhost:5001/api/fulfillment-rate" />
-              </div>
-            </div>
-          </div>
-          <div className="component-holder">
-            <h2>Recent requests</h2>
-            <div className="chart">
-              <div className="pie-chart">
-                {requests.map((item, index) => {
-                  const bgColor = softCoolColors[index % softCoolColors.length];
-                  const textColor = index < 3 ? "#000" : "#000"; // Darker colors get white text, lighter get dark text
+            <div className="component-holder">
+              <h2>Recent requests</h2>
+              <div className="chart">
+                <div className="pie-chart">
+                  {requests.map((item, index) => {
+                    const bgColor = softCoolColors[index % softCoolColors.length];
+                    const textColor = index < 3 ? "#000" : "#000"; // Darker colors get white text, lighter get dark text
 
-                  return (
-                    <div
-                      key={item._id}
-                      className="slice"
-                      style={{
-                        backgroundColor: bgColor,
-                        color: textColor, // Dynamic font color
-                        borderRadius: "12px",
-                        padding: "8px 17px 10px",
-                      }}
-                    >
-                      <span>{item.module}</span>
-                    </div>
-                  );
-                })}
+                    return (
+                      <div
+                        key={item._id}
+                        className="slice"
+                        style={{
+                          backgroundColor: bgColor,
+                          color: textColor, // Dynamic font color
+                          borderRadius: "12px",
+                          padding: "8px 17px 10px",
+                        }}
+                      >
+                        <span>{item.module}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 };

@@ -61,13 +61,19 @@ export const useTracking = () => {
   };
 
   const updateTrackingStatus = async (id: string, status: string) => {
+    console.log(`Updating shipment with ID: ${id} and status: ${status}`);
+  
     try {
       const res = await fetch("http://localhost:5001/api/tracking", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status }),
+        body: JSON.stringify({ id, status }), // Send `id` and `status` in the payload
       });
-      if (!res.ok) throw new Error("Failed to update tracking status");
+  
+      if (!res.ok) {
+        throw new Error("Failed to update tracking status");
+      }
+  
       await fetchTrackingLogs(); // Refresh the tracking logs after updating
     } catch (err) {
       setError((err as Error).message);

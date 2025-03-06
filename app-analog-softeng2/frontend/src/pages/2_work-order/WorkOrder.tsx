@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useWorkOrders } from "../../hooks/useWorkOrder";
+import React, { useState } from "react";
+import { useWorkOrders, WorkOrder as WorkOrderType } from "../../hooks/useWorkOrder";
 import "./WorkOrder.css";
 import Header from "../components/Header";
 import "../components/global.css";
@@ -94,7 +94,8 @@ const WorkOrder: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formattedData = {
+    const formattedData: WorkOrderType = {
+      phoneModel: formData.module,
       module: formData.module,
       createdBy: formData.requestedBy,
       description: formData.description,
@@ -167,7 +168,7 @@ const WorkOrder: React.FC = () => {
       recipient: order.assignedTo,
       quantity: order.quantity,
       status: order.status,
-      daysDifference,
+      daysDifference: typeof daysDifference === "number" && daysDifference < 0 ? "-" : daysDifference, // Handle negative values
     };
   });
 
